@@ -3,11 +3,11 @@ package com.noveris.races;
 import java.util.Locale;
 
 public enum Race {
-    NONE("Sem raça", 20.0, 1.0f, 0xFFB8A7BD),
-    TIEFLING("Tiefling", 20.0, 1.0f, 0xFFE05252),
-    LYCANTHROPE("Licantropo", 24.0, 1.05f, 0xFFC6B7A1),
-    DRAGONBORN("Draconato", 26.0, 1.05f, 0xFFD18A62),
-    HARPY("Harpia", 18.0, 0.95f, 0xFFDCC6E8);
+    NONE("Sem raça", 20.0, 1.0f, 0xFFC8BFA6),
+    TIEFLING("Tiefling", 20.0, 1.0f, 0xFFE58B32),
+    LYCANTHROPE("Licantropo", 24.0, 1.05f, 0xFFD7CDB4),
+    DRAGONBORN("Draconato", 26.0, 1.05f, 0xFFD6A13A),
+    HARPY("Harpia", 18.0, 0.95f, 0xFFE9DDBB);
 
     public final String title;
     public final double maxHealth;

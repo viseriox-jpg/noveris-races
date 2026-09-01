@@ -28,7 +28,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
         for (int i = 0; i < races.length; i++) {
             int x = left + 34 + i * cell;
             boolean active = selected == races[i];
-            g.fill(x, symbolsY, x + cell - 10, symbolsY + 54, active ? WINE : 0xFF1B181E);
+            g.fill(x, symbolsY, x + cell - 10, symbolsY + 54, active ? WINE : 0xFF17140E);
             drawLargeSymbol(g, symbols[i], x + (cell - 10) / 2, symbolsY + 7, races[i].color);
             g.drawCenteredString(font, races[i].title.toUpperCase(), x + (cell - 10) / 2, symbolsY + 36, active ? WHITE : MUTED);
         }
@@ -94,7 +94,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private void lineageButton(GuiGraphics g, int x, int y, String label, DragonLineage value, int color, int mx, int my) {
         boolean active = lineage == value;
         boolean hover = mx >= x && mx < x + lineageW && my >= y && my < y + lineageH;
-        g.fill(x, y, x + lineageW, y + lineageH, active ? WINE : hover ? WINE_HOVER : 0xFF1B181E);
+        g.fill(x, y, x + lineageW, y + lineageH, active ? WINE : hover ? WINE_HOVER : 0xFF17140E);
         g.drawCenteredString(font, label, x + lineageW / 2, y + 7, active ? color : MUTED);
     }
     private String style(Race r) { return switch(r){case TIEFLING->"Sobrevivência infernal e retaliação.";case LYCANTHROPE->"Predador poderoso durante a noite.";case DRAGONBORN->"Tanque ofensivo de linhagem elemental.";case HARPY->"Exploração vertical e agilidade.";default->"";}; }

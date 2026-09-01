@@ -1,7 +1,8 @@
 package com.noveris.races.game;
 
 import com.noveris.races.*;
-import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -11,12 +12,9 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public final class RaceAbilities {
     private RaceAbilities() {}
-    private static final DustParticleOptions WINE = new DustParticleOptions(new Vector3f(.42f, .08f, .16f), 1f);
-
     public static void usePrimary(ServerPlayer p) {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
@@ -51,7 +49,13 @@ public final class RaceAbilities {
         p.hurtMarked = true;
         p.causeFoodExhaustion(1.0f);
         RaceState.setMobilityReady(p, now + (race == Race.HARPY ? 240 : 300));
-        particles(p, 18);
+        switch (race) {
+            case TIEFLING -> particles(p, ParticleTypes.FLAME, 22, .55, .12);
+            case LYCANTHROPE -> particles(p, ParticleTypes.POOF, 24, .7, .08);
+            case DRAGONBORN -> particles(p, ParticleTypes.LARGE_SMOKE, 20, .65, .04);
+            case HARPY -> particles(p, ParticleTypes.CLOUD, 26, .8, .12);
+            default -> { }
+        }
         RaceGame.sync(p);
     }
 
@@ -61,13 +65,17 @@ public final class RaceAbilities {
             target.igniteForSeconds(3);
         }
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 120, 0));
-        particles(p, 45);
+        particles(p, ParticleTypes.FLAME, 42, 1.2, .08);
+        particles(p, ParticleTypes.SMOKE, 18, 1.0, .04);
+        p.level().playSound(null, p.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1.0f, .75f);
     }
 
     private static void huntingHowl(ServerPlayer p) {
         for (LivingEntity target : nearby(p, 24.0)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0));
         if (p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));
         p.level().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1.2f, .8f);
+        particles(p, ParticleTypes.POOF, 34, 1.5, .08);
+        particles(p, ParticleTypes.CRIT, 22, 1.2, .12);
         p.causeFoodExhaustion(1f);
     }
 
@@ -75,6 +83,8 @@ public final class RaceAbilities {
         Vec3 from = p.getEyePosition();
         Vec3 look = p.getLookAngle();
         DragonLineage lineage = RaceState.lineage(p);
+        ParticleOptions breathParticle = lineage == DragonLineage.FIRE ? ParticleTypes.FLAME
+                : lineage == DragonLineage.FROST ? ParticleTypes.SNOWFLAKE : ParticleTypes.WITCH;
         for (LivingEntity target : nearby(p, 8.0)) {
             Vec3 to = target.getEyePosition().subtract(from).normalize();
             if (look.dot(to) < .72) continue;
@@ -84,7 +94,14 @@ public final class RaceAbilities {
             if (lineage == DragonLineage.VENOM) target.addEffect(new MobEffectInstance(MobEffects.POISON, 120, 0));
         }
         p.causeFoodExhaustion(1f);
-        particles(p, 55);
+        if (p.level() instanceof ServerLevel level) {
+            for (int step = 1; step <= 8; step++) {
+                Vec3 point = from.add(look.scale(step));
+                level.sendParticles(breathParticle, point.x, point.y, point.z, 6, .22, .22, .22, .02);
+            }
+        }
+        particles(p, ParticleTypes.SMOKE, 14, .5, .02);
+        p.level().playSound(null, p.blockPosition(), SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.PLAYERS, 1.0f, .9f);
     }
 
     private static void windGust(ServerPlayer p) {
@@ -95,7 +112,14 @@ public final class RaceAbilities {
             target.push(look.x * 1.4, .35, look.z * 1.4);
             target.hurtMarked = true;
         }
-        particles(p, 35);
+        if (p.level() instanceof ServerLevel level) {
+            Vec3 origin = p.getEyePosition();
+            for (int step = 1; step <= 6; step++) {
+                Vec3 point = origin.add(look.scale(step));
+                level.sendParticles(ParticleTypes.CLOUD, point.x, point.y, point.z, 7, .3, .25, .3, .05);
+            }
+        }
+        p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, .9f, .65f);
     }
 
     private static java.util.List<LivingEntity> nearby(ServerPlayer p, double radius) {
@@ -103,8 +127,8 @@ public final class RaceAbilities {
         return p.level().getEntitiesOfClass(LivingEntity.class, box, e -> e != p && e.isAlive());
     }
 
-    private static void particles(ServerPlayer p, int count) {
+    private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {
         if (p.level() instanceof ServerLevel level)
-            level.sendParticles(WINE, p.getX(), p.getY() + 1, p.getZ(), count, .7, .7, .7, .05);
+            level.sendParticles(particle, p.getX(), p.getY() + 1, p.getZ(), count, spread, spread, spread, speed);
     }
 }

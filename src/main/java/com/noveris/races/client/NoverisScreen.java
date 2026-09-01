@@ -5,20 +5,20 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 abstract class NoverisScreen extends Screen {
-    static final int BACKDROP = 0xE9100E14;
-    static final int BORDER = 0xFF672332;
-    static final int WINE = 0xFF4A1C2B;
-    static final int WINE_HOVER = 0xFF64283A;
-    static final int LILAC = 0xFFCDB7D1;
-    static final int MUTED = 0xFF837985;
-    static final int WHITE = 0xFFE8E4EA;
-    static final int DANGER = 0xFFFF5164;
+    static final int BACKDROP = 0xEB0D0C09;
+    static final int BORDER = 0xFF8A6728;
+    static final int WINE = 0xFF5C451B;
+    static final int WINE_HOVER = 0xFF806227;
+    static final int LILAC = 0xFFE2D3A2;
+    static final int MUTED = 0xFF9C9278;
+    static final int WHITE = 0xFFF3EAD0;
+    static final int DANGER = 0xFFD6A13A;
     int left, top, panelWidth, panelHeight;
 
     NoverisScreen(String title) { super(Component.literal(title)); }
 
     void frame(GuiGraphics g, String title) {
-        g.fill(0, 0, width, height, 0x7808070C);
+        g.fill(0, 0, width, height, 0x80060402);
         panelWidth = Math.min(width - 32, 1080);
         panelHeight = Math.min(height - 30, 650);
         left = (width - panelWidth) / 2;
@@ -34,11 +34,11 @@ abstract class NoverisScreen extends Screen {
 
     boolean button(GuiGraphics g, int x, int y, int w, int h, String text, double mx, double my, boolean enabled) {
         boolean hover = enabled && mx >= x && mx < x + w && my >= y && my < y + h;
-        g.fill(x, y, x + w, y + h, enabled ? (hover ? WINE_HOVER : WINE) : 0xFF1C191F);
+        g.fill(x, y, x + w, y + h, enabled ? (hover ? WINE_HOVER : WINE) : 0xFF1B1811);
         int color = enabled ? WHITE : MUTED;
         g.drawCenteredString(font, text, x + w / 2, y + (h - 8) / 2, color);
         return hover;
     }
 
-    void divider(GuiGraphics g, int y) { g.fill(left + 34, y, left + panelWidth - 34, y + 2, 0xFF352A39); }
+    void divider(GuiGraphics g, int y) { g.fill(left + 34, y, left + panelWidth - 34, y + 2, 0xFF45391F); }
 }

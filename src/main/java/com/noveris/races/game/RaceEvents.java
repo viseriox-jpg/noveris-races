@@ -19,7 +19,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = NoverisRaces.MOD_ID)
@@ -138,17 +137,10 @@ public final class RaceEvents {
     }
 
     @SubscribeEvent
-    public static void experience(PlayerXpEvent.XpChange event) {
-        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.HUMAN && event.getAmount() > 0)
-            event.setAmount(Math.max(event.getAmount() + 1, Math.round(event.getAmount() * 1.10f)));
-    }
-
-    @SubscribeEvent
     public static void breakSpeed(PlayerEvent.BreakSpeed event) {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         Race race = RaceState.race(p);
         float speed = event.getNewSpeed();
-        if (race == Race.HUMAN) speed *= 1.08f;
         if (race == Race.THALASSIAN && p.isInWater()) speed *= 5f;
         event.setNewSpeed(speed);
     }

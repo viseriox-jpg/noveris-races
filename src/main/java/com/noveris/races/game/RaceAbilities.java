@@ -26,7 +26,6 @@ public final class RaceAbilities {
             case FAIRY -> { faeSense(p); cooldown = 800; }
             case SATYR -> { woodlandVigor(p); cooldown = 700; }
             case THALASSIAN -> { tidalGuard(p); cooldown = 700; }
-            case HUMAN -> { adaptation(p); cooldown = 500; }
             case NEPHILIM -> { supernaturalAegis(p); cooldown = 1000; }
             case VAMPIRE -> { bloodDrain(p); cooldown = 700; }
             case HALF_BLOOD -> { hybridHeritage(p); cooldown = 800; }
@@ -50,7 +49,6 @@ public final class RaceAbilities {
             case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); RaceState.customLong(p,"FaeLandingUntil",now+100); }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
             case THALASSIAN -> p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75));
-            case HUMAN -> p.setDeltaMovement(look.x * .85, .15, look.z * .85);
             case NEPHILIM -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .7, .62, look.z * .7); }
             case VAMPIRE -> p.setDeltaMovement(look.x * 1.2, .12, look.z * 1.2);
             case HALF_BLOOD -> p.setDeltaMovement(look.x * .72, .18, look.z * .72);
@@ -72,7 +70,6 @@ public final class RaceAbilities {
             case FAIRY -> particles(p, ParticleTypes.END_ROD, 20, .55, .04);
             case SATYR -> particles(p, ParticleTypes.COMPOSTER, 20, .65, .05);
             case THALASSIAN -> particles(p, ParticleTypes.BUBBLE, 24, .7, .08);
-            case HUMAN -> particles(p, ParticleTypes.CRIT, 14, .5, .08);
             case NEPHILIM -> particles(p, ParticleTypes.END_ROD, 18, .6, .03);
             case VAMPIRE -> particles(p, ParticleTypes.SMOKE, 22, .6, .04);
             case HALF_BLOOD -> particles(p, ParticleTypes.ENCHANTED_HIT, 18, .6, .04);
@@ -104,11 +101,6 @@ public final class RaceAbilities {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, p.isInWater() ? 1 : 0));
         p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 160, 0));
         particles(p, ParticleTypes.BUBBLE, 36, .9, .08);
-    }
-    private static void adaptation(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 200, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 0));
-        particles(p, ParticleTypes.CRIT, 24, .7, .06);
     }
     private static void supernaturalAegis(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, 1));

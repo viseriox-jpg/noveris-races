@@ -94,14 +94,6 @@ public final class RaceEvents {
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
         if (race == Race.NEPHILIM && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .65f);
         if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.35f);
-        if (race == Race.REVENANT && event.getAmount() >= victim.getHealth()
-                && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)
-                && victim.level().getGameTime() >= RaceState.customLong(victim, "DeathDefianceReady")) {
-            event.setAmount(Math.max(0, victim.getHealth() - 4f));
-            RaceState.customLong(victim, "DeathDefianceReady", victim.level().getGameTime() + 24000);
-            RaceState.customLong(victim, "RegenBlockedUntil", victim.level().getGameTime() + 600);
-            victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 160, 0));
-        }
         if (race == Race.TIEFLING && event.getSource().is(DamageTypeTags.IS_FIRE)) {
             event.setCanceled(true);
             victim.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 120, 0));
@@ -139,10 +131,6 @@ public final class RaceEvents {
                 && p.getFoodData().getFoodLevel() >= 18 && event.getAmount() <= 1.0f)
             event.setAmount(event.getAmount() * .75f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
-        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.REVENANT) {
-            if (p.level().getGameTime() < RaceState.customLong(p, "RegenBlockedUntil")) event.setAmount(0);
-            else event.setAmount(event.getAmount() * .7f);
-        }
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.THALASSIAN
                 && RaceState.customLong(p, "DryTicks") > 6000) event.setAmount(event.getAmount() * .6f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.FAIRY
@@ -221,14 +209,6 @@ public final class RaceEvents {
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false));
                 if (p.level().isNight()) { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 0, false, false)); }
             }
-            case REVENANT -> {
-                var poison = p.getEffect(MobEffects.POISON);
-                if (poison != null && poison.getDuration() > 10) {
-                    int reduced = Math.max(10, poison.getDuration() / 4), amplifier = poison.getAmplifier();
-                    p.removeEffect(MobEffects.POISON);
-                    p.addEffect(new MobEffectInstance(MobEffects.POISON, reduced, amplifier, false, false));
-                }
-            }
             case HALF_BLOOD -> applyHybridPassives(p);
             case TIEFLING -> {
                 if (RaceState.visionEnabled(p) && p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7)
@@ -288,7 +268,6 @@ public final class RaceEvents {
         if(RaceState.customLong(p,"FoodTracked")==0){RaceState.customLong(p,"LastFood",current);RaceState.customLong(p,"FoodTracked",1);return;}
         int previous=(int)RaceState.customLong(p,"LastFood");
         if(race==Race.VAMPIRE&&current>previous){int gain=current-previous;current=previous+Math.max(1,(int)Math.ceil(gain*.7));p.getFoodData().setFoodLevel(current);}
-        if(race==Race.REVENANT&&current<previous){long losses=RaceState.customLong(p,"FoodLosses")+(previous-current);if(losses>=5){current=Math.min(20,current+1);p.getFoodData().setFoodLevel(current);losses-=5;}RaceState.customLong(p,"FoodLosses",losses);}
         RaceState.customLong(p,"LastFood",current);
     }
     private static void handleLycanTransformation(ServerPlayer p, Race race) {
@@ -311,7 +290,6 @@ public final class RaceEvents {
         if ((a==Race.SATYR||b==Race.SATYR)&&isNaturalGround(p)) p.addEffect(new MobEffectInstance(MobEffects.JUMP,40,0,false,false));
         if (a==Race.HUMAN||b==Race.HUMAN) p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED,40,0,false,false));
         if ((a==Race.NEPHILIM||b==Race.NEPHILIM)&&p.getHealth()<p.getMaxHealth()*.25f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,40,0,false,false));
-        if (a==Race.REVENANT||b==Race.REVENANT) p.removeEffect(MobEffects.POISON);
         if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
         if ((a==Race.HARPY||b==Race.HARPY)&&!p.onGround()&&p.getDeltaMovement().y<-.15) p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,8,0,false,false));
     }

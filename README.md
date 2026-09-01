@@ -5,7 +5,7 @@ Mod de raças jogáveis do Noveris SMP, independente do Noveris Staff Call e do 
 ## Reinos e raças
 
 - **Orvannis:** Elfo, Feérico, Sátiro e Thalassiano.
-- **Neutros:** Humano, Nephilin, Vampiro, Revenante e Meio-Sangue.
+- **Neutros:** Humano, Nephilin, Vampiro e Meio-Sangue.
 - **Avarion:** Tiefling, Licantropo, Draconato e Harpia.
 
 Meio-Sangue exige duas ascendências diferentes e recebe versões reduzidas de características e fraquezas. Nenhuma raça possui voo livre.

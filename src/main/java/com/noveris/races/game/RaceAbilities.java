@@ -29,7 +29,6 @@ public final class RaceAbilities {
             case HUMAN -> { adaptation(p); cooldown = 500; }
             case NEPHILIM -> { supernaturalAegis(p); cooldown = 1000; }
             case VAMPIRE -> { bloodDrain(p); cooldown = 700; }
-            case REVENANT -> { deathDefiance(p); cooldown = 1200; }
             case HALF_BLOOD -> { hybridHeritage(p); cooldown = 800; }
             case TIEFLING -> { infernalPulse(p); cooldown = 700; }
             case LYCANTHROPE -> { huntingHowl(p); cooldown = 900; }
@@ -54,7 +53,6 @@ public final class RaceAbilities {
             case HUMAN -> p.setDeltaMovement(look.x * .85, .15, look.z * .85);
             case NEPHILIM -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .7, .62, look.z * .7); }
             case VAMPIRE -> p.setDeltaMovement(look.x * 1.2, .12, look.z * 1.2);
-            case REVENANT -> p.setDeltaMovement(look.x * .8, .08, look.z * .8);
             case HALF_BLOOD -> p.setDeltaMovement(look.x * .72, .18, look.z * .72);
             case TIEFLING -> p.setDeltaMovement(look.x * 1.15, Math.max(.18, look.y * .35), look.z * 1.15);
             case LYCANTHROPE -> p.setDeltaMovement(look.x * 1.35, .34, look.z * 1.35);
@@ -77,7 +75,6 @@ public final class RaceAbilities {
             case HUMAN -> particles(p, ParticleTypes.CRIT, 14, .5, .08);
             case NEPHILIM -> particles(p, ParticleTypes.END_ROD, 18, .6, .03);
             case VAMPIRE -> particles(p, ParticleTypes.SMOKE, 22, .6, .04);
-            case REVENANT -> particles(p, ParticleTypes.ASH, 22, .6, .03);
             case HALF_BLOOD -> particles(p, ParticleTypes.ENCHANTED_HIT, 18, .6, .04);
             case TIEFLING -> particles(p, ParticleTypes.FLAME, 22, .55, .12);
             case LYCANTHROPE -> particles(p, ParticleTypes.POOF, 24, .7, .08);
@@ -122,11 +119,6 @@ public final class RaceAbilities {
         LivingEntity target = nearby(p, 5).stream().min(java.util.Comparator.comparingDouble(p::distanceToSqr)).orElse(null);
         if (target != null) { target.hurt(p.damageSources().playerAttack(p), 4f); p.heal(2f); }
         particles(p, ParticleTypes.DAMAGE_INDICATOR, 24, .8, .05);
-    }
-    private static void deathDefiance(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
-        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 1));
-        particles(p, ParticleTypes.SOUL, 30, .8, .04);
     }
     private static void hybridHeritage(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));

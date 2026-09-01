@@ -10,6 +10,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private Race selected = Race.TIEFLING;
     private DragonLineage lineage = DragonLineage.FIRE;
     private int startX, startY, startW, startH;
+    private int lineageX, lineageY, lineageW, lineageH;
 
     public RaceSelectionScreen() { super("Linhagens de Noveris"); }
     @Override public boolean shouldCloseOnEsc() { return false; }
@@ -45,13 +46,25 @@ public final class RaceSelectionScreen extends NoverisScreen {
         g.drawString(font, "FRAQUEZAS", split, detailY + 62, DANGER, false);
         drawLines(g, weaknesses(selected), split, detailY + 78, MUTED);
         if (selected == Race.DRAGONBORN) {
-            g.drawString(font, "LINHAGEM: " + lineage.title.toUpperCase() + "  [ALTERAR]", split, detailY + 112, lineageColor(), false);
+            g.drawString(font, "ESCOLHA A LINHAGEM", left + 44, detailY + 120, WHITE, false);
+            lineageX = left + 44;
+            lineageY = detailY + 136;
+            lineageW = 72;
+            lineageH = 22;
+            lineageButton(g, lineageX, lineageY, "FOGO", DragonLineage.FIRE, 0xFFFF6754, mx, my);
+            lineageButton(g, lineageX + lineageW + 6, lineageY, "GELO", DragonLineage.FROST, 0xFF80D9FF, mx, my);
+            lineageButton(g, lineageX + (lineageW + 6) * 2, lineageY, "VENENO", DragonLineage.VENOM, 0xFF86D48A, mx, my);
         }
         startW = 260; startH = 28; startX = left + (panelWidth - startW) / 2; startY = top + panelHeight - 46;
         button(g, startX, startY, startW, startH, "INICIAR TESTE — 5:00", mx, my, true);
     }
 
     @Override public boolean mouseClicked(double mx, double my, int button) {
+        // The primary action always wins over every secondary hit area.
+        if (mx >= startX && mx < startX + startW && my >= startY && my < startY + startH) {
+            PacketDistributor.sendToServer(new ActionPayload("trial", selected.name(), lineage.name()));
+            minecraft.setScreen(null); return true;
+        }
         int cell = (panelWidth - 68) / 4;
         int y = top + 68;
         Race[] races = {Race.TIEFLING, Race.LYCANTHROPE, Race.DRAGONBORN, Race.HARPY};
@@ -59,14 +72,12 @@ public final class RaceSelectionScreen extends NoverisScreen {
             int x = left + 34 + i * cell;
             if (mx >= x && mx < x + cell - 10 && my >= y && my < y + 54) { selected = races[i]; return true; }
         }
-        int detailY = y + 90, split = left + panelWidth / 2;
-        if (selected == Race.DRAGONBORN && mx >= split && my >= detailY + 102 && my < detailY + 130) {
-            lineage = lineage == DragonLineage.FIRE ? DragonLineage.FROST : lineage == DragonLineage.FROST ? DragonLineage.VENOM : DragonLineage.FIRE;
+        if (selected == Race.DRAGONBORN && my >= lineageY && my < lineageY + lineageH) {
+            if (mx >= lineageX && mx < lineageX + lineageW) lineage = DragonLineage.FIRE;
+            else if (mx >= lineageX + lineageW + 6 && mx < lineageX + lineageW * 2 + 6) lineage = DragonLineage.FROST;
+            else if (mx >= lineageX + (lineageW + 6) * 2 && mx < lineageX + lineageW * 3 + 12) lineage = DragonLineage.VENOM;
+            else return super.mouseClicked(mx, my, button);
             return true;
-        }
-        if (mx >= startX && mx < startX + startW && my >= startY && my < startY + startH) {
-            PacketDistributor.sendToServer(new ActionPayload("trial", selected.name(), lineage.name()));
-            minecraft.setScreen(null); return true;
         }
         return super.mouseClicked(mx, my, button);
     }
@@ -80,7 +91,12 @@ public final class RaceSelectionScreen extends NoverisScreen {
         g.pose().popPose();
     }
     private int hearts(Race r) { return (int)r.maxHealth / 2; }
-    private int lineageColor() { return lineage == DragonLineage.FIRE ? 0xFFFF6754 : lineage == DragonLineage.FROST ? 0xFF80D9FF : 0xFF86D48A; }
+    private void lineageButton(GuiGraphics g, int x, int y, String label, DragonLineage value, int color, int mx, int my) {
+        boolean active = lineage == value;
+        boolean hover = mx >= x && mx < x + lineageW && my >= y && my < y + lineageH;
+        g.fill(x, y, x + lineageW, y + lineageH, active ? WINE : hover ? WINE_HOVER : 0xFF1B181E);
+        g.drawCenteredString(font, label, x + lineageW / 2, y + 7, active ? color : MUTED);
+    }
     private String style(Race r) { return switch(r){case TIEFLING->"Sobrevivência infernal e retaliação.";case LYCANTHROPE->"Predador poderoso durante a noite.";case DRAGONBORN->"Tanque ofensivo de linhagem elemental.";case HARPY->"Exploração vertical e agilidade.";default->"";}; }
     private String primary(Race r) { return switch(r){case TIEFLING->"Pulso Infernal";case LYCANTHROPE->"Uivo de Caçada";case DRAGONBORN->"Sopro Elemental";case HARPY->"Rajada de Vento";default->"";}; }
     private String mobility(Race r) { return switch(r){case TIEFLING->"Avanço em Fogo";case LYCANTHROPE->"Bote Predatório";case DRAGONBORN->"Investida Dracônica";case HARPY->"Impulso Alado (sem voo)";default->"";}; }

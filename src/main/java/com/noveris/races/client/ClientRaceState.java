@@ -16,11 +16,12 @@ public final class ClientRaceState {
     public static long primaryCooldown;
     public static long mobilityCooldown;
     public static boolean combat;
+    public static boolean visionEnabled = true;
 
     private ClientRaceState() {}
     public static void accept(StatePayload p) {
         race = Race.parse(p.race()); lineage = DragonLineage.parse(p.lineage());
         ancestryA = Race.parse(p.ancestryA()); ancestryB = Race.parse(p.ancestryB()); size = RaceSize.parse(p.size()); confirmed = p.confirmed();
-        trial = p.trial(); primaryCooldown = p.primaryCooldown(); mobilityCooldown = p.mobilityCooldown(); combat = p.combat();
+        trial = p.trial(); primaryCooldown = p.primaryCooldown(); mobilityCooldown = p.mobilityCooldown(); combat = p.combat(); visionEnabled = p.visionEnabled();
     }
 }

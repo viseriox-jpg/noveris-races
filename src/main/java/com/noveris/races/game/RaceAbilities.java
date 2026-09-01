@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,10 +22,10 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.primaryReady(p)) return;
         int cooldown;
         switch (race) {
-            case ELF -> { focusArcher(p); cooldown = 500; }
-            case FAIRY -> { faeSense(p); cooldown = 700; }
-            case SATYR -> { woodlandVigor(p); cooldown = 600; }
-            case THALASSIAN -> { tidalGuard(p); cooldown = 600; }
+            case ELF -> { focusArcher(p); cooldown = 700; }
+            case FAIRY -> { faeSense(p); cooldown = 800; }
+            case SATYR -> { woodlandVigor(p); cooldown = 700; }
+            case THALASSIAN -> { tidalGuard(p); cooldown = 700; }
             case HUMAN -> { adaptation(p); cooldown = 500; }
             case NEPHILIM -> { supernaturalAegis(p); cooldown = 1000; }
             case VAMPIRE -> { bloodDrain(p); cooldown = 700; }
@@ -46,8 +47,8 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
         Vec3 look = p.getLookAngle();
         switch (race) {
-            case ELF -> p.setDeltaMovement(look.x * 1.0, .2, look.z * 1.0);
-            case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); }
+            case ELF -> { double power=p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST)?1.25:1.0; p.setDeltaMovement(look.x * power, .2, look.z * power); }
+            case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); RaceState.customLong(p,"FaeLandingUntil",now+100); }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
             case THALASSIAN -> p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75));
             case HUMAN -> p.setDeltaMovement(look.x * .85, .15, look.z * .85);
@@ -66,7 +67,8 @@ public final class RaceAbilities {
         }
         p.hurtMarked = true;
         p.causeFoodExhaustion(1.0f);
-        RaceState.setMobilityReady(p, now + (race == Race.HARPY ? 240 : 300));
+        long mobilityCooldown = switch (race) { case FAIRY -> 280; case SATYR -> 320; case THALASSIAN -> p.isInWater() ? 240 : 360; case HARPY -> 240; default -> 300; };
+        RaceState.setMobilityReady(p, now + mobilityCooldown);
         switch (race) {
             case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);
             case FAIRY -> particles(p, ParticleTypes.END_ROD, 20, .55, .04);
@@ -87,8 +89,8 @@ public final class RaceAbilities {
     }
 
     private static void focusArcher(ServerPlayer p) {
+        RaceState.customLong(p, "ArcherFocusUntil", p.level().getGameTime() + 160);
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 200, 0));
         particles(p, ParticleTypes.HAPPY_VILLAGER, 28, .8, .04);
     }
     private static void faeSense(ServerPlayer p) {

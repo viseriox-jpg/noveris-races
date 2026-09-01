@@ -19,6 +19,7 @@ public final class ClientEvents {
     public static final KeyMapping PANEL = key("key.noveris_races.panel", GLFW.GLFW_KEY_R);
     public static final KeyMapping PRIMARY = key("key.noveris_races.primary", GLFW.GLFW_KEY_G);
     public static final KeyMapping MOBILITY = key("key.noveris_races.mobility", GLFW.GLFW_KEY_V);
+    public static final KeyMapping VISION = key("key.noveris_races.vision", GLFW.GLFW_KEY_B);
     private static int syncTimer;
 
     private static KeyMapping key(String name, int key) {
@@ -28,7 +29,7 @@ public final class ClientEvents {
 
     @EventBusSubscriber(modid = NoverisRaces.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
     public static final class ModBus {
-        @SubscribeEvent public static void keys(RegisterKeyMappingsEvent e) { e.register(PANEL); e.register(PRIMARY); e.register(MOBILITY); }
+        @SubscribeEvent public static void keys(RegisterKeyMappingsEvent e) { e.register(PANEL); e.register(PRIMARY); e.register(MOBILITY); e.register(VISION); }
     }
 
     @EventBusSubscriber(modid = NoverisRaces.MOD_ID, value = Dist.CLIENT)
@@ -44,6 +45,7 @@ public final class ClientEvents {
             while (PANEL.consumeClick()) mc.setScreen(ClientRaceState.race == Race.NONE ? new RaceSelectionScreen() : new RacePanelScreen(false));
             while (PRIMARY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("primary", "", "", "", "", ""));
             while (MOBILITY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("mobility", "", "", "", "", ""));
+            while (VISION.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("vision", "", "", "", "", ""));
         }
     }
 }

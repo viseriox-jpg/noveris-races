@@ -46,6 +46,11 @@ public final class RacePanelScreen extends NoverisScreen {
         String[] weak = weaknesses(race);
         for (int i=0;i<weak.length;i++) g.drawString(font, "• " + weak[i], right, y+88+i*14, MUTED, false);
         g.drawString(font, "[" + ClientEvents.PANEL.getTranslatedKeyMessage().getString() + "] ABRIR PAINEL", x, top + panelHeight - 64, MUTED, false);
+        if (hasRacialVision(race)) {
+            String vision = !ClientRaceState.visionEnabled ? "DESATIVADA" : visionActive(race) ? "ATIVA" : "SUSPENSA";
+            g.drawString(font, "[" + ClientEvents.VISION.getTranslatedKeyMessage().getString() + "] VISÃO: " + vision,
+                    right, top + panelHeight - 64, vision.equals("ATIVA") ? LILAC : MUTED, false);
+        }
 
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             g.drawCenteredString(font, "SEU SANGUE RECONHECE ESTA LINHAGEM", left + panelWidth/2, top + panelHeight - 68, DANGER);
@@ -81,6 +86,8 @@ public final class RacePanelScreen extends NoverisScreen {
     private boolean inside(double x,double y,int bx,int by,int bw,int bh){return x>=bx&&x<bx+bw&&y>=by&&y<by+bh;}
     private String formatTicks(long ticks){long s=ticks/20;return String.format("%d:%02d",s/60,s%60);}
     private String seconds(long ticks){return ticks<=0?"PRONTA":String.format("%.1fs",ticks/20f);}
+    private boolean hasRacialVision(Race r){return r==Race.ELF||r==Race.THALASSIAN||r==Race.TIEFLING||r==Race.VAMPIRE||(r==Race.HALF_BLOOD&&(ClientRaceState.ancestryA==Race.ELF||ClientRaceState.ancestryB==Race.ELF));}
+    private boolean visionActive(Race r){if(minecraft.player==null)return false;boolean dark=minecraft.player.level().getMaxLocalRawBrightness(minecraft.player.blockPosition())<7;return dark&&(r!=Race.THALASSIAN||minecraft.player.isInWater());}
     private String summary(Race r){return switch(r){case ELF->"Explorador arcano e arqueiro.";case FAIRY->"Suporte natural sem voo.";case SATYR->"Mobilidade terrestre silvestre.";case THALASSIAN->"Especialista em ambientes aquáticos.";case HUMAN->"Versatilidade e progressão.";case NEPHILIM->"Resistência sobrenatural sem voo.";case VAMPIRE->"Caçador noturno com sustentação.";case REVENANT->"Sobrevivente de combates prolongados.";case HALF_BLOOD->"Duas heranças raciais reduzidas.";case TIEFLING->"Resistente a ambientes infernais.";case LYCANTHROPE->"Predador fortalecido pela noite.";case DRAGONBORN->"Tanque ofensivo elemental.";case HARPY->"Exploradora vertical extremamente ágil.";default->"Nenhuma raça escolhida.";};}
     private String active(Race r){return switch(r){case ELF->"FOCO DO ARQUEIRO";case FAIRY->"PERCEPÇÃO FEÉRICA";case SATYR->"VIGOR SILVESTRE";case THALASSIAN->"GUARDA DAS MARÉS";case HUMAN->"ADAPTAÇÃO";case NEPHILIM->"ÉGIDE SOBRENATURAL";case VAMPIRE->"DRENAGEM DE SANGUE";case REVENANT->"RECUSA DA MORTE";case HALF_BLOOD->"HERANÇA COMBINADA";case TIEFLING->"PULSO INFERNAL";case LYCANTHROPE->"UIVO DE CAÇADA";case DRAGONBORN->"SOPRO ELEMENTAL";case HARPY->"RAJADA DE VENTO";default->"—";};}
     private String mobility(Race r){return switch(r){case ELF->"PASSO FLORESTAL";case FAIRY->"SALTO FLORAL";case SATYR->"INVESTIDA CAPRINA";case THALASSIAN->"IMPULSO AQUÁTICO";case HUMAN->"ARRANCADA DETERMINADA";case NEPHILIM->"IMPULSO RADIANTE";case VAMPIRE->"PASSO SOMBRIO";case REVENANT->"AVANÇO IMPLACÁVEL";case HALF_BLOOD->"MOBILIDADE HERDADA";case TIEFLING->"AVANÇO EM FOGO";case LYCANTHROPE->"BOTE PREDATÓRIO";case DRAGONBORN->"INVESTIDA DRACÔNICA";case HARPY->"IMPULSO ALADO";default->"—";};}

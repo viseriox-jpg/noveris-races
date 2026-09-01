@@ -24,6 +24,7 @@ public final class RaceState {
     public static long combatUntil(ServerPlayer p) { return root(p).getLong("CombatUntil"); }
     public static long primaryReady(ServerPlayer p) { return root(p).getLong("PrimaryReady"); }
     public static long mobilityReady(ServerPlayer p) { return root(p).getLong("MobilityReady"); }
+    public static boolean visionEnabled(ServerPlayer p) { CompoundTag tag=root(p); return !tag.contains("VisionEnabled") || tag.getBoolean("VisionEnabled"); }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage) {
         beginTrial(p, race, lineage, Race.NONE, Race.NONE, RaceSize.STANDARD);
@@ -40,6 +41,7 @@ public final class RaceState {
         tag.putLong("TrialRemaining", TRIAL_TICKS);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
+        tag.putBoolean("VisionEnabled", true);
     }
 
     public static void confirm(ServerPlayer p) {
@@ -57,6 +59,7 @@ public final class RaceState {
         tag.putLong("TrialRemaining", 0);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
+        tag.putBoolean("VisionEnabled", true);
     }
 
     public static void cancelTrialOnLogout(ServerPlayer p) {
@@ -73,6 +76,7 @@ public final class RaceState {
     public static void markCombat(ServerPlayer p) { root(p).putLong("CombatUntil", p.level().getGameTime() + 200); }
     public static void setPrimaryReady(ServerPlayer p, long tick) { root(p).putLong("PrimaryReady", tick); }
     public static void setMobilityReady(ServerPlayer p, long tick) { root(p).putLong("MobilityReady", tick); }
+    public static void toggleVision(ServerPlayer p) { root(p).putBoolean("VisionEnabled", !visionEnabled(p)); }
     public static long customLong(ServerPlayer p, String key) { return root(p).getLong(key); }
     public static void customLong(ServerPlayer p, String key, long value) { root(p).putLong(key, value); }
 

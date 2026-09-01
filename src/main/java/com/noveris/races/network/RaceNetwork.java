@@ -23,11 +23,11 @@ public final class RaceNetwork {
     }
 
     public record StatePayload(String race, String lineage, String ancestryA, String ancestryB, String size, boolean confirmed, long trial,
-                               long primaryCooldown, long mobilityCooldown, boolean combat) implements CustomPacketPayload {
+                               long primaryCooldown, long mobilityCooldown, boolean combat, boolean visionEnabled) implements CustomPacketPayload {
         public static final Type<StatePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "state"));
         public static final StreamCodec<RegistryFriendlyByteBuf, StatePayload> CODEC = StreamCodec.of(
-                (buf, v) -> { buf.writeUtf(v.race); buf.writeUtf(v.lineage); buf.writeUtf(v.ancestryA); buf.writeUtf(v.ancestryB); buf.writeUtf(v.size); buf.writeBoolean(v.confirmed); buf.writeVarLong(v.trial); buf.writeVarLong(v.primaryCooldown); buf.writeVarLong(v.mobilityCooldown); buf.writeBoolean(v.combat); },
-                buf -> new StatePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readBoolean()));
+                (buf, v) -> { buf.writeUtf(v.race); buf.writeUtf(v.lineage); buf.writeUtf(v.ancestryA); buf.writeUtf(v.ancestryB); buf.writeUtf(v.size); buf.writeBoolean(v.confirmed); buf.writeVarLong(v.trial); buf.writeVarLong(v.primaryCooldown); buf.writeVarLong(v.mobilityCooldown); buf.writeBoolean(v.combat); buf.writeBoolean(v.visionEnabled); },
+                buf -> new StatePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readBoolean(), buf.readBoolean()));
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
@@ -58,6 +58,7 @@ public final class RaceNetwork {
                 case "confirm" -> { RaceState.confirm(player); RaceGame.sync(player); }
                 case "primary" -> RaceAbilities.usePrimary(player);
                 case "mobility" -> RaceAbilities.useMobility(player);
+                case "vision" -> { RaceState.toggleVision(player); RaceGame.sync(player); }
                 case "sync" -> RaceGame.sync(player);
             }
         });

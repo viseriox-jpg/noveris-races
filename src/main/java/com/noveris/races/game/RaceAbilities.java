@@ -25,7 +25,7 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.primaryReady(p)) return;
         int cooldown;
         switch (race) {
-            case ELF -> { focusArcher(p); cooldown = 300; }
+            case ELF -> { piercingShot(p); cooldown = 300; }
             case FAIRY -> { faeSense(p); cooldown = 300; }
             case SATYR -> { woodlandVigor(p); cooldown = 300; }
             case THALASSIAN -> { tidalGuard(p); cooldown = 300; }
@@ -48,7 +48,7 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
         Vec3 look = p.getLookAngle();
         switch (race) {
-            case ELF -> { double power=p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST)?1.25:1.0; p.setDeltaMovement(look.x * power, .2, look.z * power); }
+            case ELF -> { if (!leafStep(p)) return; }
             case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); RaceState.customLong(p,"FaeLandingUntil",now+100); }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
             case THALASSIAN -> p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75));
@@ -85,29 +85,65 @@ public final class RaceAbilities {
         RaceGame.sync(p);
     }
 
-    private static void focusArcher(ServerPlayer p) {
-        RaceState.customLong(p, "ArcherFocusUntil", p.level().getGameTime() + 160);
-        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 0));
-        particles(p, ParticleTypes.HAPPY_VILLAGER, 28, .8, .04);
+    private static void piercingShot(ServerPlayer p) {
+        Vec3 origin = p.getEyePosition();
+        Vec3 direction = p.getLookAngle().normalize();
+        double range = 16.0;
+        for (LivingEntity target : nearby(p, range)) {
+            Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0);
+            Vec3 relative = center.subtract(origin);
+            double alongRay = relative.dot(direction);
+            if (alongRay < 0 || alongRay > range || !p.hasLineOfSight(target)) continue;
+            double distanceFromRay = relative.subtract(direction.scale(alongRay)).length();
+            if (distanceFromRay <= Math.max(.75, target.getBbWidth() * .65))
+                target.hurt(p.damageSources().playerAttack(p), 5f);
+        }
+        if (p.level() instanceof ServerLevel level) {
+            for (int step = 1; step <= 24; step++) {
+                Vec3 point = origin.add(direction.scale(step * (range / 24.0)));
+                level.sendParticles(ParticleTypes.ENCHANTED_HIT, point.x, point.y, point.z, 2, .05, .05, .05, .01);
+            }
+        }
+        p.level().playSound(null, p.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1f, 1.35f);
+    }
+
+    private static boolean leafStep(ServerPlayer p) {
+        double range = p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST) ? 12.0 : 8.0;
+        Vec3 start = p.position();
+        Vec3 direction = p.getLookAngle().normalize();
+        for (double distance = range; distance >= 1.5; distance -= .5) {
+            Vec3 point = start.add(direction.scale(distance));
+            var feet = net.minecraft.core.BlockPos.containing(point.x, point.y, point.z);
+            if (!p.level().getBlockState(feet).getCollisionShape(p.level(), feet).isEmpty()) continue;
+            if (!p.level().getBlockState(feet.above()).getCollisionShape(p.level(), feet.above()).isEmpty()) continue;
+            if (p.level().getBlockState(feet.below()).getCollisionShape(p.level(), feet.below()).isEmpty()) continue;
+            p.teleportTo(feet.getX() + .5, feet.getY(), feet.getZ() + .5);
+            p.resetFallDistance();
+            particles(p, ParticleTypes.HAPPY_VILLAGER, 24, .55, .04);
+            p.level().playSound(null, p.blockPosition(), SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, .8f, 1.25f);
+            return true;
+        }
+        p.displayClientMessage(Component.literal("Nenhum local seguro entre as folhas."), true);
+        return false;
     }
     private static void faeSense(ServerPlayer p) {
         for (LivingEntity target : nearby(p, 18)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 140, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
         particles(p, ParticleTypes.END_ROD, 35, 1.1, .04);
     }
     private static void woodlandVigor(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 120, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));
         particles(p, ParticleTypes.COMPOSTER, 30, 1.0, .05);
     }
     private static void tidalGuard(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, p.isInWater() ? 1 : 0));
-        p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 160, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, p.isInWater() ? 1 : 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 120, 0));
         particles(p, ParticleTypes.BUBBLE, 36, .9, .08);
     }
     private static void supernaturalAegis(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, 1));
-        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 160, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 80, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 80, 0));
         particles(p, ParticleTypes.END_ROD, 38, .9, .03);
     }
     private static boolean bloodDrain(ServerPlayer p) {
@@ -153,7 +189,7 @@ public final class RaceAbilities {
             target.hurt(p.damageSources().playerAttack(p), 4f);
             target.igniteForSeconds(3);
         }
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 120, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 0));
         particles(p, ParticleTypes.FLAME, 42, 1.2, .08);
         particles(p, ParticleTypes.SMOKE, 18, 1.0, .04);
         p.level().playSound(null, p.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1.0f, .75f);

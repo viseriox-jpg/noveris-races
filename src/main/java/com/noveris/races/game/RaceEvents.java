@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -114,12 +113,6 @@ public final class RaceEvents {
         if (event.getSource().getEntity() instanceof ServerPlayer attacker && RaceState.race(attacker) == Race.VAMPIRE
                 && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)
                 && (attacker.level().isNight() || !attacker.level().canSeeSky(attacker.blockPosition()))) attacker.heal(Math.min(1f, event.getAmount() * .08f));
-        if (event.getSource().getEntity() instanceof ServerPlayer archer && RaceState.race(archer) == Race.ELF
-                && event.getSource().getDirectEntity() instanceof AbstractArrow arrow
-                && arrow.isCritArrow()) {
-            event.setAmount(event.getAmount() * 1.15f);
-            if (archer.level().getGameTime() < RaceState.customLong(archer, "ArcherFocusUntil")) event.setAmount(event.getAmount() * 1.20f);
-        }
         RaceState.markCombat(victim);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) RaceState.markCombat(attacker);
     }

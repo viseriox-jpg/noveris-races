@@ -36,7 +36,7 @@ abstract class NoverisScreen extends Screen {
     boolean button(GuiGraphics g, int x, int y, int w, int h, String text, double mx, double my, boolean enabled) {
         boolean hover = enabled && mx >= x && mx < x + w && my >= y && my < y + h;
         g.fill(x, y, x + w, y + h, enabled ? (hover ? WINE_HOVER : WINE) : 0xFF1B1811);
-        int color = enabled ? DARK_TEXT : MUTED;
+        int color = enabled ? WHITE : MUTED;
         g.drawCenteredString(font, text, x + w / 2, y + (h - 8) / 2, color);
         return hover;
     }

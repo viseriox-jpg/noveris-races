@@ -147,6 +147,10 @@ public final class RaceAbilities {
         particles(p, ParticleTypes.END_ROD, 38, .9, .03);
     }
     private static boolean bloodDrain(ServerPlayer p) {
+        if (!p.level().isNight()) {
+            p.displayClientMessage(Component.literal("A Drenagem de Sangue só pode ser usada durante a noite."), true);
+            return false;
+        }
         LivingEntity target = nearby(p, 6).stream()
                 .filter(p::hasLineOfSight)
                 .min(java.util.Comparator.comparingDouble(p::distanceToSqr)).orElse(null);

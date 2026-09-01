@@ -113,7 +113,7 @@ public final class RaceEvents {
                 && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount() * 1.35f);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker && RaceState.race(attacker) == Race.VAMPIRE
                 && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)
-                && (attacker.level().isNight() || !attacker.level().canSeeSky(attacker.blockPosition()))) attacker.heal(Math.min(1f, event.getAmount() * .08f));
+                && attacker.level().isNight()) attacker.heal(Math.min(1f, event.getAmount() * .08f));
         RaceState.markCombat(victim);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) RaceState.markCombat(attacker);
     }

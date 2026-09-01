@@ -3,6 +3,7 @@ package com.noveris.races.game;
 import com.noveris.races.*;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -27,7 +28,7 @@ public final class RaceAbilities {
             case SATYR -> { woodlandVigor(p); cooldown = 700; }
             case THALASSIAN -> { tidalGuard(p); cooldown = 700; }
             case NEPHILIM -> { supernaturalAegis(p); cooldown = 1000; }
-            case VAMPIRE -> { bloodDrain(p); cooldown = 700; }
+            case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = 700; }
             case HALF_BLOOD -> { hybridHeritage(p); cooldown = 800; }
             case TIEFLING -> { infernalPulse(p); cooldown = 700; }
             case LYCANTHROPE -> { huntingHowl(p); cooldown = 900; }
@@ -107,10 +108,29 @@ public final class RaceAbilities {
         p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 160, 0));
         particles(p, ParticleTypes.END_ROD, 38, .9, .03);
     }
-    private static void bloodDrain(ServerPlayer p) {
-        LivingEntity target = nearby(p, 5).stream().min(java.util.Comparator.comparingDouble(p::distanceToSqr)).orElse(null);
-        if (target != null) { target.hurt(p.damageSources().playerAttack(p), 4f); p.heal(2f); }
-        particles(p, ParticleTypes.DAMAGE_INDICATOR, 24, .8, .05);
+    private static boolean bloodDrain(ServerPlayer p) {
+        LivingEntity target = nearby(p, 6).stream()
+                .filter(p::hasLineOfSight)
+                .min(java.util.Comparator.comparingDouble(p::distanceToSqr)).orElse(null);
+        if (target == null) {
+            p.displayClientMessage(Component.literal("Nenhum alvo visível para drenar."), true);
+            return false;
+        }
+        if (!target.hurt(p.damageSources().playerAttack(p), 6f)) {
+            p.displayClientMessage(Component.literal("A drenagem não conseguiu ferir o alvo."), true);
+            return false;
+        }
+        p.heal(3f);
+        if (p.level() instanceof ServerLevel level) {
+            level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY()+target.getBbHeight()*.6, target.getZ(), 18, .35, .45, .35, .05);
+            Vec3 from=target.getEyePosition(),to=p.getEyePosition();
+            for(int step=1;step<=8;step++){
+                Vec3 point=from.lerp(to,step/8.0);
+                level.sendParticles(ParticleTypes.DUST_PLUME,point.x,point.y,point.z,2,.08,.08,.08,.01);
+            }
+        }
+        p.level().playSound(null,p.blockPosition(),SoundEvents.EVOKER_CAST_SPELL,SoundSource.PLAYERS,.8f,.65f);
+        return true;
     }
     private static void hybridHeritage(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));
@@ -183,7 +203,9 @@ public final class RaceAbilities {
 
     private static java.util.List<LivingEntity> nearby(ServerPlayer p, double radius) {
         AABB box = p.getBoundingBox().inflate(radius);
-        return p.level().getEntitiesOfClass(LivingEntity.class, box, e -> e != p && e.isAlive());
+        return p.level().getEntitiesOfClass(LivingEntity.class, box, e -> e != p && e.isAlive()
+                && e.isAttackable() && !p.isAlliedTo(e)
+                && (!(e instanceof net.minecraft.world.entity.player.Player other) || !other.isSpectator()));
     }
 
     private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {

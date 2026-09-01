@@ -29,7 +29,7 @@ public final class RacePanelScreen extends NoverisScreen {
         g.drawString(font, "RESUMO DA RAÇA", x, y, WHITE, false);
         g.drawString(font, summary(race), x, y + 16, LILAC, false);
         g.drawString(font, "VIDA  " + ((int)race.maxHealth/2) + " CORAÇÕES", x, y + 34, race.color, false);
-        g.drawString(font, "PORTE  " + ClientRaceState.size.title.toUpperCase(), x, y + 48, LILAC, false);
+        g.drawString(font, ClientRaceState.size.title.toUpperCase(), x, y + 48, LILAC, false);
         if (race == Race.DRAGONBORN) g.drawString(font, "LINHAGEM  " + ClientRaceState.lineage.title.toUpperCase(), x, y + 62, LILAC, false);
         if (race == Race.HALF_BLOOD) g.drawString(font, "ASCENDÊNCIAS  " + ClientRaceState.ancestryA.title.toUpperCase() + " + " + ClientRaceState.ancestryB.title.toUpperCase(), x, y + 62, LILAC, false);
 
@@ -45,21 +45,20 @@ public final class RacePanelScreen extends NoverisScreen {
         g.drawString(font, "FRAQUEZAS", right, y + 72, DANGER, false);
         String[] weak = weaknesses(race);
         for (int i=0;i<weak.length;i++) g.drawString(font, "• " + weak[i], right, y+88+i*14, MUTED, false);
-        divider(g, top + panelHeight - 78);
         g.drawString(font, "[" + ClientEvents.PANEL.getTranslatedKeyMessage().getString() + "] ABRIR PAINEL", x, top + panelHeight - 64, MUTED, false);
 
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             g.drawCenteredString(font, "SEU SANGUE RECONHECE ESTA LINHAGEM", left + panelWidth/2, top + panelHeight - 68, DANGER);
-            confirmW=230; confirmH=28; confirmX=left+panelWidth/2-245; confirmY=top+panelHeight-45;
-            changeW=230; changeH=34; changeX=left+panelWidth/2+15; changeY=confirmY;
+            confirmW=230; confirmH=26; confirmX=left+panelWidth/2-245; confirmY=top+panelHeight-36;
+            changeW=230; changeH=26; changeX=left+panelWidth/2+15; changeY=confirmY;
             button(g, confirmX, confirmY, confirmW, confirmH, "CONFIRMAR RAÇA", mx, my, true);
             button(g, changeX, changeY, changeW, changeH, "TESTAR OUTRA", mx, my, !ClientRaceState.combat);
         } else if (!ClientRaceState.confirmed) {
-            changeW=230; changeH=28; changeX=left+panelWidth/2-changeW/2; changeY=top+panelHeight-45;
+            changeW=230; changeH=26; changeX=left+panelWidth/2-changeW/2; changeY=top+panelHeight-36;
             button(g, changeX, changeY, changeW, changeH,
                     ClientRaceState.combat ? "EM COMBATE — AGUARDE" : "TESTAR OUTRA RAÇA", mx, my, !ClientRaceState.combat);
         } else {
-            g.drawCenteredString(font, "[ESC] RETORNAR AO MUNDO", left + panelWidth/2, top + panelHeight - 42, MUTED);
+            g.drawCenteredString(font, "[ESC] RETORNAR AO MUNDO", left + panelWidth/2, top + panelHeight - 28, MUTED);
         }
     }
 

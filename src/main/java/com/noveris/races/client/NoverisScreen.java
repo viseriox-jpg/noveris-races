@@ -6,13 +6,13 @@ import net.minecraft.network.chat.Component;
 
 abstract class NoverisScreen extends Screen {
     static final int BACKDROP = 0xEB0D0C09;
-    static final int BORDER = 0xFF8A6728;
-    static final int WINE = 0xFF5C451B;
-    static final int WINE_HOVER = 0xFF806227;
-    static final int LILAC = 0xFFE2D3A2;
-    static final int MUTED = 0xFF9C9278;
-    static final int WHITE = 0xFFF3EAD0;
-    static final int DANGER = 0xFFD6A13A;
+    static final int BORDER = 0xFFA97A1E;
+    static final int WINE = 0xFF5A4317;
+    static final int WINE_HOVER = 0xFF7A5A20;
+    static final int LILAC = 0xFFF3E8C5;
+    static final int MUTED = 0xFFB9AC8C;
+    static final int WHITE = 0xFFFBF6E7;
+    static final int DANGER = 0xFFE6B83F;
     int left, top, panelWidth, panelHeight;
 
     NoverisScreen(String title) { super(Component.literal(title)); }
@@ -40,5 +40,5 @@ abstract class NoverisScreen extends Screen {
         return hover;
     }
 
-    void divider(GuiGraphics g, int y) { g.fill(left + 34, y, left + panelWidth - 34, y + 2, 0xFF45391F); }
+    void divider(GuiGraphics g, int y) { g.fill(left + 34, y, left + panelWidth - 34, y + 2, 0xFFA97A1E); }
 }

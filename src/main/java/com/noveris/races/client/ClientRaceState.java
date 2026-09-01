@@ -2,6 +2,7 @@ package com.noveris.races.client;
 
 import com.noveris.races.DragonLineage;
 import com.noveris.races.Race;
+import com.noveris.races.RaceSize;
 import com.noveris.races.network.RaceNetwork.StatePayload;
 
 public final class ClientRaceState {

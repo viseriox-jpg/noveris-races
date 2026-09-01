@@ -11,7 +11,6 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -188,7 +187,6 @@ public final class RaceEvents {
                 if (isForest(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
             }
             case FAIRY -> {
-                shortenHarmfulEffects(p, 5);
                 if (nearFlowers(p) && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
             }
             case SATYR -> {
@@ -201,7 +199,7 @@ public final class RaceEvents {
                 if (p.isInWater()) { if (RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 60, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false)); }
             }
             case HUMAN -> p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 40, 0, false, false));
-            case NEPHILIM -> { shortenHarmfulEffects(p, 7); if (p.getHealth() <= p.getMaxHealth() * .3f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 0, false, false)); }
+            case NEPHILIM -> { if (p.getHealth() <= p.getMaxHealth() * .3f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 0, false, false)); }
             case VAMPIRE -> {
                 if (RaceState.visionEnabled(p) && isDark(p))
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false));
@@ -247,15 +245,6 @@ public final class RaceEvents {
     private static boolean isForest(ServerPlayer p) { return p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST); }
     private static boolean isDark(ServerPlayer p) { return p.level().getRawBrightness(p.blockPosition(), p.level().getSkyDarken()) < 7; }
 
-    private static void shortenHarmfulEffects(ServerPlayer p, int extraDecay) {
-        for (MobEffectInstance effect : java.util.List.copyOf(p.getActiveEffects())) {
-            if (effect.getEffect().value().getCategory() != MobEffectCategory.HARMFUL) continue;
-            int remaining = effect.getDuration() - extraDecay;
-            p.removeEffect(effect.getEffect());
-            if (remaining > 0) p.addEffect(new MobEffectInstance(effect.getEffect(), remaining, effect.getAmplifier(), effect.isAmbient(), effect.isVisible()));
-        }
-    }
-
     private static boolean isNaturalGround(ServerPlayer p) {
         var state = p.level().getBlockState(p.blockPosition().below());
         return state.is(BlockTags.DIRT) || state.is(BlockTags.LEAVES) || state.is(net.minecraft.world.level.block.Blocks.MOSS_BLOCK);
@@ -300,8 +289,6 @@ public final class RaceEvents {
         if ((a==Race.NEPHILIM||b==Race.NEPHILIM)&&p.getHealth()<p.getMaxHealth()*.25f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,40,0,false,false));
         if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
         if ((a==Race.HARPY||b==Race.HARPY)&&!p.onGround()&&p.getDeltaMovement().y<-.15) p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,8,0,false,false));
-        if (a==Race.FAIRY||b==Race.FAIRY) shortenHarmfulEffects(p,2);
-        if (a==Race.NEPHILIM||b==Race.NEPHILIM) shortenHarmfulEffects(p,3);
     }
     private static void applyHybridDamage(ServerPlayer p, LivingIncomingDamageEvent event) {
         Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);

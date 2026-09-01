@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
@@ -115,6 +116,7 @@ public final class RaceAbilities {
 
     private static void faeSense(ServerPlayer p) {
         for (LivingEntity target : nearby(p, 18)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 140, 0));
+        cleanseOneHarmfulEffect(p);
         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
         particles(p, ParticleTypes.END_ROD, 35, 1.1, .04);
     }
@@ -129,6 +131,7 @@ public final class RaceAbilities {
         particles(p, ParticleTypes.BUBBLE, 36, .9, .08);
     }
     private static void supernaturalAegis(ServerPlayer p) {
+        cleanseOneHarmfulEffect(p);
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 80, 0));
         p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 80, 0));
         particles(p, ParticleTypes.END_ROD, 38, .9, .03);
@@ -281,6 +284,16 @@ public final class RaceAbilities {
                 && e.isAttackable() && !p.isAlliedTo(e)
                 && p.distanceToSqr(e) <= radius * radius
                 && (!(e instanceof net.minecraft.world.entity.player.Player other) || !other.isSpectator()));
+    }
+
+    private static void cleanseOneHarmfulEffect(ServerPlayer p) {
+        for (MobEffectInstance effect : java.util.List.copyOf(p.getActiveEffects())) {
+            if (effect.getEffect().value().getCategory() != MobEffectCategory.HARMFUL) continue;
+            p.removeEffect(effect.getEffect());
+            p.displayClientMessage(Component.literal("Um efeito negativo foi purificado."), true);
+            particles(p, ParticleTypes.TOTEM_OF_UNDYING, 14, .45, .02);
+            return;
+        }
     }
 
     private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {

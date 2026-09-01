@@ -27,7 +27,7 @@ public final class RaceState {
     public static boolean visionEnabled(ServerPlayer p) { CompoundTag tag=root(p); return !tag.contains("VisionEnabled") || tag.getBoolean("VisionEnabled"); }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage) {
-        beginTrial(p, race, lineage, Race.NONE, Race.NONE, RaceSize.STANDARD);
+        beginTrial(p, race, lineage, Race.NONE, Race.NONE, RaceSize.MEDIUM);
     }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, Race ancestryA, Race ancestryB, RaceSize size) {
@@ -55,7 +55,7 @@ public final class RaceState {
         tag.putBoolean("Confirmed", false);
         tag.putString("AncestryA", Race.NONE.name());
         tag.putString("AncestryB", Race.NONE.name());
-        tag.putString("Size", RaceSize.STANDARD.name());
+        tag.putString("Size", RaceSize.MEDIUM.name());
         tag.putLong("TrialRemaining", 0);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
@@ -86,12 +86,11 @@ public final class RaceState {
         float scale;
         if (race == Race.HALF_BLOOD) {
             Race a = ancestryA(p), b = ancestryB(p);
-            float standard = Math.min(1.15f, (a.maxScale + b.maxScale) / 2f);
-            scale = size == RaceSize.SMALL ? Math.max(.85f, standard - .06f) : standard;
+            scale = Math.max(.85f, Math.min(1.15f, (a.scale(size) + b.scale(size)) / 2f));
             if (p.level().isNight() && (a == Race.LYCANTHROPE || b == Race.LYCANTHROPE)) scale = Math.min(1.15f, scale + .05f);
         } else {
             scale = race.scale(size);
-            if (race == Race.LYCANTHROPE && p.level().isNight()) scale = Math.min(1.10f, scale + .10f);
+            if (race == Race.LYCANTHROPE && p.level().isNight()) scale = Math.min(1.10f, scale + .05f);
         }
         return Math.min(1.15f, scale);
     }

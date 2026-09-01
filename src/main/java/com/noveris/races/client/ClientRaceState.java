@@ -10,7 +10,7 @@ public final class ClientRaceState {
     public static DragonLineage lineage = DragonLineage.NONE;
     public static Race ancestryA = Race.NONE;
     public static Race ancestryB = Race.NONE;
-    public static RaceSize size = RaceSize.STANDARD;
+    public static RaceSize size = RaceSize.MEDIUM;
     public static boolean confirmed;
     public static long trial;
     public static long primaryCooldown;

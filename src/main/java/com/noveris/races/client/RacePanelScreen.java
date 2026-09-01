@@ -8,6 +8,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class RacePanelScreen extends NoverisScreen {
     private final boolean forceConfirmation;
     private int confirmX, confirmY, confirmW, confirmH, changeX, changeY, changeW, changeH;
+    private int page, summaryTabX, powersTabX, tabY, tabW, tabH;
 
     public RacePanelScreen(boolean forceConfirmation) {
         super("Painel da Raça");
@@ -25,42 +26,9 @@ public final class RacePanelScreen extends NoverisScreen {
         g.drawString(font, status, left + panelWidth - font.width(status) - 34, top + 28,
                 ClientRaceState.confirmed ? LILAC : DANGER, false);
         divider(g, top + 56);
-        int x = left + 44, y = top + 72, right = left + panelWidth / 2 + 20;
-        g.drawString(font, "RESUMO DA RAÇA", x, y, WHITE, false);
-        g.drawString(font, summary(race), x, y + 16, LILAC, false);
-        g.drawString(font, "VIDA  " + ((int)race.maxHealth/2) + " CORAÇÕES", x, y + 34, race.color, false);
-        g.drawString(font, ClientRaceState.size.title.toUpperCase(), x, y + 48, LILAC, false);
-        if (race == Race.DRAGONBORN) g.drawString(font, "LINHAGEM  " + ClientRaceState.lineage.title.toUpperCase(), x, y + 62, LILAC, false);
-        if (race == Race.HALF_BLOOD) g.drawString(font, "ASCENDÊNCIAS  " + ClientRaceState.ancestryA.title.toUpperCase() + " + " + ClientRaceState.ancestryB.title.toUpperCase(), x, y + 62, LILAC, false);
-
-        g.drawString(font, "HABILIDADES", x, y + 82, WHITE, false);
-        if (race == Race.HUMAN) {
-            g.drawString(font, "NENHUMA HABILIDADE ATIVA", x, y + 100, race.color, false);
-            g.drawString(font, "O Humano depende de ferramentas e equipamentos.", x, y + 116, MUTED, false);
-        } else {
-            g.drawString(font, "◆ " + active(race), x, y + 98, race.color, false);
-            g.drawString(font, activeInfo(race), x, y + 112, LILAC, false);
-            g.drawString(font, "   [" + ClientEvents.PRIMARY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.primaryCooldown), x, y + 126, MUTED, false);
-            g.drawString(font, "◆ " + mobility(race), x, y + 146, race.color, false);
-            g.drawString(font, mobilityInfo(race), x, y + 160, LILAC, false);
-            g.drawString(font, "   [" + ClientEvents.MOBILITY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.mobilityCooldown), x, y + 174, MUTED, false);
-        }
-
-        g.drawString(font, "CONDIÇÕES ATUAIS", right, y, WHITE, false);
-        String[] conditions = conditions(race);
-        for (int i=0;i<conditions.length;i++) g.drawString(font, "• " + conditions[i], right, y+16+i*14, i==0?LILAC:MUTED, false);
-        g.drawString(font, "PASSIVAS", right, y + 76, WHITE, false);
-        String[] passive = passives(race);
-        for (int i=0;i<passive.length;i++) g.drawString(font, "• " + passive[i], right, y+92+i*14, LILAC, false);
-        g.drawString(font, "FRAQUEZAS", right, y + 136, DANGER, false);
-        String[] weak = weaknesses(race);
-        for (int i=0;i<weak.length;i++) g.drawString(font, "• " + weak[i], right, y+152+i*14, MUTED, false);
-        g.drawString(font, "[" + ClientEvents.PANEL.getTranslatedKeyMessage().getString() + "] ABRIR PAINEL", x, top + panelHeight - 64, MUTED, false);
-        if (hasRacialVision(race)) {
-            String vision = !ClientRaceState.visionEnabled ? "DESATIVADA" : visionActive(race) ? "ATIVA" : "SUSPENSA";
-            g.drawString(font, "[" + ClientEvents.VISION.getTranslatedKeyMessage().getString() + "] VISÃO: " + vision,
-                    right, top + panelHeight - 64, vision.equals("ATIVA") ? LILAC : MUTED, false);
-        }
+        renderTabs(g, mx, my);
+        if (page == 0) renderOverview(g, race);
+        else renderPowers(g, race);
 
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             g.drawCenteredString(font, "SEU SANGUE RECONHECE ESTA LINHAGEM", left + panelWidth/2, top + panelHeight - 68, DANGER);
@@ -77,7 +45,64 @@ public final class RacePanelScreen extends NoverisScreen {
         }
     }
 
+    private void renderTabs(GuiGraphics g, int mx, int my) {
+        tabW=210;tabH=22;tabY=top+63;summaryTabX=left+panelWidth/2-tabW-4;powersTabX=left+panelWidth/2+4;
+        panelTab(g,summaryTabX,"RESUMO",page==0,mx,my);
+        panelTab(g,powersTabX,"PODERES E FRAQUEZAS",page==1,mx,my);
+    }
+
+    private void panelTab(GuiGraphics g,int x,String label,boolean active,int mx,int my){
+        boolean hover=inside(mx,my,x,tabY,tabW,tabH);
+        g.fill(x,tabY,x+tabW,tabY+tabH,active?WINE:hover?WINE_HOVER:0xFF17140E);
+        g.drawCenteredString(font,label,x+tabW/2,tabY+7,active||hover?WHITE:MUTED);
+    }
+
+    private void renderOverview(GuiGraphics g, Race race) {
+        int x = left + 44, y = top + 100, right = left + panelWidth / 2 + 20;
+        g.drawString(font, "RESUMO DA RAÇA", x, y, WHITE, false);
+        g.drawString(font, summary(race), x, y + 16, LILAC, false);
+        g.drawString(font, "VIDA  " + ((int)race.maxHealth/2) + " CORAÇÕES", x, y + 34, race.color, false);
+        g.drawString(font, ClientRaceState.size.title.toUpperCase(), x, y + 48, LILAC, false);
+        if (race == Race.DRAGONBORN) g.drawString(font, "LINHAGEM  " + ClientRaceState.lineage.title.toUpperCase(), x, y + 62, LILAC, false);
+        if (race == Race.HALF_BLOOD) g.drawString(font, "ASCENDÊNCIAS  " + ClientRaceState.ancestryA.title.toUpperCase() + " + " + ClientRaceState.ancestryB.title.toUpperCase(), x, y + 62, LILAC, false);
+
+        g.drawString(font, "PASSIVAS", x, y + 88, WHITE, false);
+        String[] passive = passives(race);
+        for (int i=0;i<passive.length;i++) g.drawString(font, "• " + passive[i], x, y+106+i*16, LILAC, false);
+
+        g.drawString(font, "CONDIÇÕES ATUAIS", right, y, WHITE, false);
+        String[] conditions = conditions(race);
+        for (int i=0;i<conditions.length;i++) g.drawString(font, "• " + conditions[i], right, y+18+i*16, i==0?LILAC:MUTED, false);
+        if (hasRacialVision(race)) {
+            String vision = !ClientRaceState.visionEnabled ? "DESATIVADA" : visionActive(race) ? "ATIVA" : "SUSPENSA";
+            g.drawString(font, "VISÃO RACIAL", right, y + 98, WHITE, false);
+            g.drawString(font, "[" + ClientEvents.VISION.getTranslatedKeyMessage().getString() + "] " + vision,
+                    right, y + 116, vision.equals("ATIVA") ? LILAC : MUTED, false);
+        }
+    }
+
+    private void renderPowers(GuiGraphics g, Race race) {
+        int x = left + 44, y = top + 104, right = left + panelWidth / 2 + 20;
+        g.drawString(font, "HABILIDADES", x, y, WHITE, false);
+        if (race == Race.HUMAN) {
+            g.drawString(font, "NENHUMA HABILIDADE ATIVA", x, y + 20, race.color, false);
+            g.drawString(font, "O Humano depende de ferramentas e equipamentos.", x, y + 38, MUTED, false);
+        } else {
+            g.drawString(font, "◆ " + active(race), x, y + 20, race.color, false);
+            g.drawString(font, activeInfo(race), x, y + 38, LILAC, false);
+            g.drawString(font, "[" + ClientEvents.PRIMARY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.primaryCooldown), x, y + 56, MUTED, false);
+            g.drawString(font, "◆ " + mobility(race), x, y + 88, race.color, false);
+            g.drawString(font, mobilityInfo(race), x, y + 106, LILAC, false);
+            g.drawString(font, "[" + ClientEvents.MOBILITY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.mobilityCooldown), x, y + 124, MUTED, false);
+        }
+        g.drawString(font, "FRAQUEZAS E LIMITAÇÕES", right, y, DANGER, false);
+        String[] weak = weaknesses(race);
+        for (int i=0;i<weak.length;i++) g.drawString(font, "• " + weak[i], right, y+20+i*20, MUTED, false);
+    }
+
     @Override public boolean mouseClicked(double mx, double my, int button) {
+        if (inside(mx,my,summaryTabX,tabY,tabW,tabH)) { page=0; return true; }
+        if (inside(mx,my,powersTabX,tabY,tabW,tabH)) { page=1; return true; }
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             if (inside(mx,my,confirmX,confirmY,confirmW,confirmH)) {
                 PacketDistributor.sendToServer(new ActionPayload("confirm", "", "", "", "", "")); minecraft.setScreen(null); return true;

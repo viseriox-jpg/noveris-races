@@ -2,12 +2,13 @@
 
 Mod de raças jogáveis do Noveris SMP, independente do Noveris Staff Call e do Origins.
 
-## Raças
+## Reinos e raças
 
-- **Tiefling** — 10 corações, afinidade infernal, Pulso Infernal e Avanço em Fogo.
-- **Licantropo** — 12 corações, fortalecimento noturno, Uivo de Caçada e Bote Predatório.
-- **Draconato** — 13 corações, linhagens de Fogo/Gelo/Veneno, Sopro Elemental e Investida.
-- **Harpia** — 9 corações, salto/planagem sem voo, Rajada de Vento e Impulso Alado.
+- **Orvannis:** Elfo, Feérico, Sátiro e Thalassiano.
+- **Neutros:** Humano, Nephilin, Vampiro, Revenante e Meio-Sangue.
+- **Avarion:** Tiefling, Licantropo, Draconato e Harpia.
+
+Meio-Sangue exige duas ascendências diferentes e recebe versões reduzidas de características e fraquezas. Nenhuma raça possui voo livre.
 
 ## Seleção
 

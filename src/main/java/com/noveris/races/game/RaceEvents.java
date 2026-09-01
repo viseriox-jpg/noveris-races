@@ -68,6 +68,7 @@ public final class RaceEvents {
     public static void damage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
         Race race = RaceState.race(victim);
+        if (race == Race.HALF_BLOOD) applyHybridDamage(victim, event);
         if (race == Race.ELF && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * 1.12f);
         if (race == Race.FAIRY && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity fairyAttacker
                 && fairyAttacker.getMainHandItem().getItem().toString().contains("iron")) event.setAmount(event.getAmount() * 1.3f);
@@ -217,9 +218,30 @@ public final class RaceEvents {
     private static void applyHybridPassives(ServerPlayer p) {
         Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);
         if (a==Race.ELF||b==Race.ELF) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,80,0,false,false));
+        if ((a==Race.FAIRY||b==Race.FAIRY)&&nearFlowers(p)&&p.tickCount%200==0) p.heal(1f);
         if (a==Race.THALASSIAN||b==Race.THALASSIAN) p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING,60,0,false,false));
         if ((a==Race.VAMPIRE||b==Race.VAMPIRE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
         if ((a==Race.SATYR||b==Race.SATYR)&&isNaturalGround(p)) p.addEffect(new MobEffectInstance(MobEffects.JUMP,40,0,false,false));
+        if (a==Race.HUMAN||b==Race.HUMAN) p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED,40,0,false,false));
+        if ((a==Race.NEPHILIM||b==Race.NEPHILIM)&&p.getHealth()<p.getMaxHealth()*.25f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,40,0,false,false));
+        if (a==Race.REVENANT||b==Race.REVENANT) p.removeEffect(MobEffects.POISON);
+        if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
+        if ((a==Race.HARPY||b==Race.HARPY)&&!p.onGround()&&p.getDeltaMovement().y<-.15) p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,8,0,false,false));
+    }
+    private static void applyHybridDamage(ServerPlayer p, LivingIncomingDamageEvent event) {
+        Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);
+        java.util.function.Predicate<Race> has=r->a==r||b==r;
+        if (has.test(Race.TIEFLING)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*.55f);
+        if (has.test(Race.NEPHILIM)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*.8f);
+        if (has.test(Race.DRAGONBORN)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount()*.94f);
+        if (has.test(Race.ELF)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount()*1.06f);
+        if (has.test(Race.THALASSIAN)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.15f);
+        if (has.test(Race.VAMPIRE)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.18f);
+        if (has.test(Race.HARPY)&&event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount()*.6f);
+        if (has.test(Race.FAIRY)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && attacker.getMainHandItem().getItem().toString().contains("iron")) event.setAmount(event.getAmount()*1.15f);
+        if (has.test(Race.LYCANTHROPE)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
+                && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount()*1.17f);
     }
 
     private static void ambientParticles(ServerPlayer p, Race race) {

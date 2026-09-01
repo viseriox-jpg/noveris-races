@@ -24,41 +24,41 @@ public final class RacePanelScreen extends NoverisScreen {
                 "EM TESTE  " + formatTicks(ClientRaceState.trial) : "O SANGUE AGUARDA SEU VEREDITO";
         g.drawString(font, status, left + panelWidth - font.width(status) - 34, top + 28,
                 ClientRaceState.confirmed ? LILAC : DANGER, false);
-        divider(g, top + 62);
-        int x = left + 44, y = top + 86, right = left + panelWidth / 2 + 20;
+        divider(g, top + 56);
+        int x = left + 44, y = top + 72, right = left + panelWidth / 2 + 20;
         g.drawString(font, "RESUMO DA RAÇA", x, y, WHITE, false);
-        g.drawString(font, summary(race), x, y + 22, LILAC, false);
-        g.drawString(font, "VIDA  " + ((int)race.maxHealth/2) + " CORAÇÕES", x, y + 50, race.color, false);
-        g.drawString(font, "ALTURA  " + Math.round(race.scale*100) + "%", x, y + 68, LILAC, false);
-        if (race == Race.DRAGONBORN) g.drawString(font, "LINHAGEM  " + ClientRaceState.lineage.title.toUpperCase(), x, y + 86, LILAC, false);
+        g.drawString(font, summary(race), x, y + 16, LILAC, false);
+        g.drawString(font, "VIDA  " + ((int)race.maxHealth/2) + " CORAÇÕES", x, y + 34, race.color, false);
+        g.drawString(font, "ALTURA  " + Math.round(race.scale*100) + "%", x, y + 48, LILAC, false);
+        if (race == Race.DRAGONBORN) g.drawString(font, "LINHAGEM  " + ClientRaceState.lineage.title.toUpperCase(), x, y + 62, LILAC, false);
 
-        g.drawString(font, "HABILIDADES", x, y + 126, WHITE, false);
-        g.drawString(font, "◆ " + active(race), x, y + 148, race.color, false);
-        g.drawString(font, "   [" + ClientEvents.PRIMARY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.primaryCooldown), x, y + 166, MUTED, false);
-        g.drawString(font, "◆ " + mobility(race), x, y + 194, race.color, false);
-        g.drawString(font, "   [" + ClientEvents.MOBILITY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.mobilityCooldown), x, y + 212, MUTED, false);
+        g.drawString(font, "HABILIDADES", x, y + 86, WHITE, false);
+        g.drawString(font, "◆ " + active(race), x, y + 104, race.color, false);
+        g.drawString(font, "   [" + ClientEvents.PRIMARY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.primaryCooldown), x, y + 118, MUTED, false);
+        g.drawString(font, "◆ " + mobility(race), x, y + 140, race.color, false);
+        g.drawString(font, "   [" + ClientEvents.MOBILITY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.mobilityCooldown), x, y + 154, MUTED, false);
 
         g.drawString(font, "CONDIÇÕES ATUAIS", right, y, WHITE, false);
         String[] conditions = conditions(race);
-        for (int i=0;i<conditions.length;i++) g.drawString(font, "• " + conditions[i], right, y+22+i*18, i==0?LILAC:MUTED, false);
-        g.drawString(font, "FRAQUEZAS", right, y + 126, DANGER, false);
+        for (int i=0;i<conditions.length;i++) g.drawString(font, "• " + conditions[i], right, y+16+i*14, i==0?LILAC:MUTED, false);
+        g.drawString(font, "FRAQUEZAS", right, y + 72, DANGER, false);
         String[] weak = weaknesses(race);
-        for (int i=0;i<weak.length;i++) g.drawString(font, "• " + weak[i], right, y+148+i*18, MUTED, false);
-        divider(g, top + panelHeight - 112);
-        g.drawString(font, "[" + ClientEvents.PANEL.getTranslatedKeyMessage().getString() + "] ABRIR PAINEL", x, top + panelHeight - 94, MUTED, false);
+        for (int i=0;i<weak.length;i++) g.drawString(font, "• " + weak[i], right, y+88+i*14, MUTED, false);
+        divider(g, top + panelHeight - 78);
+        g.drawString(font, "[" + ClientEvents.PANEL.getTranslatedKeyMessage().getString() + "] ABRIR PAINEL", x, top + panelHeight - 64, MUTED, false);
 
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
-            g.drawCenteredString(font, "SEU SANGUE RECONHECE ESTA LINHAGEM", left + panelWidth/2, top + panelHeight - 92, DANGER);
-            confirmW=230; confirmH=34; confirmX=left+panelWidth/2-245; confirmY=top+panelHeight-62;
+            g.drawCenteredString(font, "SEU SANGUE RECONHECE ESTA LINHAGEM", left + panelWidth/2, top + panelHeight - 68, DANGER);
+            confirmW=230; confirmH=28; confirmX=left+panelWidth/2-245; confirmY=top+panelHeight-45;
             changeW=230; changeH=34; changeX=left+panelWidth/2+15; changeY=confirmY;
             button(g, confirmX, confirmY, confirmW, confirmH, "CONFIRMAR RAÇA", mx, my, true);
             button(g, changeX, changeY, changeW, changeH, "TESTAR OUTRA", mx, my, !ClientRaceState.combat);
         } else if (!ClientRaceState.confirmed) {
-            changeW=230; changeH=34; changeX=left+panelWidth/2-changeW/2; changeY=top+panelHeight-68;
+            changeW=230; changeH=28; changeX=left+panelWidth/2-changeW/2; changeY=top+panelHeight-45;
             button(g, changeX, changeY, changeW, changeH,
                     ClientRaceState.combat ? "EM COMBATE — AGUARDE" : "TESTAR OUTRA RAÇA", mx, my, !ClientRaceState.combat);
         } else {
-            g.drawCenteredString(font, "[ESC] RETORNAR AO MUNDO", left + panelWidth/2, top + panelHeight - 52, MUTED);
+            g.drawCenteredString(font, "[ESC] RETORNAR AO MUNDO", left + panelWidth/2, top + panelHeight - 42, MUTED);
         }
     }
 

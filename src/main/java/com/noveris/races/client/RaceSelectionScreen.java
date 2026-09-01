@@ -19,48 +19,48 @@ public final class RaceSelectionScreen extends NoverisScreen {
         super.render(g, mx, my, partialTick);
         frame(g, "LINHAGENS DE NOVERIS");
         g.drawString(font, "ESCOLHA O SANGUE QUE GUIARÁ SUA JORNADA", left + panelWidth - 330, top + 28, DANGER, false);
-        divider(g, top + 62);
-        int symbolsY = top + 85;
+        divider(g, top + 56);
+        int symbolsY = top + 68;
         Race[] races = {Race.TIEFLING, Race.LYCANTHROPE, Race.DRAGONBORN, Race.HARPY};
         String[] symbols = {"♠", "☾", "◆", "⌁"};
-        int cell = Math.min(120, (panelWidth - 80) / 4);
+        int cell = (panelWidth - 68) / 4;
         for (int i = 0; i < races.length; i++) {
             int x = left + 34 + i * cell;
             boolean active = selected == races[i];
-            g.fill(x, symbolsY, x + cell - 10, symbolsY + 66, active ? WINE : 0xFF1B181E);
-            g.drawCenteredString(font, symbols[i], x + (cell - 10) / 2, symbolsY + 13, races[i].color);
-            g.drawCenteredString(font, races[i].title.toUpperCase(), x + (cell - 10) / 2, symbolsY + 43, active ? WHITE : MUTED);
+            g.fill(x, symbolsY, x + cell - 10, symbolsY + 54, active ? WINE : 0xFF1B181E);
+            drawLargeSymbol(g, symbols[i], x + (cell - 10) / 2, symbolsY + 7, races[i].color);
+            g.drawCenteredString(font, races[i].title.toUpperCase(), x + (cell - 10) / 2, symbolsY + 36, active ? WHITE : MUTED);
         }
-        int detailY = symbolsY + 90;
+        int detailY = symbolsY + 68;
         int split = left + panelWidth / 2;
         g.drawString(font, selected.title.toUpperCase(), left + 44, detailY, selected.color, false);
-        g.drawString(font, hearts(selected) + " CORAÇÕES  •  ALTURA " + Math.round(selected.scale * 100) + "%", left + 44, detailY + 22, LILAC, false);
-        g.drawString(font, style(selected), left + 44, detailY + 48, MUTED, false);
-        g.drawString(font, "HABILIDADE ATIVA", left + 44, detailY + 84, WHITE, false);
-        g.drawString(font, primary(selected), left + 44, detailY + 102, LILAC, false);
-        g.drawString(font, "MOBILIDADE", left + 44, detailY + 130, WHITE, false);
-        g.drawString(font, mobility(selected), left + 44, detailY + 148, LILAC, false);
+        g.drawString(font, hearts(selected) + " CORAÇÕES  •  ALTURA " + Math.round(selected.scale * 100) + "%", left + 44, detailY + 16, LILAC, false);
+        g.drawString(font, style(selected), left + 44, detailY + 32, MUTED, false);
+        g.drawString(font, "HABILIDADE ATIVA", left + 44, detailY + 54, WHITE, false);
+        g.drawString(font, primary(selected), left + 44, detailY + 68, LILAC, false);
+        g.drawString(font, "MOBILIDADE", left + 44, detailY + 88, WHITE, false);
+        g.drawString(font, mobility(selected), left + 44, detailY + 102, LILAC, false);
         g.drawString(font, "PASSIVAS", split, detailY, WHITE, false);
-        drawLines(g, passives(selected), split, detailY + 20, LILAC);
-        g.drawString(font, "FRAQUEZAS", split, detailY + 92, DANGER, false);
-        drawLines(g, weaknesses(selected), split, detailY + 112, MUTED);
+        drawLines(g, passives(selected), split, detailY + 16, LILAC);
+        g.drawString(font, "FRAQUEZAS", split, detailY + 62, DANGER, false);
+        drawLines(g, weaknesses(selected), split, detailY + 78, MUTED);
         if (selected == Race.DRAGONBORN) {
-            g.drawString(font, "LINHAGEM:  " + lineage.title.toUpperCase() + "  [CLIQUE PARA ALTERAR]", split, detailY + 174, lineageColor(), false);
+            g.drawString(font, "LINHAGEM: " + lineage.title.toUpperCase() + "  [ALTERAR]", split, detailY + 112, lineageColor(), false);
         }
-        startW = 260; startH = 38; startX = left + (panelWidth - startW) / 2; startY = top + panelHeight - 72;
+        startW = 260; startH = 28; startX = left + (panelWidth - startW) / 2; startY = top + panelHeight - 46;
         button(g, startX, startY, startW, startH, "INICIAR TESTE — 5:00", mx, my, true);
     }
 
     @Override public boolean mouseClicked(double mx, double my, int button) {
-        int cell = Math.min(120, (panelWidth - 80) / 4);
-        int y = top + 85;
+        int cell = (panelWidth - 68) / 4;
+        int y = top + 68;
         Race[] races = {Race.TIEFLING, Race.LYCANTHROPE, Race.DRAGONBORN, Race.HARPY};
         for (int i = 0; i < races.length; i++) {
             int x = left + 34 + i * cell;
-            if (mx >= x && mx < x + cell - 10 && my >= y && my < y + 66) { selected = races[i]; return true; }
+            if (mx >= x && mx < x + cell - 10 && my >= y && my < y + 54) { selected = races[i]; return true; }
         }
         int detailY = y + 90, split = left + panelWidth / 2;
-        if (selected == Race.DRAGONBORN && mx >= split && my >= detailY + 164 && my < detailY + 198) {
+        if (selected == Race.DRAGONBORN && mx >= split && my >= detailY + 102 && my < detailY + 130) {
             lineage = lineage == DragonLineage.FIRE ? DragonLineage.FROST : lineage == DragonLineage.FROST ? DragonLineage.VENOM : DragonLineage.FIRE;
             return true;
         }
@@ -71,7 +71,14 @@ public final class RaceSelectionScreen extends NoverisScreen {
         return super.mouseClicked(mx, my, button);
     }
 
-    private void drawLines(GuiGraphics g, String[] lines, int x, int y, int color) { for (int i=0;i<lines.length;i++) g.drawString(font, "• " + lines[i], x, y+i*16, color, false); }
+    private void drawLines(GuiGraphics g, String[] lines, int x, int y, int color) { for (int i=0;i<lines.length;i++) g.drawString(font, "• " + lines[i], x, y+i*13, color, false); }
+    private void drawLargeSymbol(GuiGraphics g, String symbol, int centerX, int y, int color) {
+        g.pose().pushPose();
+        g.pose().translate(centerX, y, 0);
+        g.pose().scale(1.6f, 1.6f, 1f);
+        g.drawCenteredString(font, symbol, 0, 0, color);
+        g.pose().popPose();
+    }
     private int hearts(Race r) { return (int)r.maxHealth / 2; }
     private int lineageColor() { return lineage == DragonLineage.FIRE ? 0xFFFF6754 : lineage == DragonLineage.FROST ? 0xFF80D9FF : 0xFF86D48A; }
     private String style(Race r) { return switch(r){case TIEFLING->"Sobrevivência infernal e retaliação.";case LYCANTHROPE->"Predador poderoso durante a noite.";case DRAGONBORN->"Tanque ofensivo de linhagem elemental.";case HARPY->"Exploração vertical e agilidade.";default->"";}; }

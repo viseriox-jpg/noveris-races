@@ -48,7 +48,13 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
         Vec3 look = p.getLookAngle();
         switch (race) {
-            case ELF -> { if (!leafStep(p)) return; }
+            case ELF -> {
+                if (!p.onGround()) return;
+                Vec3 horizontal = new Vec3(look.x, 0, look.z).normalize();
+                p.setDeltaMovement(-horizontal.x * 1.15, .42, -horizontal.z * 1.15);
+                p.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+                p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 10, 0, false, false));
+            }
             case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); RaceState.customLong(p,"FaeLandingUntil",now+100); }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
             case THALASSIAN -> p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75));
@@ -107,25 +113,6 @@ public final class RaceAbilities {
         p.level().playSound(null, p.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1f, 1.35f);
     }
 
-    private static boolean leafStep(ServerPlayer p) {
-        double range = p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST) ? 12.0 : 8.0;
-        Vec3 start = p.position();
-        Vec3 direction = p.getLookAngle().normalize();
-        for (double distance = range; distance >= 1.5; distance -= .5) {
-            Vec3 point = start.add(direction.scale(distance));
-            var feet = net.minecraft.core.BlockPos.containing(point.x, point.y, point.z);
-            if (!p.level().getBlockState(feet).getCollisionShape(p.level(), feet).isEmpty()) continue;
-            if (!p.level().getBlockState(feet.above()).getCollisionShape(p.level(), feet.above()).isEmpty()) continue;
-            if (p.level().getBlockState(feet.below()).getCollisionShape(p.level(), feet.below()).isEmpty()) continue;
-            p.teleportTo(feet.getX() + .5, feet.getY(), feet.getZ() + .5);
-            p.resetFallDistance();
-            particles(p, ParticleTypes.HAPPY_VILLAGER, 24, .55, .04);
-            p.level().playSound(null, p.blockPosition(), SoundEvents.CHORUS_FRUIT_TELEPORT, SoundSource.PLAYERS, .8f, 1.25f);
-            return true;
-        }
-        p.displayClientMessage(Component.literal("Nenhum local seguro entre as folhas."), true);
-        return false;
-    }
     private static void faeSense(ServerPlayer p) {
         for (LivingEntity target : nearby(p, 18)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 140, 0));
         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
@@ -164,7 +151,7 @@ public final class RaceAbilities {
             return false;
         }
         float damageDealt = Math.max(0f, healthBefore - target.getHealth());
-        float healthStolen = Math.min(3f, damageDealt * .5f);
+        float healthStolen = Math.min(6f, damageDealt);
         if (healthStolen > 0f && p.getHealth() < p.getMaxHealth()) {
             p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + healthStolen));
             p.displayClientMessage(Component.literal(String.format("Vida drenada: %.1f coração(ões)", healthStolen / 2f)), true);

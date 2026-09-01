@@ -173,7 +173,7 @@ public final class RaceEvents {
     private static void applyPassives(ServerPlayer p, Race race) {
         switch (race) {
             case ELF -> {
-                if (RaceState.visionEnabled(p) && p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 220, 0, false, false));
+                if (RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 220, 0, false, false));
                 if (isForest(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
             }
             case FAIRY -> {
@@ -186,18 +186,18 @@ public final class RaceEvents {
             }
             case THALASSIAN -> {
                 p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false));
-                if (p.isInWater()) { if (RaceState.visionEnabled(p) && p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 60, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false)); }
+                if (p.isInWater()) { if (RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 60, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false)); }
             }
             case HUMAN -> p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 40, 0, false, false));
             case NEPHILIM -> { if (p.getHealth() <= p.getMaxHealth() * .3f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 0, false, false)); }
             case VAMPIRE -> {
-                if (RaceState.visionEnabled(p) && p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7)
+                if (RaceState.visionEnabled(p) && isDark(p))
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false));
                 if (p.level().isNight()) { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 0, false, false)); }
             }
             case HALF_BLOOD -> applyHybridPassives(p);
             case TIEFLING -> {
-                if (RaceState.visionEnabled(p) && p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7)
+                if (RaceState.visionEnabled(p) && isDark(p))
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 240, 0, false, false));
                 if (p.isInWater()) p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
             }
@@ -233,6 +233,7 @@ public final class RaceEvents {
     }
 
     private static boolean isForest(ServerPlayer p) { return p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST); }
+    private static boolean isDark(ServerPlayer p) { return p.level().isNight() || p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7; }
 
     private static boolean isNaturalGround(ServerPlayer p) {
         var state = p.level().getBlockState(p.blockPosition().below());
@@ -269,7 +270,7 @@ public final class RaceEvents {
     }
     private static void applyHybridPassives(ServerPlayer p) {
         Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);
-        if ((a==Race.ELF||b==Race.ELF) && RaceState.visionEnabled(p) && p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,80,0,false,false));
+        if ((a==Race.ELF||b==Race.ELF) && RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,80,0,false,false));
         if ((a==Race.FAIRY||b==Race.FAIRY)&&nearFlowers(p)&&p.tickCount%200==0) p.heal(1f);
         if (a==Race.THALASSIAN||b==Race.THALASSIAN) p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING,60,0,false,false));
         if ((a==Race.VAMPIRE||b==Race.VAMPIRE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));

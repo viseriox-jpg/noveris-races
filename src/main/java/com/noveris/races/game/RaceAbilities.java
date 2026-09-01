@@ -116,11 +116,19 @@ public final class RaceAbilities {
             p.displayClientMessage(Component.literal("Nenhum alvo visível para drenar."), true);
             return false;
         }
+        float healthBefore = target.getHealth();
         if (!target.hurt(p.damageSources().playerAttack(p), 6f)) {
             p.displayClientMessage(Component.literal("A drenagem não conseguiu ferir o alvo."), true);
             return false;
         }
-        p.heal(3f);
+        float damageDealt = Math.max(0f, healthBefore - target.getHealth());
+        float healthStolen = Math.min(3f, damageDealt * .5f);
+        if (healthStolen > 0f && p.getHealth() < p.getMaxHealth()) {
+            p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + healthStolen));
+            p.displayClientMessage(Component.literal(String.format("Vida drenada: %.1f coração(ões)", healthStolen / 2f)), true);
+        } else if (p.getHealth() >= p.getMaxHealth()) {
+            p.displayClientMessage(Component.literal("Dano causado, mas sua vida já está cheia."), true);
+        }
         if (p.level() instanceof ServerLevel level) {
             level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY()+target.getBbHeight()*.6, target.getZ(), 18, .35, .45, .35, .05);
             Vec3 from=target.getEyePosition(),to=p.getEyePosition();

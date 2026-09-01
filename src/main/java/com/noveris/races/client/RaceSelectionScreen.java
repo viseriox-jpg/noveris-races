@@ -29,7 +29,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
         renderTabs(g, mx, my);
         renderRaceCards(g);
         renderDetails(g, mx, my);
-        actionW=240; actionH=26; actionX=left+(panelWidth-actionW)/2; actionY=top+panelHeight-40;
+        actionW=240; actionH=24; actionX=left+(panelWidth-actionW)/2; actionY=top+panelHeight-32;
         button(g, actionX, actionY, actionW, actionH, "SELECIONAR RAÇA", mx, my, true);
         if (confirming) renderConfirmation(g, mx, my);
     }
@@ -63,20 +63,21 @@ public final class RaceSelectionScreen extends NoverisScreen {
         g.drawString(font,"◆ "+mobility(selected),x,y+82,LILAC,false);
         g.drawString(font,"PASSIVAS",right,y,WHITE,false); drawLines(g,passives(selected),right,y+15,LILAC);
         g.drawString(font,"FRAQUEZAS / DEBUFFS",right,y+58,DANGER,false); drawLines(g,weaknesses(selected),right,y+73,MUTED);
-        specialX=x;specialY=y+106;specialW=112;specialH=22;
+        int controlsY=top+panelHeight-66;
+        specialX=x;specialY=controlsY;specialW=112;specialH=22;
         if(selected==Race.DRAGONBORN){
-            g.drawString(font,"LINHAGEM DRACÔNICA",x,specialY-14,WHITE,false);
+            g.drawString(font,"LINHAGEM DRACÔNICA",x,specialY-13,WHITE,false);
             option(g,specialX,specialY,"FOGO",lineage==DragonLineage.FIRE,0xFFFF8A4B,mx,my);
             option(g,specialX+specialW+6,specialY,"GELO",lineage==DragonLineage.FROST,0xFF80D9FF,mx,my);
             option(g,specialX+(specialW+6)*2,specialY,"VENENO",lineage==DragonLineage.VENOM,0xFF86D48A,mx,my);
         }else if(selected==Race.HALF_BLOOD){
-            g.drawString(font,"DUAS ASCENDÊNCIAS — versões reduzidas",x,specialY-14,WHITE,false);
+            g.drawString(font,"DUAS ASCENDÊNCIAS — versões reduzidas",x,specialY-13,WHITE,false);
             option(g,specialX,specialY,ancestryA.title.toUpperCase(),true,ancestryA.color,mx,my);
             option(g,specialX+specialW+6,specialY,ancestryB.title.toUpperCase(),true,ancestryB.color,mx,my);
             g.drawString(font,"Clique para alternar",specialX+specialW*2+18,specialY+7,MUTED,false);
         }
-        sizeX=right;sizeY=y+106;sizeW=106;sizeH=22;
-        g.drawString(font,"PORTE — "+Math.round(previewScale(size)*100)+"%",right,sizeY-14,WHITE,false);
+        sizeX=right;sizeY=controlsY;sizeW=106;sizeH=22;
+        g.drawString(font,"PORTE — "+Math.round(previewScale(size)*100)+"%",right,sizeY-13,WHITE,false);
         sizeOption(g,sizeX,sizeY,"MENOR",RaceSize.SMALL,mx,my);
         sizeOption(g,sizeX+sizeW+6,sizeY,"PADRÃO",RaceSize.STANDARD,mx,my);
     }

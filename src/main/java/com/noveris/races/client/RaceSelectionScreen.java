@@ -26,6 +26,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
         frame(g, "LINHAGENS DE NOVERIS");
         String realmTitle = realm.title.toUpperCase();
         g.drawString(font, realmTitle, left + panelWidth - font.width(realmTitle) - 34, top + 28, DANGER, false);
+        renderSizeControls(g, mx, my);
         renderTabs(g, mx, my);
         renderRaceCards(g);
         renderDetails(g, mx, my);
@@ -44,14 +45,14 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private void tab(GuiGraphics g,int x,int y,int w,String label,RaceRealm value,int mx,int my){
         boolean active=realm==value,hover=inside(mx,my,x,y,w,24);
         g.fill(x,y,x+w,y+24,active?WINE:hover?WINE_HOVER:0xFF17140E);
-        g.drawCenteredString(font,label,x+w/2,y+8,active||hover?DARK_TEXT:MUTED);
+        g.drawCenteredString(font,label,x+w/2,y+8,active||hover?WHITE:MUTED);
     }
     private void renderRaceCards(GuiGraphics g){
         Race[] races=racesForRealm(); int y=top+94,gap=6,w=(panelWidth-68-gap*(races.length-1))/races.length;
         for(int i=0;i<races.length;i++){int x=left+34+i*(w+gap);boolean active=selected==races[i];
             g.fill(x,y,x+w,y+44,active?WINE:0xFF17140E);
             drawLargeSymbol(g,symbol(races[i]),x+w/2,y+5,races[i].color);
-            g.drawCenteredString(font,races[i].title.toUpperCase(),x+w/2,y+28,active?DARK_TEXT:MUTED);}
+            g.drawCenteredString(font,races[i].title.toUpperCase(),x+w/2,y+28,active?WHITE:MUTED);}
     }
     private void renderDetails(GuiGraphics g,int mx,int my){
         int y=top+150,x=left+44,right=left+panelWidth/2+16;
@@ -76,16 +77,20 @@ public final class RaceSelectionScreen extends NoverisScreen {
             option(g,specialX+specialW+6,specialY,ancestryB.title.toUpperCase(),true,ancestryB.color,mx,my);
             g.drawString(font,"Clique para alternar",specialX+specialW*2+18,specialY+7,MUTED,false);
         }
-        sizeX=right;sizeY=controlsY;sizeW=106;sizeH=22;
-        g.drawString(font,"PORTE — "+Math.round(previewScale(size)*100)+"%",right,sizeY-13,WHITE,false);
+    }
+    private void renderSizeControls(GuiGraphics g,int mx,int my){
+        sizeW=76;sizeH=20;sizeY=top+18;
+        int totalW=sizeW*2+6;
+        sizeX=left+(panelWidth-totalW)/2;
+        g.drawCenteredString(font,"PORTE "+Math.round(previewScale(size)*100)+"%",sizeX+totalW/2,sizeY-11,WHITE);
         sizeOption(g,sizeX,sizeY,"MENOR",RaceSize.SMALL,mx,my);
         sizeOption(g,sizeX+sizeW+6,sizeY,"PADRÃO",RaceSize.STANDARD,mx,my);
     }
-    private void sizeOption(GuiGraphics g,int x,int y,String label,RaceSize value,int mx,int my){boolean active=size==value,hover=inside(mx,my,x,y,sizeW,sizeH);g.fill(x,y,x+sizeW,y+sizeH,active?WINE:hover?WINE_HOVER:0xFF17140E);g.drawCenteredString(font,label,x+sizeW/2,y+7,active?DARK_TEXT:MUTED);}
+    private void sizeOption(GuiGraphics g,int x,int y,String label,RaceSize value,int mx,int my){boolean active=size==value,hover=inside(mx,my,x,y,sizeW,sizeH);g.fill(x,y,x+sizeW,y+sizeH,active?WINE:hover?WINE_HOVER:0xFF17140E);g.drawCenteredString(font,label,x+sizeW/2,y+6,active?WHITE:MUTED);}
     private void option(GuiGraphics g,int x,int y,String label,boolean active,int color,int mx,int my){
         boolean hover=inside(mx,my,x,y,specialW,specialH);
         g.fill(x,y,x+specialW,y+specialH,active?WINE:hover?WINE_HOVER:0xFF17140E);
-        g.drawCenteredString(font,label,x+specialW/2,y+7,active?DARK_TEXT:MUTED);
+        g.drawCenteredString(font,label,x+specialW/2,y+7,active?WHITE:MUTED);
     }
     private void renderConfirmation(GuiGraphics g,int mx,int my){
         int w=430,h=124,x=left+(panelWidth-w)/2,y=top+(panelHeight-h)/2;
@@ -108,15 +113,15 @@ public final class RaceSelectionScreen extends NoverisScreen {
         for(int i=0;i<3;i++)if(inside(mx,my,left+34+i*(tabW+gap),tabY,tabW,24)){realm=RaceRealm.values()[i];selected=racesForRealm()[0];return true;}
         Race[] races=racesForRealm();int cardY=top+94,cardW=(panelWidth-68-gap*(races.length-1))/races.length;
         for(int i=0;i<races.length;i++)if(inside(mx,my,left+34+i*(cardW+gap),cardY,cardW,44)){selected=races[i];return true;}
-        if(selected==Race.DRAGONBORN&&my>=specialY&&my<specialY+specialH){
-            if(inside(mx,my,specialX,specialY,specialW,specialH))lineage=DragonLineage.FIRE;
-            else if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH))lineage=DragonLineage.FROST;
-            else if(inside(mx,my,specialX+(specialW+6)*2,specialY,specialW,specialH))lineage=DragonLineage.VENOM;return true;}
-        if(selected==Race.HALF_BLOOD&&my>=specialY&&my<specialY+specialH){
-            if(inside(mx,my,specialX,specialY,specialW,specialH))ancestryA=nextAncestry(ancestryA,ancestryB);
-            else if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH))ancestryB=nextAncestry(ancestryB,ancestryA);return true;}
         if(inside(mx,my,sizeX,sizeY,sizeW,sizeH)){size=RaceSize.SMALL;return true;}
         if(inside(mx,my,sizeX+sizeW+6,sizeY,sizeW,sizeH)){size=RaceSize.STANDARD;return true;}
+        if(selected==Race.DRAGONBORN){
+            if(inside(mx,my,specialX,specialY,specialW,specialH)){lineage=DragonLineage.FIRE;return true;}
+            if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH)){lineage=DragonLineage.FROST;return true;}
+            if(inside(mx,my,specialX+(specialW+6)*2,specialY,specialW,specialH)){lineage=DragonLineage.VENOM;return true;}}
+        if(selected==Race.HALF_BLOOD){
+            if(inside(mx,my,specialX,specialY,specialW,specialH)){ancestryA=nextAncestry(ancestryA,ancestryB);return true;}
+            if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH)){ancestryB=nextAncestry(ancestryB,ancestryA);return true;}}
         return super.mouseClicked(mx,my,button);
     }
     private Race nextAncestry(Race current,Race other){Race[] valid=Arrays.stream(Race.values()).filter(Race::validAncestry).toArray(Race[]::new);int i=Arrays.asList(valid).indexOf(current);do{i=(i+1)%valid.length;}while(valid[i]==other);return valid[i];}

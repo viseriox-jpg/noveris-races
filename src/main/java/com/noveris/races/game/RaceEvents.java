@@ -116,7 +116,7 @@ public final class RaceEvents {
                 && (attacker.level().isNight() || !attacker.level().canSeeSky(attacker.blockPosition()))) attacker.heal(Math.min(1f, event.getAmount() * .08f));
         if (event.getSource().getEntity() instanceof ServerPlayer archer && RaceState.race(archer) == Race.ELF
                 && event.getSource().getDirectEntity() instanceof AbstractArrow arrow
-                && arrow.getDeltaMovement().lengthSqr() >= 4.0) {
+                && arrow.isCritArrow()) {
             event.setAmount(event.getAmount() * 1.15f);
             if (archer.level().getGameTime() < RaceState.customLong(archer, "ArcherFocusUntil")) event.setAmount(event.getAmount() * 1.20f);
         }

@@ -3,6 +3,7 @@ package com.noveris.races.game;
 import com.noveris.races.*;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +15,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public final class RaceAbilities {
     private RaceAbilities() {}
@@ -23,17 +25,17 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.primaryReady(p)) return;
         int cooldown;
         switch (race) {
-            case ELF -> { focusArcher(p); cooldown = 700; }
-            case FAIRY -> { faeSense(p); cooldown = 800; }
-            case SATYR -> { woodlandVigor(p); cooldown = 700; }
-            case THALASSIAN -> { tidalGuard(p); cooldown = 700; }
-            case NEPHILIM -> { supernaturalAegis(p); cooldown = 1000; }
-            case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = 700; }
-            case HALF_BLOOD -> { hybridHeritage(p); cooldown = 800; }
-            case TIEFLING -> { infernalPulse(p); cooldown = 700; }
-            case LYCANTHROPE -> { huntingHowl(p); cooldown = 900; }
-            case DRAGONBORN -> { dragonBreath(p); cooldown = 600; }
-            case HARPY -> { windGust(p); cooldown = 500; }
+            case ELF -> { focusArcher(p); cooldown = 300; }
+            case FAIRY -> { faeSense(p); cooldown = 300; }
+            case SATYR -> { woodlandVigor(p); cooldown = 300; }
+            case THALASSIAN -> { tidalGuard(p); cooldown = 300; }
+            case NEPHILIM -> { supernaturalAegis(p); cooldown = 300; }
+            case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = 300; }
+            case HALF_BLOOD -> { hybridHeritage(p); cooldown = 300; }
+            case TIEFLING -> { infernalPulse(p); cooldown = 300; }
+            case LYCANTHROPE -> { huntingHowl(p); cooldown = 300; }
+            case DRAGONBORN -> { dragonBreath(p); cooldown = 300; }
+            case HARPY -> { windGust(p); cooldown = 300; }
             default -> { return; }
         }
         RaceState.setPrimaryReady(p, now + cooldown);
@@ -64,7 +66,7 @@ public final class RaceAbilities {
         }
         p.hurtMarked = true;
         p.causeFoodExhaustion(1.0f);
-        long mobilityCooldown = switch (race) { case FAIRY -> 280; case SATYR -> 320; case THALASSIAN -> p.isInWater() ? 240 : 360; case HARPY -> 240; default -> 300; };
+        long mobilityCooldown = switch (race) { case FAIRY -> 280; case THALASSIAN, HARPY -> 240; default -> 300; };
         RaceState.setMobilityReady(p, now + mobilityCooldown);
         switch (race) {
             case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);
@@ -171,12 +173,13 @@ public final class RaceAbilities {
         Vec3 look = p.getLookAngle();
         DragonLineage lineage = RaceState.lineage(p);
         ParticleOptions breathParticle = lineage == DragonLineage.FIRE ? ParticleTypes.FLAME
-                : lineage == DragonLineage.FROST ? ParticleTypes.SNOWFLAKE : ParticleTypes.WITCH;
+                : lineage == DragonLineage.FROST ? ParticleTypes.SNOWFLAKE
+                : new DustParticleOptions(new Vector3f(.18f, .90f, .25f), 1.2f);
         for (LivingEntity target : nearby(p, 8.0)) {
             Vec3 to = target.getEyePosition().subtract(from).normalize();
             if (look.dot(to) < .72) continue;
-            target.hurt(p.damageSources().playerAttack(p), 6f);
             if (lineage == DragonLineage.FIRE) target.igniteForSeconds(4);
+            target.hurt(p.damageSources().playerAttack(p), 6f);
             if (lineage == DragonLineage.FROST) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 1));
             if (lineage == DragonLineage.VENOM) target.addEffect(new MobEffectInstance(MobEffects.POISON, 120, 0));
         }

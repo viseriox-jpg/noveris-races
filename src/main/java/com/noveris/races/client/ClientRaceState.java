@@ -7,6 +7,8 @@ import com.noveris.races.network.RaceNetwork.StatePayload;
 public final class ClientRaceState {
     public static Race race = Race.NONE;
     public static DragonLineage lineage = DragonLineage.NONE;
+    public static Race ancestryA = Race.NONE;
+    public static Race ancestryB = Race.NONE;
     public static boolean confirmed;
     public static long trial;
     public static long primaryCooldown;
@@ -15,7 +17,8 @@ public final class ClientRaceState {
 
     private ClientRaceState() {}
     public static void accept(StatePayload p) {
-        race = Race.parse(p.race()); lineage = DragonLineage.parse(p.lineage()); confirmed = p.confirmed();
+        race = Race.parse(p.race()); lineage = DragonLineage.parse(p.lineage());
+        ancestryA = Race.parse(p.ancestryA()); ancestryB = Race.parse(p.ancestryB()); confirmed = p.confirmed();
         trial = p.trial(); primaryCooldown = p.primaryCooldown(); mobilityCooldown = p.mobilityCooldown(); combat = p.combat();
     }
 }

@@ -21,6 +21,15 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.primaryReady(p)) return;
         int cooldown;
         switch (race) {
+            case ELF -> { focusArcher(p); cooldown = 500; }
+            case FAIRY -> { faeSense(p); cooldown = 700; }
+            case SATYR -> { woodlandVigor(p); cooldown = 600; }
+            case THALASSIAN -> { tidalGuard(p); cooldown = 600; }
+            case HUMAN -> { adaptation(p); cooldown = 500; }
+            case NEPHILIM -> { supernaturalAegis(p); cooldown = 1000; }
+            case VAMPIRE -> { bloodDrain(p); cooldown = 700; }
+            case REVENANT -> { deathDefiance(p); cooldown = 1200; }
+            case HALF_BLOOD -> { hybridHeritage(p); cooldown = 800; }
             case TIEFLING -> { infernalPulse(p); cooldown = 700; }
             case LYCANTHROPE -> { huntingHowl(p); cooldown = 900; }
             case DRAGONBORN -> { dragonBreath(p); cooldown = 600; }
@@ -37,6 +46,15 @@ public final class RaceAbilities {
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
         Vec3 look = p.getLookAngle();
         switch (race) {
+            case ELF -> p.setDeltaMovement(look.x * 1.0, .2, look.z * 1.0);
+            case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); }
+            case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
+            case THALASSIAN -> p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75));
+            case HUMAN -> p.setDeltaMovement(look.x * .85, .15, look.z * .85);
+            case NEPHILIM -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .7, .62, look.z * .7); }
+            case VAMPIRE -> p.setDeltaMovement(look.x * 1.2, .12, look.z * 1.2);
+            case REVENANT -> p.setDeltaMovement(look.x * .8, .08, look.z * .8);
+            case HALF_BLOOD -> p.setDeltaMovement(look.x * .72, .18, look.z * .72);
             case TIEFLING -> p.setDeltaMovement(look.x * 1.15, Math.max(.18, look.y * .35), look.z * 1.15);
             case LYCANTHROPE -> p.setDeltaMovement(look.x * 1.35, .34, look.z * 1.35);
             case DRAGONBORN -> p.setDeltaMovement(look.x * 1.0, .12, look.z * 1.0);
@@ -50,6 +68,15 @@ public final class RaceAbilities {
         p.causeFoodExhaustion(1.0f);
         RaceState.setMobilityReady(p, now + (race == Race.HARPY ? 240 : 300));
         switch (race) {
+            case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);
+            case FAIRY -> particles(p, ParticleTypes.END_ROD, 20, .55, .04);
+            case SATYR -> particles(p, ParticleTypes.COMPOSTER, 20, .65, .05);
+            case THALASSIAN -> particles(p, ParticleTypes.BUBBLE, 24, .7, .08);
+            case HUMAN -> particles(p, ParticleTypes.CRIT, 14, .5, .08);
+            case NEPHILIM -> particles(p, ParticleTypes.END_ROD, 18, .6, .03);
+            case VAMPIRE -> particles(p, ParticleTypes.SMOKE, 22, .6, .04);
+            case REVENANT -> particles(p, ParticleTypes.ASH, 22, .6, .03);
+            case HALF_BLOOD -> particles(p, ParticleTypes.ENCHANTED_HIT, 18, .6, .04);
             case TIEFLING -> particles(p, ParticleTypes.FLAME, 22, .55, .12);
             case LYCANTHROPE -> particles(p, ParticleTypes.POOF, 24, .7, .08);
             case DRAGONBORN -> particles(p, ParticleTypes.LARGE_SMOKE, 20, .65, .04);
@@ -57,6 +84,52 @@ public final class RaceAbilities {
             default -> { }
         }
         RaceGame.sync(p);
+    }
+
+    private static void focusArcher(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 200, 0));
+        particles(p, ParticleTypes.HAPPY_VILLAGER, 28, .8, .04);
+    }
+    private static void faeSense(ServerPlayer p) {
+        for (LivingEntity target : nearby(p, 18)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 140, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 0));
+        particles(p, ParticleTypes.END_ROD, 35, 1.1, .04);
+    }
+    private static void woodlandVigor(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 120, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 0));
+        particles(p, ParticleTypes.COMPOSTER, 30, 1.0, .05);
+    }
+    private static void tidalGuard(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, p.isInWater() ? 1 : 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 160, 0));
+        particles(p, ParticleTypes.BUBBLE, 36, .9, .08);
+    }
+    private static void adaptation(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 200, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 0));
+        particles(p, ParticleTypes.CRIT, 24, .7, .06);
+    }
+    private static void supernaturalAegis(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, 1));
+        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 160, 0));
+        particles(p, ParticleTypes.END_ROD, 38, .9, .03);
+    }
+    private static void bloodDrain(ServerPlayer p) {
+        LivingEntity target = nearby(p, 5).stream().min(java.util.Comparator.comparingDouble(p::distanceToSqr)).orElse(null);
+        if (target != null) { target.hurt(p.damageSources().playerAttack(p), 4f); p.heal(2f); }
+        particles(p, ParticleTypes.DAMAGE_INDICATOR, 24, .8, .05);
+    }
+    private static void deathDefiance(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
+        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 1));
+        particles(p, ParticleTypes.SOUL, 30, .8, .04);
+    }
+    private static void hybridHeritage(ServerPlayer p) {
+        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
+        particles(p, ParticleTypes.ENCHANTED_HIT, 28, .8, .05);
     }
 
     private static void infernalPulse(ServerPlayer p) {

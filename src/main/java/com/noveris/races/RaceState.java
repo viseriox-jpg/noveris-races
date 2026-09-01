@@ -16,6 +16,8 @@ public final class RaceState {
 
     public static Race race(ServerPlayer p) { return Race.parse(root(p).getString("Race")); }
     public static DragonLineage lineage(ServerPlayer p) { return DragonLineage.parse(root(p).getString("Lineage")); }
+    public static Race ancestryA(ServerPlayer p) { return Race.parse(root(p).getString("AncestryA")); }
+    public static Race ancestryB(ServerPlayer p) { return Race.parse(root(p).getString("AncestryB")); }
     public static boolean confirmed(ServerPlayer p) { return root(p).getBoolean("Confirmed"); }
     public static long trialRemaining(ServerPlayer p) { return root(p).getLong("TrialRemaining"); }
     public static long combatUntil(ServerPlayer p) { return root(p).getLong("CombatUntil"); }
@@ -23,10 +25,16 @@ public final class RaceState {
     public static long mobilityReady(ServerPlayer p) { return root(p).getLong("MobilityReady"); }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage) {
+        beginTrial(p, race, lineage, Race.NONE, Race.NONE);
+    }
+
+    public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, Race ancestryA, Race ancestryB) {
         CompoundTag tag = root(p);
         tag.putString("Race", race.name());
         tag.putString("Lineage", race == Race.DRAGONBORN ? lineage.name() : DragonLineage.NONE.name());
         tag.putBoolean("Confirmed", false);
+        tag.putString("AncestryA", race == Race.HALF_BLOOD ? ancestryA.name() : Race.NONE.name());
+        tag.putString("AncestryB", race == Race.HALF_BLOOD ? ancestryB.name() : Race.NONE.name());
         tag.putLong("TrialRemaining", TRIAL_TICKS);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
@@ -41,6 +49,8 @@ public final class RaceState {
         tag.putString("Race", Race.NONE.name());
         tag.putString("Lineage", DragonLineage.NONE.name());
         tag.putBoolean("Confirmed", false);
+        tag.putString("AncestryA", Race.NONE.name());
+        tag.putString("AncestryB", Race.NONE.name());
         tag.putLong("TrialRemaining", 0);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
@@ -60,6 +70,8 @@ public final class RaceState {
     public static void markCombat(ServerPlayer p) { root(p).putLong("CombatUntil", p.level().getGameTime() + 200); }
     public static void setPrimaryReady(ServerPlayer p, long tick) { root(p).putLong("PrimaryReady", tick); }
     public static void setMobilityReady(ServerPlayer p, long tick) { root(p).putLong("MobilityReady", tick); }
+    public static long customLong(ServerPlayer p, String key) { return root(p).getLong(key); }
+    public static void customLong(ServerPlayer p, String key, long value) { root(p).putLong(key, value); }
 
     public static void copyOnDeath(ServerPlayer from, ServerPlayer to) {
         if (from.getPersistentData().contains(ROOT))

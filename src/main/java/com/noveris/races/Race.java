@@ -3,19 +3,30 @@ package com.noveris.races;
 import java.util.Locale;
 
 public enum Race {
-    NONE("Sem raça", 20.0, 1.0f, 0xFFC8BFA6),
-    TIEFLING("Tiefling", 20.0, 1.0f, 0xFFE58B32),
-    LYCANTHROPE("Licantropo", 24.0, 1.05f, 0xFFD7CDB4),
-    DRAGONBORN("Draconato", 26.0, 1.05f, 0xFFD6A13A),
-    HARPY("Harpia", 18.0, 0.95f, 0xFFE9DDBB);
+    NONE("Sem raça", RaceRealm.NEUTRAL, 20.0, 1.0f, 0xFFC8BFA6),
+    ELF("Elfo", RaceRealm.ORVANNIS, 20.0, 1.0f, 0xFFA8D49B),
+    FAIRY("Feérico", RaceRealm.ORVANNIS, 16.0, .95f, 0xFFE8B8DE),
+    SATYR("Sátiro", RaceRealm.ORVANNIS, 22.0, 1.0f, 0xFFC69B62),
+    THALASSIAN("Thalassiano", RaceRealm.ORVANNIS, 22.0, 1.0f, 0xFF68C9D0),
+    HUMAN("Humano", RaceRealm.NEUTRAL, 20.0, 1.0f, 0xFFD8CBB1),
+    NEPHILIM("Nephilin", RaceRealm.NEUTRAL, 22.0, 1.02f, 0xFFE4D49A),
+    VAMPIRE("Vampiro", RaceRealm.NEUTRAL, 24.0, 1.0f, 0xFFBFA3A3),
+    REVENANT("Revenante", RaceRealm.NEUTRAL, 26.0, 1.02f, 0xFF9DA69B),
+    HALF_BLOOD("Meio-Sangue", RaceRealm.NEUTRAL, 20.0, 1.0f, 0xFFD1B98A),
+    TIEFLING("Tiefling", RaceRealm.AVARION, 20.0, 1.0f, 0xFFE58B32),
+    LYCANTHROPE("Licantropo", RaceRealm.AVARION, 24.0, 1.05f, 0xFFD7CDB4),
+    DRAGONBORN("Draconato", RaceRealm.AVARION, 26.0, 1.05f, 0xFFD6A13A),
+    HARPY("Harpia", RaceRealm.AVARION, 18.0, 0.95f, 0xFFE9DDBB);
 
     public final String title;
+    public final RaceRealm realm;
     public final double maxHealth;
     public final float scale;
     public final int color;
 
-    Race(String title, double maxHealth, float scale, int color) {
+    Race(String title, RaceRealm realm, double maxHealth, float scale, int color) {
         this.title = title;
+        this.realm = realm;
         this.maxHealth = maxHealth;
         this.scale = scale;
         this.color = color;
@@ -27,7 +38,18 @@ public enum Race {
         if (normalized.equals("licantropo")) return LYCANTHROPE;
         if (normalized.equals("draconato")) return DRAGONBORN;
         if (normalized.equals("harpia")) return HARPY;
+        if (normalized.equals("elfo")) return ELF;
+        if (normalized.equals("feérico") || normalized.equals("feerico")) return FAIRY;
+        if (normalized.equals("sátiro") || normalized.equals("satiro")) return SATYR;
+        if (normalized.equals("thalassiano")) return THALASSIAN;
+        if (normalized.equals("humano")) return HUMAN;
+        if (normalized.equals("nephilin")) return NEPHILIM;
+        if (normalized.equals("vampiro")) return VAMPIRE;
+        if (normalized.equals("revenante")) return REVENANT;
+        if (normalized.equals("meio-sangue") || normalized.equals("meio_sangue")) return HALF_BLOOD;
         try { return valueOf(value.toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException ignored) { return NONE; }
     }
+
+    public boolean validAncestry() { return this != NONE && this != HALF_BLOOD; }
 }

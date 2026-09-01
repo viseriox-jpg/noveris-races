@@ -14,20 +14,20 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public final class RaceNetwork {
     private RaceNetwork() {}
 
-    public record ActionPayload(String action, String race, String lineage) implements CustomPacketPayload {
+    public record ActionPayload(String action, String race, String lineage, String ancestryA, String ancestryB) implements CustomPacketPayload {
         public static final Type<ActionPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "action"));
         public static final StreamCodec<RegistryFriendlyByteBuf, ActionPayload> CODEC = StreamCodec.of(
-                (buf, value) -> { buf.writeUtf(value.action); buf.writeUtf(value.race); buf.writeUtf(value.lineage); },
-                buf -> new ActionPayload(buf.readUtf(), buf.readUtf(), buf.readUtf()));
+                (buf, value) -> { buf.writeUtf(value.action); buf.writeUtf(value.race); buf.writeUtf(value.lineage); buf.writeUtf(value.ancestryA); buf.writeUtf(value.ancestryB); },
+                buf -> new ActionPayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf()));
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
-    public record StatePayload(String race, String lineage, boolean confirmed, long trial,
+    public record StatePayload(String race, String lineage, String ancestryA, String ancestryB, boolean confirmed, long trial,
                                long primaryCooldown, long mobilityCooldown, boolean combat) implements CustomPacketPayload {
         public static final Type<StatePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "state"));
         public static final StreamCodec<RegistryFriendlyByteBuf, StatePayload> CODEC = StreamCodec.of(
-                (buf, v) -> { buf.writeUtf(v.race); buf.writeUtf(v.lineage); buf.writeBoolean(v.confirmed); buf.writeVarLong(v.trial); buf.writeVarLong(v.primaryCooldown); buf.writeVarLong(v.mobilityCooldown); buf.writeBoolean(v.combat); },
-                buf -> new StatePayload(buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readBoolean()));
+                (buf, v) -> { buf.writeUtf(v.race); buf.writeUtf(v.lineage); buf.writeUtf(v.ancestryA); buf.writeUtf(v.ancestryB); buf.writeBoolean(v.confirmed); buf.writeVarLong(v.trial); buf.writeVarLong(v.primaryCooldown); buf.writeVarLong(v.mobilityCooldown); buf.writeBoolean(v.combat); },
+                buf -> new StatePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readBoolean()));
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
@@ -46,8 +46,11 @@ public final class RaceNetwork {
                     if (RaceState.inCombat(player)) return;
                     Race race = Race.parse(payload.race);
                     DragonLineage lineage = DragonLineage.parse(payload.lineage);
-                    if (race != Race.NONE && (race != Race.DRAGONBORN || lineage != DragonLineage.NONE)) {
-                        RaceState.beginTrial(player, race, lineage);
+                    Race ancestryA = Race.parse(payload.ancestryA);
+                    Race ancestryB = Race.parse(payload.ancestryB);
+                    boolean validHybrid = race != Race.HALF_BLOOD || (ancestryA.validAncestry() && ancestryB.validAncestry() && ancestryA != ancestryB);
+                    if (race != Race.NONE && (race != Race.DRAGONBORN || lineage != DragonLineage.NONE) && validHybrid) {
+                        RaceState.beginTrial(player, race, lineage, ancestryA, ancestryB);
                         RaceGame.sync(player);
                     }
                 }

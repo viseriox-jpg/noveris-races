@@ -66,6 +66,7 @@ public final class RaceEvents {
         }
         if (p.tickCount % 40 == 0) ambientParticles(p, race);
         if (race == Race.TIEFLING && p.isOnFire()) p.clearFire();
+        if (race == Race.NEPHILIM && p.isOnFire() && p.tickCount % 40 == 0) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
         tickRacialHunger(p, race);
         if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 3)
@@ -90,7 +91,7 @@ public final class RaceEvents {
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * .8f);
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.3f);
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
-        if (race == Race.NEPHILIM && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .65f);
+        if (race == Race.NEPHILIM && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .50f);
         if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.35f);
         if (race == Race.TIEFLING && event.getSource().is(DamageTypeTags.IS_FIRE)) {
             event.setCanceled(true);

@@ -18,6 +18,7 @@ public final class RaceState {
     public static DragonLineage lineage(ServerPlayer p) { return DragonLineage.parse(root(p).getString("Lineage")); }
     public static Race ancestryA(ServerPlayer p) { return Race.parse(root(p).getString("AncestryA")); }
     public static Race ancestryB(ServerPlayer p) { return Race.parse(root(p).getString("AncestryB")); }
+    public static RaceSize size(ServerPlayer p) { return RaceSize.parse(root(p).getString("Size")); }
     public static boolean confirmed(ServerPlayer p) { return root(p).getBoolean("Confirmed"); }
     public static long trialRemaining(ServerPlayer p) { return root(p).getLong("TrialRemaining"); }
     public static long combatUntil(ServerPlayer p) { return root(p).getLong("CombatUntil"); }
@@ -25,16 +26,17 @@ public final class RaceState {
     public static long mobilityReady(ServerPlayer p) { return root(p).getLong("MobilityReady"); }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage) {
-        beginTrial(p, race, lineage, Race.NONE, Race.NONE);
+        beginTrial(p, race, lineage, Race.NONE, Race.NONE, RaceSize.STANDARD);
     }
 
-    public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, Race ancestryA, Race ancestryB) {
+    public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, Race ancestryA, Race ancestryB, RaceSize size) {
         CompoundTag tag = root(p);
         tag.putString("Race", race.name());
         tag.putString("Lineage", race == Race.DRAGONBORN ? lineage.name() : DragonLineage.NONE.name());
         tag.putBoolean("Confirmed", false);
         tag.putString("AncestryA", race == Race.HALF_BLOOD ? ancestryA.name() : Race.NONE.name());
         tag.putString("AncestryB", race == Race.HALF_BLOOD ? ancestryB.name() : Race.NONE.name());
+        tag.putString("Size", size.name());
         tag.putLong("TrialRemaining", TRIAL_TICKS);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
@@ -51,6 +53,7 @@ public final class RaceState {
         tag.putBoolean("Confirmed", false);
         tag.putString("AncestryA", Race.NONE.name());
         tag.putString("AncestryB", Race.NONE.name());
+        tag.putString("Size", RaceSize.STANDARD.name());
         tag.putLong("TrialRemaining", 0);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
@@ -72,6 +75,22 @@ public final class RaceState {
     public static void setMobilityReady(ServerPlayer p, long tick) { root(p).putLong("MobilityReady", tick); }
     public static long customLong(ServerPlayer p, String key) { return root(p).getLong(key); }
     public static void customLong(ServerPlayer p, String key, long value) { root(p).putLong(key, value); }
+
+    public static float effectiveScale(ServerPlayer p) {
+        Race race = race(p);
+        RaceSize size = size(p);
+        float scale;
+        if (race == Race.HALF_BLOOD) {
+            Race a = ancestryA(p), b = ancestryB(p);
+            float standard = Math.min(1.15f, (a.maxScale + b.maxScale) / 2f);
+            scale = size == RaceSize.SMALL ? Math.max(.85f, standard - .06f) : standard;
+            if (p.level().isNight() && (a == Race.LYCANTHROPE || b == Race.LYCANTHROPE)) scale = Math.min(1.15f, scale + .05f);
+        } else {
+            scale = race.scale(size);
+            if (race == Race.LYCANTHROPE && p.level().isNight()) scale = Math.min(1.10f, scale + .10f);
+        }
+        return Math.min(1.15f, scale);
+    }
 
     public static void copyOnDeath(ServerPlayer from, ServerPlayer to) {
         if (from.getPersistentData().contains(ROOT))

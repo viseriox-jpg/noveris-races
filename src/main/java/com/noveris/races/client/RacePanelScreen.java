@@ -29,7 +29,7 @@ public final class RacePanelScreen extends NoverisScreen {
         g.drawString(font, "RESUMO DA RAÇA", x, y, WHITE, false);
         g.drawString(font, summary(race), x, y + 16, LILAC, false);
         g.drawString(font, "VIDA  " + ((int)race.maxHealth/2) + " CORAÇÕES", x, y + 34, race.color, false);
-        g.drawString(font, "ALTURA  " + Math.round(race.scale*100) + "%", x, y + 48, LILAC, false);
+        g.drawString(font, "PORTE  " + ClientRaceState.size.title.toUpperCase(), x, y + 48, LILAC, false);
         if (race == Race.DRAGONBORN) g.drawString(font, "LINHAGEM  " + ClientRaceState.lineage.title.toUpperCase(), x, y + 62, LILAC, false);
         if (race == Race.HALF_BLOOD) g.drawString(font, "ASCENDÊNCIAS  " + ClientRaceState.ancestryA.title.toUpperCase() + " + " + ClientRaceState.ancestryB.title.toUpperCase(), x, y + 62, LILAC, false);
 
@@ -66,7 +66,7 @@ public final class RacePanelScreen extends NoverisScreen {
     @Override public boolean mouseClicked(double mx, double my, int button) {
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             if (inside(mx,my,confirmX,confirmY,confirmW,confirmH)) {
-                PacketDistributor.sendToServer(new ActionPayload("confirm", "", "", "", "")); minecraft.setScreen(null); return true;
+                PacketDistributor.sendToServer(new ActionPayload("confirm", "", "", "", "", "")); minecraft.setScreen(null); return true;
             }
             if (!ClientRaceState.combat && inside(mx,my,changeX,changeY,changeW,changeH)) {
                 minecraft.setScreen(new RaceSelectionScreen()); return true;

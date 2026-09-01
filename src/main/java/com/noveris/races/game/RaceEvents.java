@@ -52,9 +52,11 @@ public final class RaceEvents {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         RaceState.tickTrial(p);
         Race race = RaceState.race(p);
+        updateScale(p);
         if (p.tickCount % 20 == 0) {
             applyAttributes(p);
             applyPassives(p, race);
+            handleLycanTransformation(p, race);
             RaceGame.sync(p);
         }
         if (p.tickCount % 40 == 0) ambientParticles(p, race);
@@ -70,6 +72,9 @@ public final class RaceEvents {
         Race race = RaceState.race(victim);
         if (race == Race.HALF_BLOOD) applyHybridDamage(victim, event);
         if (race == Race.ELF && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * 1.12f);
+        if (race == Race.ELF && event.getAmount() >= 6f && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity)
+            event.setAmount(event.getAmount() * 1.10f);
+        if (race == Race.SATYR && event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .4f);
         if (race == Race.FAIRY && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity fairyAttacker
                 && fairyAttacker.getMainHandItem().getItem().toString().contains("iron")) event.setAmount(event.getAmount() * 1.3f);
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.3f);
@@ -119,11 +124,11 @@ public final class RaceEvents {
     private static void applyAttributes(ServerPlayer p) {
         Race race = RaceState.race(p);
         var maxHealth = p.getAttribute(Attributes.MAX_HEALTH);
-        var scale = p.getAttribute(Attributes.SCALE);
         var speed = p.getAttribute(Attributes.MOVEMENT_SPEED);
         var knockback = p.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
+        var blockReach = p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+        var entityReach = p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
         if (maxHealth != null) maxHealth.setBaseValue(race.maxHealth);
-        if (scale != null) scale.setBaseValue(race.scale);
         if (speed != null) {
             double value = .1;
             if (race == Race.DRAGONBORN) value = .092;
@@ -132,7 +137,19 @@ public final class RaceEvents {
             speed.setBaseValue(value);
         }
         if (knockback != null) knockback.setBaseValue(race == Race.DRAGONBORN ? .2 : 0);
+        boolean small = RaceState.size(p) == RaceSize.SMALL;
+        if (blockReach != null) blockReach.setBaseValue(small ? 4.275 : 4.5);
+        if (entityReach != null) entityReach.setBaseValue(small ? 2.85 : 3.0);
         if (p.getHealth() > p.getMaxHealth()) p.setHealth(p.getMaxHealth());
+    }
+
+    private static void updateScale(ServerPlayer p) {
+        var attribute = p.getAttribute(Attributes.SCALE);
+        if (attribute == null) return;
+        double current = attribute.getBaseValue(), target = RaceState.effectiveScale(p);
+        if (Math.abs(current - target) < .002) { attribute.setBaseValue(target); return; }
+        if (target > current && !p.level().noCollision(p, p.getBoundingBox().expandTowards(0, .18, 0))) return;
+        attribute.setBaseValue(current + Math.copySign(Math.min(.008, Math.abs(target - current)), target - current));
     }
 
     private static void applyPassives(ServerPlayer p, Race race) {
@@ -146,7 +163,7 @@ public final class RaceEvents {
                 if (p.level().dimensionType().ultraWarm()) p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
             }
             case SATYR -> {
-                if (isNaturalGround(p)) { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 0, false, false)); }
+                if (isNaturalGround(p) && heavyArmorPieces(p) < 3) { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 0, false, false)); }
                 else if (p.getY() < 50 && !p.level().canSeeSky(p.blockPosition())) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
             }
             case THALASSIAN -> {
@@ -214,6 +231,17 @@ public final class RaceEvents {
         RaceState.customLong(p, "DryTicks", dry);
         if (dry > 2400) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, dry > 6000 ? 1 : 0, false, false));
         if (dry > 6000) p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
+    }
+    private static void handleLycanTransformation(ServerPlayer p, Race race) {
+        boolean affected = race == Race.LYCANTHROPE || (race == Race.HALF_BLOOD && (RaceState.ancestryA(p) == Race.LYCANTHROPE || RaceState.ancestryB(p) == Race.LYCANTHROPE));
+        if (!affected) { RaceState.customLong(p, "WasNight", p.level().isNight() ? 1 : 0); return; }
+        long night = p.level().isNight() ? 1 : 0, before = RaceState.customLong(p, "WasNight");
+        if (before != night && p.level() instanceof ServerLevel level) {
+            level.sendParticles(ParticleTypes.LARGE_SMOKE, p.getX(), p.getY()+1, p.getZ(), 28, .55, .8, .55, .04);
+            level.sendParticles(ParticleTypes.POOF, p.getX(), p.getY()+1, p.getZ(), 18, .5, .7, .5, .06);
+            p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.WOLF_HOWL, net.minecraft.sounds.SoundSource.PLAYERS, 1.1f, night == 1 ? .65f : 1.05f);
+        }
+        RaceState.customLong(p, "WasNight", night);
     }
     private static void applyHybridPassives(ServerPlayer p) {
         Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);

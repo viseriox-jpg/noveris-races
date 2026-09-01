@@ -11,6 +11,7 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -95,7 +96,11 @@ public final class RaceEvents {
         if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.35f);
         if (race == Race.TIEFLING && event.getSource().is(DamageTypeTags.IS_FIRE)) {
             event.setCanceled(true);
-            victim.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 120, 0));
+            long now = victim.level().getGameTime();
+            if (now >= RaceState.customLong(victim, "InfernalRetaliationReady")) {
+                victim.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 0));
+                RaceState.customLong(victim, "InfernalRetaliationReady", now + 200);
+            }
             return;
         }
         if (race == Race.DRAGONBORN && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
@@ -103,7 +108,10 @@ public final class RaceEvents {
         if (race == Race.DRAGONBORN) {
             DragonLineage lineage = RaceState.lineage(victim);
             if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .4f);
+            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * 1.3f);
             if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.3f);
+            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * .4f);
+            if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * 1.25f);
         }
         if (race == Race.HARPY) {
             if (event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .2f);
@@ -113,7 +121,10 @@ public final class RaceEvents {
                 && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount() * 1.35f);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker && RaceState.race(attacker) == Race.VAMPIRE
                 && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)
-                && attacker.level().isNight()) attacker.heal(Math.min(1f, event.getAmount() * .08f));
+                && attacker.level().isNight() && attacker.level().getGameTime() >= RaceState.customLong(attacker, "VampireBiteReady")) {
+            attacker.heal(Math.min(1f, event.getAmount() * .08f));
+            RaceState.customLong(attacker, "VampireBiteReady", attacker.level().getGameTime() + 20);
+        }
         RaceState.markCombat(victim);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) RaceState.markCombat(attacker);
     }
@@ -177,6 +188,7 @@ public final class RaceEvents {
                 if (isForest(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
             }
             case FAIRY -> {
+                shortenHarmfulEffects(p, 5);
                 if (nearFlowers(p) && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
             }
             case SATYR -> {
@@ -189,7 +201,7 @@ public final class RaceEvents {
                 if (p.isInWater()) { if (RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 60, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false)); }
             }
             case HUMAN -> p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 40, 0, false, false));
-            case NEPHILIM -> { if (p.getHealth() <= p.getMaxHealth() * .3f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 0, false, false)); }
+            case NEPHILIM -> { shortenHarmfulEffects(p, 7); if (p.getHealth() <= p.getMaxHealth() * .3f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 0, false, false)); }
             case VAMPIRE -> {
                 if (RaceState.visionEnabled(p) && isDark(p))
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false));
@@ -207,7 +219,7 @@ public final class RaceEvents {
                     if (p.getFoodData().getFoodLevel() > 6 && p.tickCount % 160 == 0) p.heal(1f);
                     p.causeFoodExhaustion(.035f);
                     for (var target : p.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
-                            p.getBoundingBox().inflate(8), e -> e.isAlive()))
+                            p.getBoundingBox().inflate(6), e -> e.isAlive() && p.distanceToSqr(e) <= 36))
                         target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 30, 0, false, false));
                 }
             }
@@ -233,7 +245,16 @@ public final class RaceEvents {
     }
 
     private static boolean isForest(ServerPlayer p) { return p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST); }
-    private static boolean isDark(ServerPlayer p) { return p.level().isNight() || p.level().getMaxLocalRawBrightness(p.blockPosition()) < 7; }
+    private static boolean isDark(ServerPlayer p) { return p.level().getRawBrightness(p.blockPosition(), p.level().getSkyDarken()) < 7; }
+
+    private static void shortenHarmfulEffects(ServerPlayer p, int extraDecay) {
+        for (MobEffectInstance effect : java.util.List.copyOf(p.getActiveEffects())) {
+            if (effect.getEffect().value().getCategory() != MobEffectCategory.HARMFUL) continue;
+            int remaining = effect.getDuration() - extraDecay;
+            p.removeEffect(effect.getEffect());
+            if (remaining > 0) p.addEffect(new MobEffectInstance(effect.getEffect(), remaining, effect.getAmplifier(), effect.isAmbient(), effect.isVisible()));
+        }
+    }
 
     private static boolean isNaturalGround(ServerPlayer p) {
         var state = p.level().getBlockState(p.blockPosition().below());
@@ -279,6 +300,8 @@ public final class RaceEvents {
         if ((a==Race.NEPHILIM||b==Race.NEPHILIM)&&p.getHealth()<p.getMaxHealth()*.25f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,40,0,false,false));
         if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
         if ((a==Race.HARPY||b==Race.HARPY)&&!p.onGround()&&p.getDeltaMovement().y<-.15) p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,8,0,false,false));
+        if (a==Race.FAIRY||b==Race.FAIRY) shortenHarmfulEffects(p,2);
+        if (a==Race.NEPHILIM||b==Race.NEPHILIM) shortenHarmfulEffects(p,3);
     }
     private static void applyHybridDamage(ServerPlayer p, LivingIncomingDamageEvent event) {
         Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);

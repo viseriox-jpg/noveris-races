@@ -57,13 +57,13 @@ public final class RaceAbilities {
             }
             case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); RaceState.customLong(p,"FaeLandingUntil",now+100); }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
-            case THALASSIAN -> p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75));
+            case THALASSIAN -> { if (!p.isInWater() && !p.onGround()) return; p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75)); }
             case NEPHILIM -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .7, .62, look.z * .7); }
-            case VAMPIRE -> p.setDeltaMovement(look.x * 1.2, .12, look.z * 1.2);
-            case HALF_BLOOD -> p.setDeltaMovement(look.x * .72, .18, look.z * .72);
-            case TIEFLING -> p.setDeltaMovement(look.x * 1.15, Math.max(.18, look.y * .35), look.z * 1.15);
-            case LYCANTHROPE -> p.setDeltaMovement(look.x * 1.35, .34, look.z * 1.35);
-            case DRAGONBORN -> p.setDeltaMovement(look.x * 1.0, .12, look.z * 1.0);
+            case VAMPIRE -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.2, .12, look.z * 1.2); }
+            case HALF_BLOOD -> { if (!p.onGround()) return; hybridMobility(p, look); }
+            case TIEFLING -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, Math.max(.18, look.y * .35), look.z * 1.15); }
+            case LYCANTHROPE -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.35, .34, look.z * 1.35); }
+            case DRAGONBORN -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.0, .12, look.z * 1.0); }
             case HARPY -> {
                 if (!p.onGround()) return;
                 p.setDeltaMovement(look.x * .65, 1.0, look.z * .65);
@@ -125,7 +125,7 @@ public final class RaceAbilities {
     }
     private static void tidalGuard(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, p.isInWater() ? 1 : 0));
-        p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 120, 0));
+        if (p.isInWater()) p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 120, 0));
         particles(p, ParticleTypes.BUBBLE, 36, .9, .08);
     }
     private static void supernaturalAegis(ServerPlayer p) {
@@ -170,15 +170,51 @@ public final class RaceAbilities {
         return true;
     }
     private static void hybridHeritage(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
+        applyHybridPower(p, RaceState.ancestryA(p));
+        applyHybridPower(p, RaceState.ancestryB(p));
         particles(p, ParticleTypes.ENCHANTED_HIT, 28, .8, .05);
     }
 
+    private static void applyHybridPower(ServerPlayer p, Race ancestry) {
+        switch (ancestry) {
+            case ELF -> p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 100, 0));
+            case FAIRY -> p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0));
+            case SATYR -> { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 80, 0)); p.addEffect(new MobEffectInstance(MobEffects.JUMP, 80, 0)); }
+            case THALASSIAN -> p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 80, 0));
+            case HUMAN -> p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 120, 0));
+            case NEPHILIM -> p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 80, 0));
+            case VAMPIRE -> { if (p.level().isNight()) p.heal(2f); }
+            case TIEFLING -> p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 100, 0));
+            case LYCANTHROPE -> { if (p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 0)); }
+            case DRAGONBORN -> p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 0));
+            case HARPY -> p.addEffect(new MobEffectInstance(MobEffects.JUMP, 100, 0));
+            default -> { }
+        }
+    }
+
+    private static void hybridMobility(ServerPlayer p, Vec3 look) {
+        Race a = RaceState.ancestryA(p), b = RaceState.ancestryB(p);
+        double horizontal = (hybridHorizontal(a) + hybridHorizontal(b)) / 2.0;
+        double vertical = (hybridVertical(a) + hybridVertical(b)) / 2.0;
+        horizontal = Math.min(1.05, horizontal);
+        vertical = Math.min(.62, vertical);
+        p.setDeltaMovement(look.x * horizontal, vertical, look.z * horizontal);
+    }
+    private static double hybridHorizontal(Race race) { return switch (race) {
+        case ELF -> .75; case FAIRY -> .5; case SATYR -> 1.0; case THALASSIAN -> .7;
+        case HUMAN -> .65; case NEPHILIM -> .6; case VAMPIRE -> .95; case TIEFLING -> .95;
+        case LYCANTHROPE -> 1.05; case DRAGONBORN -> .8; case HARPY -> .55; default -> .65;
+    }; }
+    private static double hybridVertical(Race race) { return switch (race) {
+        case FAIRY -> .62; case SATYR -> .42; case NEPHILIM -> .52; case LYCANTHROPE -> .3;
+        case HARPY -> .62; case ELF -> .34; default -> .18;
+    }; }
+
     private static void infernalPulse(ServerPlayer p) {
         for (LivingEntity target : nearby(p, 4.0)) {
-            target.hurt(p.damageSources().playerAttack(p), 4f);
+            if (!p.hasLineOfSight(target)) continue;
             target.igniteForSeconds(3);
+            target.hurt(p.damageSources().playerAttack(p), 4f);
         }
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 0));
         particles(p, ParticleTypes.FLAME, 42, 1.2, .08);
@@ -204,7 +240,7 @@ public final class RaceAbilities {
                 : new DustParticleOptions(new Vector3f(.18f, .90f, .25f), 1.2f);
         for (LivingEntity target : nearby(p, 8.0)) {
             Vec3 to = target.getEyePosition().subtract(from).normalize();
-            if (look.dot(to) < .72) continue;
+            if (look.dot(to) < .72 || !p.hasLineOfSight(target)) continue;
             if (lineage == DragonLineage.FIRE) target.igniteForSeconds(4);
             target.hurt(p.damageSources().playerAttack(p), 6f);
             if (lineage == DragonLineage.FROST) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 1));
@@ -225,7 +261,7 @@ public final class RaceAbilities {
         Vec3 look = p.getLookAngle();
         for (LivingEntity target : nearby(p, 7.0)) {
             Vec3 to = target.position().subtract(p.position()).normalize();
-            if (look.dot(to) < .5) continue;
+            if (look.dot(to) < .5 || !p.hasLineOfSight(target)) continue;
             target.push(look.x * 1.4, .35, look.z * 1.4);
             target.hurtMarked = true;
         }
@@ -243,6 +279,7 @@ public final class RaceAbilities {
         AABB box = p.getBoundingBox().inflate(radius);
         return p.level().getEntitiesOfClass(LivingEntity.class, box, e -> e != p && e.isAlive()
                 && e.isAttackable() && !p.isAlliedTo(e)
+                && p.distanceToSqr(e) <= radius * radius
                 && (!(e instanceof net.minecraft.world.entity.player.Player other) || !other.isSpectator()));
     }
 

@@ -10,6 +10,12 @@ Mod de raças jogáveis do Noveris SMP, independente do Noveris Staff Call e do 
 
 Meio-Sangue exige duas ascendências diferentes e recebe versões reduzidas de características e fraquezas. Nenhuma raça possui voo livre.
 
+## Portes
+
+Cada raça oferece `Porte menor` e `Porte padrão`. O porte padrão é o máximo racial e nunca ultrapassa 115%. Porte menor reduz em 5% o alcance corpo a corpo e de interação. Licantropos crescem 10 pontos percentuais à noite, chegando no máximo a 110%; a transformação híbrida cresce 5 pontos.
+
+O mod não concede qualquer benefício relacionado a encantamentos.
+
 ## Seleção
 
 Jogadores sem raça recebem a tela de seleção obrigatória ao entrar. A raça é testada por cinco minutos. Trocas são permitidas fora de combate; desconectar cancela o teste. Ao fim, o jogador confirma definitivamente.

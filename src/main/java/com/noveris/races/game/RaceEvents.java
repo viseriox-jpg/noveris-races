@@ -17,6 +17,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = NoverisRaces.MOD_ID)
@@ -62,6 +63,7 @@ public final class RaceEvents {
         if (p.tickCount % 40 == 0) ambientParticles(p, race);
         if (race == Race.TIEFLING && p.isOnFire()) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
+        tickRacialHunger(p, race);
         if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 3)
             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 8, 0, false, false));
     }
@@ -119,6 +121,22 @@ public final class RaceEvents {
             event.setAmount(event.getAmount() * .75f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.REVENANT) event.setAmount(event.getAmount() * .6f);
+    }
+
+    @SubscribeEvent
+    public static void experience(PlayerXpEvent.XpChange event) {
+        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.HUMAN && event.getAmount() > 0)
+            event.setAmount(Math.max(event.getAmount() + 1, Math.round(event.getAmount() * 1.10f)));
+    }
+
+    @SubscribeEvent
+    public static void breakSpeed(PlayerEvent.BreakSpeed event) {
+        if (!(event.getEntity() instanceof ServerPlayer p)) return;
+        Race race = RaceState.race(p);
+        float speed = event.getNewSpeed();
+        if (race == Race.HUMAN) speed *= 1.08f;
+        if (race == Race.THALASSIAN && p.isInWater()) speed *= 5f;
+        event.setNewSpeed(speed);
     }
 
     private static void applyAttributes(ServerPlayer p) {
@@ -231,6 +249,14 @@ public final class RaceEvents {
         RaceState.customLong(p, "DryTicks", dry);
         if (dry > 2400) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, dry > 6000 ? 1 : 0, false, false));
         if (dry > 6000) p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
+    }
+    private static void tickRacialHunger(ServerPlayer p, Race race) {
+        int current=p.getFoodData().getFoodLevel();
+        if(RaceState.customLong(p,"FoodTracked")==0){RaceState.customLong(p,"LastFood",current);RaceState.customLong(p,"FoodTracked",1);return;}
+        int previous=(int)RaceState.customLong(p,"LastFood");
+        if(race==Race.VAMPIRE&&current>previous){int gain=current-previous;current=previous+Math.max(1,(int)Math.ceil(gain*.7));p.getFoodData().setFoodLevel(current);}
+        if(race==Race.REVENANT&&current<previous){long losses=RaceState.customLong(p,"FoodLosses")+(previous-current);if(losses>=4){current=Math.min(20,current+1);p.getFoodData().setFoodLevel(current);losses-=4;}RaceState.customLong(p,"FoodLosses",losses);}
+        RaceState.customLong(p,"LastFood",current);
     }
     private static void handleLycanTransformation(ServerPlayer p, Race race) {
         boolean affected = race == Race.LYCANTHROPE || (race == Race.HALF_BLOOD && (RaceState.ancestryA(p) == Race.LYCANTHROPE || RaceState.ancestryB(p) == Race.LYCANTHROPE));

@@ -20,6 +20,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -61,10 +62,10 @@ public final class RaceEvents {
         RaceState.tickTrial(p);
         Race race = RaceState.race(p);
         updateScale(p);
+        handleHeavyArmorMobility(p, race);
         if (p.tickCount % 20 == 0) {
             applyAttributes(p);
             applyPassives(p, race);
-            handleHeavyArmorMobility(p, race);
             handleLycanTransformation(p, race);
             RaceGame.sync(p);
         }
@@ -75,6 +76,19 @@ public final class RaceEvents {
         tickRacialHunger(p, race);
         if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 3)
             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 8, 0, false, false));
+    }
+
+    @SubscribeEvent
+    public static void preventHeavyArmorMobilityEffects(MobEffectEvent.Applicable event) {
+        if (!(event.getEntity() instanceof ServerPlayer p)
+                || RaceState.customLong(p, "HeavyMobilityBlocked") != 1) return;
+        Race race = RaceState.race(p);
+        var effect = event.getEffectInstance().getEffect();
+        boolean blocked = race == Race.SATYR
+                && (effect.equals(MobEffects.MOVEMENT_SPEED) || effect.equals(MobEffects.JUMP));
+        blocked |= race == Race.HARPY
+                && (effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING));
+        if (blocked) event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
 
     @SubscribeEvent

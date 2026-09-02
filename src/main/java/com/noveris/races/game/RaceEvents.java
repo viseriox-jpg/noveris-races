@@ -273,6 +273,16 @@ public final class RaceEvents {
         boolean blocked = susceptible && pieces >= 3;
         boolean wasBlocked = RaceState.customLong(p, "HeavyMobilityBlocked") == 1;
 
+        if (blocked) {
+            p.removeEffect(MobEffects.JUMP);
+            if (race == Race.SATYR) {
+                p.removeEffect(MobEffects.MOVEMENT_SPEED);
+                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
+            } else {
+                p.removeEffect(MobEffects.SLOW_FALLING);
+            }
+        }
+
         if (blocked && (p.tickCount % 40 == 0 || !wasBlocked))
             p.displayClientMessage(Component.literal("⚠ Mobilidade racial reduzida: armadura pesada ("
                     + pieces + "/4 peças)"), true);

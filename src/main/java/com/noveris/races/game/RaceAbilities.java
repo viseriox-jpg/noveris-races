@@ -47,6 +47,11 @@ public final class RaceAbilities {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
+        if ((race == Race.SATYR || race == Race.HARPY)
+                && RaceState.customLong(p, "HeavyMobilityBlocked") == 1) {
+            p.displayClientMessage(Component.literal("A armadura pesada bloqueia sua habilidade de mobilidade."), true);
+            return;
+        }
         Vec3 look = p.getLookAngle();
         switch (race) {
             case ELF -> {

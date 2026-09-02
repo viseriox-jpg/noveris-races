@@ -161,8 +161,10 @@ public final class RaceAbilities {
             double alongRay = relative.dot(direction);
             if (alongRay < 0 || alongRay > range || !p.hasLineOfSight(target)) continue;
             double distanceFromRay = relative.subtract(direction.scale(alongRay)).length();
-            if (distanceFromRay <= Math.max(.75, target.getBbWidth() * .65))
+            if (distanceFromRay <= Math.max(.75, target.getBbWidth() * .65)) {
                 target.hurt(p.damageSources().playerAttack(p), 5f);
+                particlesAt(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), target.getX(), target.getY()+target.getBbHeight()*.5, target.getZ(), 10, .25, .35, .25, .03);
+            }
         }
         if (p.level() instanceof ServerLevel level) {
             for (int step = 1; step <= 24; step++) {
@@ -181,6 +183,7 @@ public final class RaceAbilities {
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
                 particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.SPLASH), 42, 1.1, .12);
                 particles(p, external("irons_spellbooks:acid_bubble", ParticleTypes.BUBBLE), 24, .8, .08);
+                particles(p, ParticleTypes.FALLING_WATER, 20, .8, .04);
             }
             case AIR -> {
                 Vec3 look = p.getLookAngle().normalize();
@@ -192,6 +195,7 @@ public final class RaceAbilities {
                 }
                 p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 120, 0));
                 particles(p, external("irons_spellbooks:spark", ParticleTypes.CLOUD), 46, 1.3, .16);
+                particles(p, ParticleTypes.SWEEP_ATTACK, 8, .7, .02);
             }
             default -> {
                 for (LivingEntity target : nearby(p, 9)) {
@@ -206,12 +210,14 @@ public final class RaceAbilities {
     private static void woodlandVigor(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 0));
-        particles(p, ParticleTypes.COMPOSTER, 30, 1.0, .05);
+        particles(p, external("hazennstuff:nature_slash_particle", ParticleTypes.COMPOSTER), 30, 1.0, .05);
+        particles(p, ParticleTypes.FALLING_SPORE_BLOSSOM, 18, .8, .02);
     }
     private static void tidalGuard(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, p.isInWater() ? 1 : 0));
         if (p.isInWater()) p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 120, 0));
-        particles(p, ParticleTypes.BUBBLE, 36, .9, .08);
+        particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 36, .9, .08);
+        particles(p, ParticleTypes.FALLING_WATER, 16, .8, .03);
     }
     private static void supernaturalAegis(ServerPlayer p) {
         cleanseOneHarmfulEffect(p);
@@ -219,7 +225,8 @@ public final class RaceAbilities {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 0));
         p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 0));
         RaceState.customLong(p, "AegisWeaknessAt", p.level().getGameTime() + 200);
-        particles(p, external("irons_spellbooks:absorption", ParticleTypes.END_ROD), 38, .9, .03);
+        particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 28, .9, .03);
+        particles(p, external("irons_spellbooks:absorption", ParticleTypes.END_ROD), 18, .6, .03);
     }
     private static boolean bloodDrain(ServerPlayer p) {
         if (!p.level().isNight()) {
@@ -248,6 +255,7 @@ public final class RaceAbilities {
         }
         if (p.level() instanceof ServerLevel level) {
             level.sendParticles(external("irons_spellbooks:blood", ParticleTypes.DAMAGE_INDICATOR), target.getX(), target.getY()+target.getBbHeight()*.6, target.getZ(), 18, .35, .45, .35, .05);
+            level.sendParticles(external("irons_spellbooks:blood_ground", ParticleTypes.DAMAGE_INDICATOR), target.getX(), target.getY()+.05, target.getZ(), 6, .25, .02, .25, .01);
             Vec3 from=target.getEyePosition(),to=p.getEyePosition();
             for(int step=1;step<=8;step++){
                 Vec3 point=from.lerp(to,step/8.0);
@@ -306,7 +314,8 @@ public final class RaceAbilities {
         }
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 0));
         particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 42, 1.2, .08);
-        particles(p, external("irons_spellbooks:fiery_smoke", ParticleTypes.SMOKE), 18, 1.0, .04);
+        particles(p, external("irons_spellbooks:fiery_smoke", ParticleTypes.SMOKE), 28, 1.0, .04);
+        particles(p, ParticleTypes.SOUL_FIRE_FLAME, 8, .55, .03);
         p.level().playSound(null, p.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1.0f, .75f);
     }
 
@@ -348,7 +357,8 @@ public final class RaceAbilities {
                 level.sendParticles(breathParticle, point.x, point.y, point.z, 6, .22, .22, .22, .02);
             }
         }
-        particles(p, lineage == DragonLineage.VENOM ? external("irons_spellbooks:acid", ParticleTypes.SNEEZE) : ParticleTypes.SMOKE, 14, .5, .02);
+        particles(p, lineage == DragonLineage.VENOM ? external("irons_spellbooks:acid", ParticleTypes.SNEEZE) : ParticleTypes.SMOKE, 20, .5, .02);
+        if (lineage == DragonLineage.VENOM) particles(p, new DustParticleOptions(new Vector3f(.1f, .9f, .18f), 1.4f), 18, .65, .04);
         p.level().playSound(null, p.blockPosition(), SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.PLAYERS, 1.0f, .9f);
     }
 
@@ -391,6 +401,11 @@ public final class RaceAbilities {
     private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {
         if (p.level() instanceof ServerLevel level)
             level.sendParticles(particle, p.getX(), p.getY() + 1, p.getZ(), count, spread, spread, spread, speed);
+    }
+
+    private static void particlesAt(ServerPlayer p, ParticleOptions particle, double x, double y, double z, int count, double dx, double dy, double dz, double speed) {
+        if (p.level() instanceof ServerLevel level)
+            level.sendParticles(particle, x, y, z, count, dx, dy, dz, speed);
     }
 
     private static ParticleOptions external(String id, ParticleOptions fallback) {

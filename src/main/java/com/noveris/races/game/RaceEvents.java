@@ -196,6 +196,28 @@ public final class RaceEvents {
     }
 
     @SubscribeEvent
+    public static void fairyPlantFood(LivingEntityUseItemEvent.Finish event) {
+        if (!(event.getEntity() instanceof ServerPlayer p)) return;
+        boolean fairy = RaceState.race(p) == Race.FAIRY && RaceState.fairyAffinity(p) == FairyAffinity.NATURE;
+        boolean hybridFairy = RaceState.race(p) == Race.HALF_BLOOD
+                && (RaceState.ancestryA(p) == Race.FAIRY || RaceState.ancestryB(p) == Race.FAIRY);
+        if ((fairy || hybridFairy) && isPlantFood(event.getItem())) {
+            p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, fairy ? 60 : 35, 0, false, true));
+            p.displayClientMessage(Component.literal("Seiva Vital: regeneração fortalecida."), true);
+            if (p.level() instanceof ServerLevel level)
+                level.sendParticles(ParticleTypes.HAPPY_VILLAGER, p.getX(), p.getY()+1, p.getZ(), 12, .45, .6, .45, .03);
+        }
+    }
+
+    private static boolean isPlantFood(ItemStack stack) {
+        return stack.is(Items.APPLE) || stack.is(Items.GOLDEN_APPLE) || stack.is(Items.BREAD)
+                || stack.is(Items.CARROT) || stack.is(Items.GOLDEN_CARROT) || stack.is(Items.POTATO)
+                || stack.is(Items.BAKED_POTATO) || stack.is(Items.BEETROOT) || stack.is(Items.MELON_SLICE)
+                || stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES) || stack.is(Items.CHORUS_FRUIT)
+                || stack.is(Items.DRIED_KELP) || stack.is(Items.COOKIE) || stack.is(Items.PUMPKIN_PIE);
+    }
+
+    @SubscribeEvent
     public static void breakSpeed(PlayerEvent.BreakSpeed event) {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         Race race = RaceState.race(p);
@@ -258,8 +280,7 @@ public final class RaceEvents {
                         }
                     }
                     default -> {
-                        if (nearFlowers(p) && !nearLava(p) && ironArmorPieces(p) < 4
-                                && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
+                        // A Nature fairy regenerates through plant food via fairyPlantFood().
                     }
                 }
             }
@@ -452,7 +473,6 @@ public final class RaceEvents {
     private static void applyHybridPassives(ServerPlayer p) {
         Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);
         if ((a==Race.ELF||b==Race.ELF) && RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,80,0,false,false));
-        if ((a==Race.FAIRY||b==Race.FAIRY)&&nearFlowers(p)&&p.tickCount%200==0) p.heal(1f);
         if (a==Race.THALASSIAN||b==Race.THALASSIAN) p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING,60,0,false,false));
         if ((a==Race.VAMPIRE||b==Race.VAMPIRE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
         if ((a==Race.SATYR||b==Race.SATYR)&&isNaturalGround(p)&&heavyArmorPieces(p)<4) p.addEffect(new MobEffectInstance(MobEffects.JUMP,40,0,false,false));

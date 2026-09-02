@@ -3,6 +3,9 @@ package com.noveris.races.game;
 import com.noveris.races.*;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -131,18 +134,18 @@ public final class RaceAbilities {
                 ? "Mobilidade: " + charges + "/3 cargas restantes."
                 : "Mobilidade esgotada: recarga de " + (mobilityCooldown / 20) + " segundos."), true);
         switch (race) {
-            case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);
+            case ELF -> particles(p, external("irons_spellbooks:wisp", ParticleTypes.HAPPY_VILLAGER), 18, .6, .03);
             case FAIRY -> particles(p, RaceState.fairyAffinity(p) == FairyAffinity.NATURE ? ParticleTypes.HAPPY_VILLAGER
                     : RaceState.fairyAffinity(p) == FairyAffinity.WATER ? ParticleTypes.SPLASH : ParticleTypes.CLOUD, 22, .65, .07);
-            case SATYR -> particles(p, ParticleTypes.COMPOSTER, 20, .65, .05);
-            case THALASSIAN -> particles(p, ParticleTypes.BUBBLE, 24, .7, .08);
-            case NEPHILIM -> particles(p, ParticleTypes.END_ROD, 18, .6, .03);
-            case VAMPIRE -> particles(p, ParticleTypes.SMOKE, 22, .6, .04);
+            case SATYR -> particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 20, .65, .05);
+            case THALASSIAN -> particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 24, .7, .08);
+            case NEPHILIM -> particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 18, .6, .03);
+            case VAMPIRE -> particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 22, .6, .04);
             case HALF_BLOOD -> particles(p, ParticleTypes.ENCHANTED_HIT, 18, .6, .04);
-            case TIEFLING -> particles(p, ParticleTypes.FLAME, 22, .55, .12);
+            case TIEFLING -> particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 22, .55, .12);
             case LYCANTHROPE -> particles(p, ParticleTypes.POOF, 24, .7, .08);
             case DRAGONBORN -> particles(p, ParticleTypes.LARGE_SMOKE, 20, .65, .04);
-            case HARPY -> particles(p, ParticleTypes.CLOUD, 26, .8, .12);
+            case HARPY -> particles(p, external("irons_spellbooks:blastwave", ParticleTypes.CLOUD), 26, .8, .12);
             default -> { }
         }
         RaceGame.sync(p);
@@ -176,8 +179,8 @@ public final class RaceAbilities {
                 cleanseOneHarmfulEffect(p);
                 p.heal(4f);
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
-                particles(p, ParticleTypes.SPLASH, 42, 1.1, .12);
-                particles(p, ParticleTypes.BUBBLE, 24, .8, .08);
+                particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.SPLASH), 42, 1.1, .12);
+                particles(p, external("irons_spellbooks:acid_bubble", ParticleTypes.BUBBLE), 24, .8, .08);
             }
             case AIR -> {
                 Vec3 look = p.getLookAngle().normalize();
@@ -188,15 +191,15 @@ public final class RaceAbilities {
                     target.hurtMarked = true;
                 }
                 p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 120, 0));
-                particles(p, ParticleTypes.CLOUD, 46, 1.3, .16);
+                particles(p, external("irons_spellbooks:blastwave", ParticleTypes.CLOUD), 46, 1.3, .16);
             }
             default -> {
                 for (LivingEntity target : nearby(p, 9)) {
                     if (p.hasLineOfSight(target)) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
                 }
                 p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
-                particles(p, ParticleTypes.HAPPY_VILLAGER, 38, 1.1, .08);
-                particles(p, ParticleTypes.COMPOSTER, 26, .9, .05);
+                particles(p, external("irons_spellbooks:cleanse", ParticleTypes.HAPPY_VILLAGER), 38, 1.1, .08);
+                particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 26, .9, .05);
             }
         }
     }
@@ -216,7 +219,7 @@ public final class RaceAbilities {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 0));
         p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 0));
         RaceState.customLong(p, "AegisWeaknessAt", p.level().getGameTime() + 200);
-        particles(p, ParticleTypes.END_ROD, 38, .9, .03);
+        particles(p, external("irons_spellbooks:absorption", ParticleTypes.END_ROD), 38, .9, .03);
     }
     private static boolean bloodDrain(ServerPlayer p) {
         if (!p.level().isNight()) {
@@ -244,7 +247,7 @@ public final class RaceAbilities {
             p.displayClientMessage(Component.literal("Dano causado, mas sua vida já está cheia."), true);
         }
         if (p.level() instanceof ServerLevel level) {
-            level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, target.getX(), target.getY()+target.getBbHeight()*.6, target.getZ(), 18, .35, .45, .35, .05);
+            level.sendParticles(external("irons_spellbooks:blood", ParticleTypes.DAMAGE_INDICATOR), target.getX(), target.getY()+target.getBbHeight()*.6, target.getZ(), 18, .35, .45, .35, .05);
             Vec3 from=target.getEyePosition(),to=p.getEyePosition();
             for(int step=1;step<=8;step++){
                 Vec3 point=from.lerp(to,step/8.0);
@@ -302,8 +305,8 @@ public final class RaceAbilities {
             target.hurt(p.damageSources().playerAttack(p), 4f);
         }
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 0));
-        particles(p, ParticleTypes.FLAME, 42, 1.2, .08);
-        particles(p, ParticleTypes.SMOKE, 18, 1.0, .04);
+        particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 42, 1.2, .08);
+        particles(p, external("irons_spellbooks:fiery_smoke", ParticleTypes.SMOKE), 18, 1.0, .04);
         p.level().playSound(null, p.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1.0f, .75f);
     }
 
@@ -327,8 +330,8 @@ public final class RaceAbilities {
         Vec3 from = p.getEyePosition();
         Vec3 look = p.getLookAngle();
         DragonLineage lineage = RaceState.lineage(p);
-        ParticleOptions breathParticle = lineage == DragonLineage.FIRE ? ParticleTypes.FLAME
-                : lineage == DragonLineage.FROST ? ParticleTypes.SNOWFLAKE
+        ParticleOptions breathParticle = lineage == DragonLineage.FIRE ? external("irons_spellbooks:dragon_fire", ParticleTypes.FLAME)
+                : lineage == DragonLineage.FROST ? external("irons_spellbooks:snowflake", ParticleTypes.SNOWFLAKE)
                 : new DustParticleOptions(new Vector3f(.18f, .90f, .25f), 1.2f);
         for (LivingEntity target : nearby(p, 8.0)) {
             Vec3 to = target.getEyePosition().subtract(from).normalize();
@@ -345,7 +348,7 @@ public final class RaceAbilities {
                 level.sendParticles(breathParticle, point.x, point.y, point.z, 6, .22, .22, .22, .02);
             }
         }
-        particles(p, ParticleTypes.SMOKE, 14, .5, .02);
+        particles(p, lineage == DragonLineage.VENOM ? external("irons_spellbooks:acid", ParticleTypes.SNEEZE) : ParticleTypes.SMOKE, 14, .5, .02);
         p.level().playSound(null, p.blockPosition(), SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.PLAYERS, 1.0f, .9f);
     }
 
@@ -361,7 +364,7 @@ public final class RaceAbilities {
             Vec3 origin = p.getEyePosition();
             for (int step = 1; step <= 6; step++) {
                 Vec3 point = origin.add(look.scale(step));
-                level.sendParticles(ParticleTypes.CLOUD, point.x, point.y, point.z, 7, .3, .25, .3, .05);
+                level.sendParticles(external("irons_spellbooks:gust", ParticleTypes.CLOUD), point.x, point.y, point.z, 7, .3, .25, .3, .05);
             }
         }
         p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, .9f, .65f);
@@ -388,5 +391,12 @@ public final class RaceAbilities {
     private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {
         if (p.level() instanceof ServerLevel level)
             level.sendParticles(particle, p.getX(), p.getY() + 1, p.getZ(), count, spread, spread, spread, speed);
+    }
+
+    private static ParticleOptions external(String id, ParticleOptions fallback) {
+        try {
+            var type = BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(id));
+            return type instanceof SimpleParticleType simple ? simple : fallback;
+        } catch (Exception ignored) { return fallback; }
     }
 }

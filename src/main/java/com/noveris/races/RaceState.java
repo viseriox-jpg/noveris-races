@@ -42,6 +42,9 @@ public final class RaceState {
         tag.putString("Size", size.name());
         tag.putLong("TrialRemaining", TRIAL_TICKS);
         tag.putLong("PrimaryReady", 0);
+        tag.putLong("MobilityCharges", 3);
+        tag.putLong("MobilityChargeSystem", 1);
+        tag.putLong("MobilityReady", 0);
         tag.putLong("AegisWeaknessAt", 0);
         tag.putLong("DryTicks", 0);
         tag.putLong("HydrationWarning", 0);

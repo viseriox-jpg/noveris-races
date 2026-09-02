@@ -51,7 +51,18 @@ public final class RaceAbilities {
     public static void useMobility(ServerPlayer p) {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
-        if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
+        if (race == Race.NONE) return;
+        if (RaceState.customLong(p, "MobilityChargeSystem") == 0) {
+            RaceState.customLong(p, "MobilityChargeSystem", 1);
+            RaceState.customLong(p, "MobilityCharges", 3);
+            RaceState.setMobilityReady(p, 0);
+        }
+        int charges = (int) RaceState.customLong(p, "MobilityCharges");
+        if (charges <= 0) {
+            if (now < RaceState.mobilityReady(p)) return;
+            charges = 3;
+            RaceState.customLong(p, "MobilityCharges", charges);
+        }
         if (race == Race.FAIRY && nearLava(p)) {
             p.displayClientMessage(Component.literal("A proximidade da lava impede sua mobilidade feérica."), true);
             return;
@@ -81,12 +92,19 @@ public final class RaceAbilities {
             default -> { return; }
         }
         p.hurtMarked = true;
-        p.causeFoodExhaustion(race == Race.LYCANTHROPE && p.level().isNight() ? 3.0f : 1.0f);
-        long mobilityCooldown = switch (race) { case FAIRY -> 280; case THALASSIAN, HARPY -> 240; default -> 300; };
+        if (race == Race.LYCANTHROPE)
+            p.getFoodData().setFoodLevel(Math.max(0, p.getFoodData().getFoodLevel() - 3));
+        else p.causeFoodExhaustion(1.0f);
+        charges--;
+        RaceState.customLong(p, "MobilityCharges", charges);
+        long mobilityCooldown = 900;
         int heavyPieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
         if ((race == Race.SATYR && heavyPieces >= 3) || (race == Race.HARPY && heavyPieces >= 4))
             mobilityCooldown *= 2;
-        RaceState.setMobilityReady(p, now + mobilityCooldown);
+        RaceState.setMobilityReady(p, charges == 0 ? now + mobilityCooldown : 0);
+        p.displayClientMessage(Component.literal(charges > 0
+                ? "Mobilidade: " + charges + "/3 cargas restantes."
+                : "Mobilidade esgotada: recarga de " + (mobilityCooldown / 20) + " segundos."), true);
         switch (race) {
             case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);
             case FAIRY -> particles(p, ParticleTypes.END_ROD, 20, .55, .04);
@@ -245,7 +263,7 @@ public final class RaceAbilities {
         p.level().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1.2f, .8f);
         particles(p, ParticleTypes.POOF, 34, 1.5, .08);
         particles(p, ParticleTypes.CRIT, 22, 1.2, .12);
-        p.causeFoodExhaustion(p.level().isNight() ? 2f : 1f);
+        p.getFoodData().setFoodLevel(Math.max(0, p.getFoodData().getFoodLevel() - 3));
     }
 
     private static boolean nearLava(ServerPlayer p) {

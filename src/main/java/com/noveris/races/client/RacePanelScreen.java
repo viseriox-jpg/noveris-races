@@ -99,7 +99,11 @@ public final class RacePanelScreen extends NoverisScreen {
             g.drawString(font, "[" + ClientEvents.PRIMARY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.primaryCooldown), x, y + 56, MUTED, false);
             g.drawString(font, "◆ " + mobility(race), x, y + 88, race.color, false);
             g.drawString(font, mobilityInfo(race), x, y + 106, LILAC, false);
-            g.drawString(font, "[" + ClientEvents.MOBILITY.getTranslatedKeyMessage().getString() + "]  RECARGA " + seconds(ClientRaceState.mobilityCooldown), x, y + 124, MUTED, false);
+            String mobilityState = ClientRaceState.mobilityCooldown > 0
+                    ? "RECARGA " + seconds(ClientRaceState.mobilityCooldown)
+                    : "CARGAS " + ClientRaceState.mobilityCharges + "/3";
+            g.drawString(font, "[" + ClientEvents.MOBILITY.getTranslatedKeyMessage().getString() + "]  " + mobilityState,
+                    x, y + 124, MUTED, false);
         }
         g.drawString(font, "FRAQUEZAS E LIMITAÇÕES", right, y, DANGER, false);
         String[] weak = weaknesses(race);

@@ -66,6 +66,14 @@ public final class RaceEvents {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         RaceState.tickTrial(p);
         Race race = RaceState.race(p);
+        if (RaceState.customLong(p, "MobilityChargeSystem") == 1
+                && RaceState.customLong(p, "MobilityCharges") <= 0
+                && RaceState.mobilityReady(p) > 0
+                && p.level().getGameTime() >= RaceState.mobilityReady(p)) {
+            RaceState.customLong(p, "MobilityCharges", 3);
+            RaceState.setMobilityReady(p, 0);
+            p.displayClientMessage(Component.literal("Mobilidade recarregada: 3/3 cargas."), true);
+        }
         updateScale(p);
         handleHeavyArmorMobility(p, race);
         if (p.tickCount % 20 == 0) {

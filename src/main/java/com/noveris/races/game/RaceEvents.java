@@ -74,7 +74,7 @@ public final class RaceEvents {
         if (race == Race.NEPHILIM && p.isOnFire() && p.tickCount % 40 == 0) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
         tickRacialHunger(p, race);
-        if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 3)
+        if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 4)
             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 8, 0, false, false));
     }
 
@@ -84,11 +84,11 @@ public final class RaceEvents {
                 || RaceState.customLong(p, "HeavyMobilityBlocked") != 1) return;
         Race race = RaceState.race(p);
         var effect = event.getEffectInstance().getEffect();
-        boolean blocked = race == Race.SATYR
-                && (effect.equals(MobEffects.MOVEMENT_SPEED) || effect.equals(MobEffects.JUMP));
-        blocked |= race == Race.HARPY
-                && (effect.equals(MobEffects.MOVEMENT_SPEED)
-                || effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING));
+        int pieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
+        boolean blocked = race == Race.SATYR && (effect.equals(MobEffects.MOVEMENT_SPEED)
+                || pieces >= 4 && effect.equals(MobEffects.JUMP));
+        blocked |= race == Race.HARPY && (effect.equals(MobEffects.MOVEMENT_SPEED)
+                || pieces >= 4 && (effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING)));
         if (blocked) event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
 
@@ -210,7 +210,11 @@ public final class RaceEvents {
                 if (nearFlowers(p) && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
             }
             case SATYR -> {
-                if (isNaturalGround(p) && heavyArmorPieces(p) < 3) { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 0, false, false)); }
+                int heavy = heavyArmorPieces(p);
+                if (isNaturalGround(p)) {
+                    if (heavy < 3) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
+                    if (heavy < 4) p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 0, false, false));
+                }
                 else if (p.getY() < 50 && !p.level().canSeeSky(p.blockPosition())) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
                 if (isForest(p) && p.tickCount % 240 == 0 && !RaceState.inCombat(p)) p.heal(1f);
             }
@@ -257,7 +261,9 @@ public final class RaceEvents {
                 if (underground) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
                 else if (p.getY() > 100 && p.level().canSeeSky(p.blockPosition()))
                     p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
-                if (heavyArmorPieces(p) < 3) p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 1, false, false));
+                int heavy = heavyArmorPieces(p);
+                if (heavy < 3) p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 1, false, false));
+                else if (heavy == 3) p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 0, false, false));
             }
             default -> {}
         }
@@ -289,20 +295,19 @@ public final class RaceEvents {
         boolean blocked = susceptible && pieces >= 3;
         boolean wasBlocked = RaceState.customLong(p, "HeavyMobilityBlocked") == 1;
 
+        RaceState.customLong(p, "HeavyArmorPieces", pieces);
         if (blocked) {
-            p.removeEffect(MobEffects.JUMP);
-            if (race == Race.SATYR) {
-                p.removeEffect(MobEffects.MOVEMENT_SPEED);
-                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
-            } else {
-                p.removeEffect(MobEffects.MOVEMENT_SPEED);
-                p.removeEffect(MobEffects.SLOW_FALLING);
+            p.removeEffect(MobEffects.MOVEMENT_SPEED);
+            if (pieces >= 4) {
+                p.removeEffect(MobEffects.JUMP);
+                if (race == Race.HARPY) p.removeEffect(MobEffects.SLOW_FALLING);
             }
         }
 
         if (blocked && (p.tickCount % 40 == 0 || !wasBlocked))
-            p.displayClientMessage(Component.literal("⚠ Mobilidade racial reduzida: armadura pesada ("
-                    + pieces + "/4 peças)"), true);
+            p.displayClientMessage(Component.literal(pieces == 3
+                    ? "⚠ Mobilidade racial parcialmente reduzida: armadura pesada (3/4 peças)"
+                    : "⚠ Mobilidade racial severamente reduzida: armadura pesada (4/4 peças)"), true);
         else if (!blocked && wasBlocked)
             p.displayClientMessage(Component.literal("Mobilidade racial restaurada."), true);
 

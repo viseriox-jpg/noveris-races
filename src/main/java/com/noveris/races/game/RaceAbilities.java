@@ -47,11 +47,6 @@ public final class RaceAbilities {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
-        if ((race == Race.SATYR || race == Race.HARPY)
-                && RaceState.customLong(p, "HeavyMobilityBlocked") == 1) {
-            p.displayClientMessage(Component.literal("A armadura pesada bloqueia sua habilidade de mobilidade."), true);
-            return;
-        }
         Vec3 look = p.getLookAngle();
         switch (race) {
             case ELF -> {
@@ -79,6 +74,9 @@ public final class RaceAbilities {
         p.hurtMarked = true;
         p.causeFoodExhaustion(1.0f);
         long mobilityCooldown = switch (race) { case FAIRY -> 280; case THALASSIAN, HARPY -> 240; default -> 300; };
+        int heavyPieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
+        if ((race == Race.SATYR && heavyPieces >= 3) || (race == Race.HARPY && heavyPieces >= 4))
+            mobilityCooldown *= 2;
         RaceState.setMobilityReady(p, now + mobilityCooldown);
         switch (race) {
             case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);

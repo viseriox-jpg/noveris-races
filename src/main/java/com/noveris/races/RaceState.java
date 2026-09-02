@@ -33,13 +33,18 @@ public final class RaceState {
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, Race ancestryA, Race ancestryB, RaceSize size) {
         CompoundTag tag = root(p);
         tag.putString("Race", race.name());
-        tag.putString("Lineage", race == Race.DRAGONBORN ? lineage.name() : DragonLineage.NONE.name());
+        boolean hybridDragon = race == Race.HALF_BLOOD
+                && (ancestryA == Race.DRAGONBORN || ancestryB == Race.DRAGONBORN);
+        tag.putString("Lineage", race == Race.DRAGONBORN || hybridDragon ? lineage.name() : DragonLineage.NONE.name());
         tag.putBoolean("Confirmed", false);
         tag.putString("AncestryA", race == Race.HALF_BLOOD ? ancestryA.name() : Race.NONE.name());
         tag.putString("AncestryB", race == Race.HALF_BLOOD ? ancestryB.name() : Race.NONE.name());
         tag.putString("Size", size.name());
         tag.putLong("TrialRemaining", TRIAL_TICKS);
         tag.putLong("PrimaryReady", 0);
+        tag.putLong("AegisWeaknessAt", 0);
+        tag.putLong("DryTicks", 0);
+        tag.putLong("HydrationWarning", 0);
         tag.putLong("MobilityReady", 0);
         tag.putBoolean("VisionEnabled", true);
     }

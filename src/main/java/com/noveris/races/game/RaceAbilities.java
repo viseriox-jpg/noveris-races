@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
@@ -24,6 +25,10 @@ public final class RaceAbilities {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
         if (race == Race.NONE || now < RaceState.primaryReady(p)) return;
+        if (race == Race.FAIRY && nearLava(p)) {
+            p.displayClientMessage(Component.literal("A proximidade da lava impede sua magia feérica."), true);
+            return;
+        }
         int cooldown;
         switch (race) {
             case ELF -> { piercingShot(p); cooldown = 300; }
@@ -47,6 +52,10 @@ public final class RaceAbilities {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
         if (race == Race.NONE || now < RaceState.mobilityReady(p)) return;
+        if (race == Race.FAIRY && nearLava(p)) {
+            p.displayClientMessage(Component.literal("A proximidade da lava impede sua mobilidade feérica."), true);
+            return;
+        }
         Vec3 look = p.getLookAngle();
         switch (race) {
             case ELF -> {
@@ -72,7 +81,7 @@ public final class RaceAbilities {
             default -> { return; }
         }
         p.hurtMarked = true;
-        p.causeFoodExhaustion(1.0f);
+        p.causeFoodExhaustion(race == Race.LYCANTHROPE && p.level().isNight() ? 3.0f : 1.0f);
         long mobilityCooldown = switch (race) { case FAIRY -> 280; case THALASSIAN, HARPY -> 240; default -> 300; };
         int heavyPieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
         if ((race == Race.SATYR && heavyPieces >= 3) || (race == Race.HARPY && heavyPieces >= 4))
@@ -135,8 +144,10 @@ public final class RaceAbilities {
     }
     private static void supernaturalAegis(ServerPlayer p) {
         cleanseOneHarmfulEffect(p);
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 80, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 80, 0));
+        p.getFoodData().setFoodLevel(Math.max(0, p.getFoodData().getFoodLevel() - 2));
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 0));
+        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 0));
+        RaceState.customLong(p, "AegisWeaknessAt", p.level().getGameTime() + 200);
         particles(p, ParticleTypes.END_ROD, 38, .9, .03);
     }
     private static boolean bloodDrain(ServerPlayer p) {
@@ -234,7 +245,14 @@ public final class RaceAbilities {
         p.level().playSound(null, p.blockPosition(), SoundEvents.WOLF_HOWL, SoundSource.PLAYERS, 1.2f, .8f);
         particles(p, ParticleTypes.POOF, 34, 1.5, .08);
         particles(p, ParticleTypes.CRIT, 22, 1.2, .12);
-        p.causeFoodExhaustion(1f);
+        p.causeFoodExhaustion(p.level().isNight() ? 2f : 1f);
+    }
+
+    private static boolean nearLava(ServerPlayer p) {
+        for (var pos : net.minecraft.core.BlockPos.betweenClosed(
+                p.blockPosition().offset(-5, -3, -5), p.blockPosition().offset(5, 3, 5)))
+            if (p.level().getFluidState(pos).is(FluidTags.LAVA)) return true;
+        return false;
     }
 
     private static void dragonBreath(ServerPlayer p) {

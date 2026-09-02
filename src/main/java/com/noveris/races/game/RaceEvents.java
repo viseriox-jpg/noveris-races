@@ -8,6 +8,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
@@ -75,8 +76,14 @@ public final class RaceEvents {
         }
         if (p.tickCount % 40 == 0) ambientParticles(p, race);
         if (race == Race.TIEFLING && p.isOnFire()) p.clearFire();
-        if (race == Race.NEPHILIM && p.isOnFire() && p.tickCount % 40 == 0) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
+        else if (race == Race.HALF_BLOOD && (RaceState.ancestryA(p) == Race.THALASSIAN
+                || RaceState.ancestryB(p) == Race.THALASSIAN)) tickHybridHydration(p);
+        long aegisWeakness = RaceState.customLong(p, "AegisWeaknessAt");
+        if (race == Race.NEPHILIM && aegisWeakness > 0 && p.level().getGameTime() >= aegisWeakness) {
+            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
+            RaceState.customLong(p, "AegisWeaknessAt", 0);
+        }
         tickRacialHunger(p, race);
         if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 4)
             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 8, 0, false, false));
@@ -110,7 +117,7 @@ public final class RaceEvents {
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.IS_FALL)
                 && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil")) event.setAmount(event.getAmount() * .35f);
         if (race == Race.FAIRY && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity fairyAttacker
-                && fairyAttacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount() * 1.25f);
+                && fairyAttacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount() * 1.30f);
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * .8f);
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.6f);
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
@@ -157,6 +164,11 @@ public final class RaceEvents {
                 && p.getFoodData().getFoodLevel() >= 18 && event.getAmount() <= 1.0f)
             event.setAmount(event.getAmount() * .75f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
+        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.HALF_BLOOD) {
+            Race a = RaceState.ancestryA(p), b = RaceState.ancestryB(p);
+            if (a == Race.NEPHILIM || b == Race.NEPHILIM) event.setAmount(event.getAmount() * .90f);
+            if (a == Race.TIEFLING || b == Race.TIEFLING) event.setAmount(event.getAmount() * .88f);
+        }
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.THALASSIAN
                 && RaceState.customLong(p, "DryTicks") > 6000) event.setAmount(event.getAmount() * .6f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.FAIRY
@@ -222,7 +234,8 @@ public final class RaceEvents {
                 if (isForest(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
             }
             case FAIRY -> {
-                if (nearFlowers(p) && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
+                if (nearFlowers(p) && !nearLava(p) && ironArmorPieces(p) < 3
+                        && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
             }
             case SATYR -> {
                 int heavy = heavyArmorPieces(p);
@@ -253,8 +266,10 @@ public final class RaceEvents {
             case LYCANTHROPE -> {
                 if (p.level().isNight()) {
                     p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 0, false, false));
-                    p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
-                    if (p.getFoodData().getFoodLevel() > 6 && p.getHealth() < p.getMaxHealth()
+                    if (p.getFoodData().getFoodLevel() >= 6)
+                        p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
+                    else p.removeEffect(MobEffects.MOVEMENT_SPEED);
+                    if (p.getFoodData().getFoodLevel() >= 6 && p.getHealth() < p.getMaxHealth()
                             && p.tickCount % 160 == 0) {
                         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0, false, false));
                         if (p.level() instanceof ServerLevel level)
@@ -287,6 +302,14 @@ public final class RaceEvents {
     private static int heavyArmorPieces(ServerPlayer p) {
         int count = 0;
         for (var stack : p.getArmorSlots()) if (isHeavyArmor(stack)) count++;
+        return count;
+    }
+
+    private static int ironArmorPieces(ServerPlayer p) {
+        int count = 0;
+        for (var stack : p.getArmorSlots())
+            if (stack.is(Items.IRON_HELMET) || stack.is(Items.IRON_CHESTPLATE)
+                    || stack.is(Items.IRON_LEGGINGS) || stack.is(Items.IRON_BOOTS)) count++;
         return count;
     }
 
@@ -341,13 +364,25 @@ public final class RaceEvents {
             if (p.level().getBlockState(pos).is(BlockTags.FLOWERS)) return true;
         return false;
     }
+    private static boolean nearLava(ServerPlayer p) {
+        for (var pos : net.minecraft.core.BlockPos.betweenClosed(
+                p.blockPosition().offset(-5,-3,-5), p.blockPosition().offset(5,3,5)))
+            if (p.level().getFluidState(pos).is(FluidTags.LAVA)) return true;
+        return false;
+    }
     private static void tickHydration(ServerPlayer p) {
+        tickHydration(p, false);
+    }
+    private static void tickHybridHydration(ServerPlayer p) {
+        tickHydration(p, true);
+    }
+    private static void tickHydration(ServerPlayer p, boolean hybrid) {
         final long maximum = 9600;
         long before = RaceState.customLong(p, "DryTicks");
         long dry;
         if (p.isInWater()) dry = Math.max(0, before - 32);
         else if (p.isInWaterOrRain()) dry = Math.max(0, before - 4);
-        else dry = Math.min(maximum, before + 1);
+        else dry = Math.min(maximum, before + (hybrid && p.tickCount % 2 != 0 ? 0 : 1));
         RaceState.customLong(p, "DryTicks", dry);
         if (dry >= 3600) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
         if (dry >= 6000) p.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
@@ -394,10 +429,15 @@ public final class RaceEvents {
         if ((a==Race.FAIRY||b==Race.FAIRY)&&nearFlowers(p)&&p.tickCount%200==0) p.heal(1f);
         if (a==Race.THALASSIAN||b==Race.THALASSIAN) p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING,60,0,false,false));
         if ((a==Race.VAMPIRE||b==Race.VAMPIRE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
-        if ((a==Race.SATYR||b==Race.SATYR)&&isNaturalGround(p)) p.addEffect(new MobEffectInstance(MobEffects.JUMP,40,0,false,false));
+        if ((a==Race.SATYR||b==Race.SATYR)&&isNaturalGround(p)&&heavyArmorPieces(p)<4) p.addEffect(new MobEffectInstance(MobEffects.JUMP,40,0,false,false));
         if (a==Race.HUMAN||b==Race.HUMAN) p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED,40,0,false,false));
         if ((a==Race.NEPHILIM||b==Race.NEPHILIM)&&p.getHealth()<p.getMaxHealth()*.25f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,40,0,false,false));
-        if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
+        if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) {
+            p.causeFoodExhaustion(.018f);
+            if (p.getFoodData().getFoodLevel() >= 6)
+                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
+            else p.removeEffect(MobEffects.MOVEMENT_SPEED);
+        }
         if ((a==Race.HARPY||b==Race.HARPY)&&!p.onGround()&&p.getDeltaMovement().y<-.15) p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,8,0,false,false));
     }
     private static void applyHybridDamage(ServerPlayer p, LivingIncomingDamageEvent event) {
@@ -406,14 +446,26 @@ public final class RaceEvents {
         if (has.test(Race.TIEFLING)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*.55f);
         if (has.test(Race.NEPHILIM)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*.8f);
         if (has.test(Race.DRAGONBORN)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount()*.94f);
-        if (has.test(Race.ELF)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount()*1.06f);
+        if (has.test(Race.DRAGONBORN)) {
+            DragonLineage lineage = RaceState.lineage(p);
+            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING))
+                event.setAmount(event.getAmount()*1.15f);
+            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE))
+                event.setAmount(event.getAmount()*1.15f);
+            if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
+                event.setAmount(event.getAmount()*1.15f);
+        }
+        if (has.test(Race.ELF)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity
+                && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)) event.setAmount(event.getAmount()*1.05f);
         if (has.test(Race.THALASSIAN)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.15f);
-        if (has.test(Race.VAMPIRE)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.18f);
+        if (has.test(Race.VAMPIRE)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.15f);
         if (has.test(Race.HARPY)&&event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount()*.6f);
+        else if (has.test(Race.HARPY)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
+            event.setAmount(event.getAmount()*1.06f);
         if (has.test(Race.FAIRY)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount()*1.12f);
+                && attacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount()*1.15f);
         if (has.test(Race.LYCANTHROPE)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount()*1.17f);
+                && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount()*1.25f);
     }
 
     private static void ambientParticles(ServerPlayer p, Race race) {

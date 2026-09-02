@@ -87,7 +87,8 @@ public final class RaceEvents {
         boolean blocked = race == Race.SATYR
                 && (effect.equals(MobEffects.MOVEMENT_SPEED) || effect.equals(MobEffects.JUMP));
         blocked |= race == Race.HARPY
-                && (effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING));
+                && (effect.equals(MobEffects.MOVEMENT_SPEED)
+                || effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING));
         if (blocked) event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
 
@@ -178,7 +179,8 @@ public final class RaceEvents {
         if (speed != null) {
             double value = .1;
             if (race == Race.DRAGONBORN) value = .092;
-            if (race == Race.HARPY) value = .112;
+            if (race == Race.HARPY)
+                value = RaceState.customLong(p, "HeavyMobilityBlocked") == 1 ? .1 : .112;
             if (race == Race.LYCANTHROPE && p.level().isNight()) value = .11;
             speed.setBaseValue(value);
         }
@@ -293,6 +295,7 @@ public final class RaceEvents {
                 p.removeEffect(MobEffects.MOVEMENT_SPEED);
                 p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
             } else {
+                p.removeEffect(MobEffects.MOVEMENT_SPEED);
                 p.removeEffect(MobEffects.SLOW_FALLING);
             }
         }

@@ -169,7 +169,7 @@ public final class RaceEvents {
                 || !event.getItem().is(Items.POTION)) return;
         var contents = event.getItem().get(DataComponents.POTION_CONTENTS);
         if (contents == null || !contents.is(Potions.WATER)) return;
-        long dry = Math.max(0, RaceState.customLong(p, "DryTicks") - 2880);
+        long dry = Math.max(0, RaceState.customLong(p, "DryTicks") - 1920);
         RaceState.customLong(p, "DryTicks", dry);
         p.displayClientMessage(Component.literal("Hidratação restaurada em 20%."), true);
     }
@@ -342,15 +342,15 @@ public final class RaceEvents {
         return false;
     }
     private static void tickHydration(ServerPlayer p) {
-        final long maximum = 14400;
+        final long maximum = 9600;
         long before = RaceState.customLong(p, "DryTicks");
         long dry;
-        if (p.isInWater()) dry = Math.max(0, before - 48);
+        if (p.isInWater()) dry = Math.max(0, before - 32);
         else if (p.isInWaterOrRain()) dry = Math.max(0, before - 4);
         else dry = Math.min(maximum, before + 1);
         RaceState.customLong(p, "DryTicks", dry);
-        if (dry >= 6000) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
-        if (dry >= 10800) p.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
+        if (dry >= 3600) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
+        if (dry >= 6000) p.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
         if (dry >= maximum) {
             p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
             if (p.tickCount % 200 == 0 && p.getHealth() > 2f) {
@@ -361,7 +361,7 @@ public final class RaceEvents {
                         net.minecraft.sounds.SoundSource.PLAYERS, .55f, 1.35f);
             }
         }
-        int warning = dry >= maximum ? 3 : dry >= 10800 ? 2 : dry >= 7200 ? 1 : 0;
+        int warning = dry >= maximum ? 3 : dry >= 7200 ? 2 : dry >= 4800 ? 1 : 0;
         int oldWarning = (int) RaceState.customLong(p, "HydrationWarning");
         if (warning > oldWarning) {
             String text = warning == 1 ? "Hidratação em 50%." : warning == 2

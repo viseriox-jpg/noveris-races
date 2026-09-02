@@ -242,7 +242,7 @@ public final class RaceEvents {
                 if (isForest(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
             }
             case FAIRY -> {
-                if (nearFlowers(p) && !nearLava(p) && ironArmorPieces(p) < 3
+                if (nearFlowers(p) && !nearLava(p) && ironArmorPieces(p) < 4
                         && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
             }
             case SATYR -> {

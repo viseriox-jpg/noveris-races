@@ -32,7 +32,7 @@ public final class RaceAbilities {
         int cooldown;
         switch (race) {
             case ELF -> { piercingShot(p); cooldown = 300; }
-            case FAIRY -> { faeSense(p); cooldown = 300; }
+            case FAIRY -> { fairyPower(p); cooldown = 300; }
             case SATYR -> { woodlandVigor(p); cooldown = 300; }
             case THALASSIAN -> { tidalGuard(p); cooldown = 300; }
             case NEPHILIM -> { supernaturalAegis(p); cooldown = 300; }
@@ -63,6 +63,12 @@ public final class RaceAbilities {
             charges = 3;
             RaceState.customLong(p, "MobilityCharges", charges);
         }
+        long burstReady = RaceState.customLong(p, "MobilityBurstReady");
+        if (now < burstReady) {
+            long tenths = (burstReady - now + 1) / 2;
+            p.displayClientMessage(Component.literal("Aguarde " + (tenths / 10.0) + "s para usar outra carga."), true);
+            return;
+        }
         if (race == Race.FAIRY && nearLava(p)) {
             p.displayClientMessage(Component.literal("A proximidade da lava impede sua mobilidade feérica."), true);
             return;
@@ -76,7 +82,25 @@ public final class RaceAbilities {
                 p.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 10, 0, false, false));
             }
-            case FAIRY -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .55, .72, look.z * .55); RaceState.customLong(p,"FaeLandingUntil",now+100); }
+            case FAIRY -> {
+                switch (RaceState.fairyAffinity(p)) {
+                    case WATER -> {
+                        if (!p.isInWater() && !p.onGround()) return;
+                        double force = p.isInWater() ? 1.45 : .72;
+                        p.setDeltaMovement(look.x * force, p.isInWater() ? look.y * 1.05 : .28, look.z * force);
+                    }
+                    case AIR -> {
+                        if (!p.onGround()) return;
+                        p.setDeltaMovement(look.x * .72, .78, look.z * .72);
+                        RaceState.customLong(p,"FaeLandingUntil",now+100);
+                    }
+                    default -> {
+                        if (!p.onGround()) return;
+                        p.setDeltaMovement(look.x * .55, .66, look.z * .55);
+                        RaceState.customLong(p,"FaeLandingUntil",now+100);
+                    }
+                }
+            }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
             case THALASSIAN -> { if (!p.isInWater() && !p.onGround()) return; p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75)); }
             case NEPHILIM -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .7, .62, look.z * .7); }
@@ -97,6 +121,7 @@ public final class RaceAbilities {
         else p.causeFoodExhaustion(1.0f);
         charges--;
         RaceState.customLong(p, "MobilityCharges", charges);
+        RaceState.customLong(p, "MobilityBurstReady", charges > 0 ? now + 60 : 0);
         long mobilityCooldown = 900;
         int heavyPieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
         if ((race == Race.SATYR && heavyPieces >= 3) || (race == Race.HARPY && heavyPieces >= 4))
@@ -107,7 +132,8 @@ public final class RaceAbilities {
                 : "Mobilidade esgotada: recarga de " + (mobilityCooldown / 20) + " segundos."), true);
         switch (race) {
             case ELF -> particles(p, ParticleTypes.HAPPY_VILLAGER, 18, .6, .03);
-            case FAIRY -> particles(p, ParticleTypes.END_ROD, 20, .55, .04);
+            case FAIRY -> particles(p, RaceState.fairyAffinity(p) == FairyAffinity.NATURE ? ParticleTypes.HAPPY_VILLAGER
+                    : RaceState.fairyAffinity(p) == FairyAffinity.WATER ? ParticleTypes.SPLASH : ParticleTypes.CLOUD, 22, .65, .07);
             case SATYR -> particles(p, ParticleTypes.COMPOSTER, 20, .65, .05);
             case THALASSIAN -> particles(p, ParticleTypes.BUBBLE, 24, .7, .08);
             case NEPHILIM -> particles(p, ParticleTypes.END_ROD, 18, .6, .03);
@@ -144,11 +170,35 @@ public final class RaceAbilities {
         p.level().playSound(null, p.blockPosition(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1f, 1.35f);
     }
 
-    private static void faeSense(ServerPlayer p) {
-        for (LivingEntity target : nearby(p, 18)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 140, 0));
-        cleanseOneHarmfulEffect(p);
-        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
-        particles(p, ParticleTypes.END_ROD, 35, 1.1, .04);
+    private static void fairyPower(ServerPlayer p) {
+        switch (RaceState.fairyAffinity(p)) {
+            case WATER -> {
+                cleanseOneHarmfulEffect(p);
+                p.heal(4f);
+                p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
+                particles(p, ParticleTypes.SPLASH, 42, 1.1, .12);
+                particles(p, ParticleTypes.BUBBLE, 24, .8, .08);
+            }
+            case AIR -> {
+                Vec3 look = p.getLookAngle().normalize();
+                for (LivingEntity target : nearby(p, 8)) {
+                    Vec3 toward = target.position().subtract(p.position()).normalize();
+                    if (toward.dot(look) < .25 || !p.hasLineOfSight(target)) continue;
+                    target.push(toward.x * 1.15, .28, toward.z * 1.15);
+                    target.hurtMarked = true;
+                }
+                p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 120, 0));
+                particles(p, ParticleTypes.CLOUD, 46, 1.3, .16);
+            }
+            default -> {
+                for (LivingEntity target : nearby(p, 9)) {
+                    if (p.hasLineOfSight(target)) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+                }
+                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
+                particles(p, ParticleTypes.HAPPY_VILLAGER, 38, 1.1, .08);
+                particles(p, ParticleTypes.COMPOSTER, 26, .9, .05);
+            }
+        }
     }
     private static void woodlandVigor(ServerPlayer p) {
         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));

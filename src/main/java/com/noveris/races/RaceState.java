@@ -16,6 +16,10 @@ public final class RaceState {
 
     public static Race race(ServerPlayer p) { return Race.parse(root(p).getString("Race")); }
     public static DragonLineage lineage(ServerPlayer p) { return DragonLineage.parse(root(p).getString("Lineage")); }
+    public static FairyAffinity fairyAffinity(ServerPlayer p) {
+        FairyAffinity affinity = FairyAffinity.parse(root(p).getString("FairyAffinity"));
+        return affinity == FairyAffinity.NONE && race(p) == Race.FAIRY ? FairyAffinity.NATURE : affinity;
+    }
     public static Race ancestryA(ServerPlayer p) { return Race.parse(root(p).getString("AncestryA")); }
     public static Race ancestryB(ServerPlayer p) { return Race.parse(root(p).getString("AncestryB")); }
     public static RaceSize size(ServerPlayer p) { return RaceSize.parse(root(p).getString("Size")); }
@@ -27,15 +31,18 @@ public final class RaceState {
     public static boolean visionEnabled(ServerPlayer p) { CompoundTag tag=root(p); return !tag.contains("VisionEnabled") || tag.getBoolean("VisionEnabled"); }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage) {
-        beginTrial(p, race, lineage, Race.NONE, Race.NONE, RaceSize.MEDIUM);
+        beginTrial(p, race, lineage, FairyAffinity.NATURE,
+                race == Race.HALF_BLOOD ? Race.HUMAN : Race.NONE,
+                race == Race.HALF_BLOOD ? Race.ELF : Race.NONE, RaceSize.MEDIUM);
     }
 
-    public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, Race ancestryA, Race ancestryB, RaceSize size) {
+    public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, FairyAffinity fairyAffinity, Race ancestryA, Race ancestryB, RaceSize size) {
         CompoundTag tag = root(p);
         tag.putString("Race", race.name());
         boolean hybridDragon = race == Race.HALF_BLOOD
                 && (ancestryA == Race.DRAGONBORN || ancestryB == Race.DRAGONBORN);
         tag.putString("Lineage", race == Race.DRAGONBORN || hybridDragon ? lineage.name() : DragonLineage.NONE.name());
+        tag.putString("FairyAffinity", race == Race.FAIRY ? fairyAffinity.name() : FairyAffinity.NONE.name());
         tag.putBoolean("Confirmed", false);
         tag.putString("AncestryA", race == Race.HALF_BLOOD ? ancestryA.name() : Race.NONE.name());
         tag.putString("AncestryB", race == Race.HALF_BLOOD ? ancestryB.name() : Race.NONE.name());
@@ -45,10 +52,10 @@ public final class RaceState {
         tag.putLong("MobilityCharges", 3);
         tag.putLong("MobilityChargeSystem", 1);
         tag.putLong("MobilityReady", 0);
+        tag.putLong("MobilityBurstReady", 0);
         tag.putLong("AegisWeaknessAt", 0);
         tag.putLong("DryTicks", 0);
         tag.putLong("HydrationWarning", 0);
-        tag.putLong("MobilityReady", 0);
         tag.putBoolean("VisionEnabled", true);
     }
 
@@ -60,6 +67,7 @@ public final class RaceState {
         CompoundTag tag = root(p);
         tag.putString("Race", Race.NONE.name());
         tag.putString("Lineage", DragonLineage.NONE.name());
+        tag.putString("FairyAffinity", FairyAffinity.NONE.name());
         tag.putBoolean("Confirmed", false);
         tag.putString("AncestryA", Race.NONE.name());
         tag.putString("AncestryB", Race.NONE.name());
@@ -67,6 +75,7 @@ public final class RaceState {
         tag.putLong("TrialRemaining", 0);
         tag.putLong("PrimaryReady", 0);
         tag.putLong("MobilityReady", 0);
+        tag.putLong("MobilityBurstReady", 0);
         tag.putBoolean("VisionEnabled", true);
     }
 

@@ -37,15 +37,15 @@ public final class ClientEvents {
         @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null) return;
-            if (++syncTimer >= 40) { syncTimer = 0; PacketDistributor.sendToServer(new ActionPayload("sync", "", "", "", "", "")); }
+            if (++syncTimer >= 40) { syncTimer = 0; PacketDistributor.sendToServer(new ActionPayload("sync", "", "", "", "", "", "")); }
             if (ClientRaceState.race == Race.NONE && !(mc.screen instanceof RaceSelectionScreen))
                 mc.setScreen(new RaceSelectionScreen());
             else if (!ClientRaceState.confirmed && ClientRaceState.race != Race.NONE && ClientRaceState.trial <= 0 && !(mc.screen instanceof RacePanelScreen))
                 mc.setScreen(new RacePanelScreen(true));
             while (PANEL.consumeClick()) mc.setScreen(ClientRaceState.race == Race.NONE ? new RaceSelectionScreen() : new RacePanelScreen(false));
-            while (PRIMARY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("primary", "", "", "", "", ""));
-            while (MOBILITY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("mobility", "", "", "", "", ""));
-            while (VISION.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("vision", "", "", "", "", ""));
+            while (PRIMARY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("primary", "", "", "", "", "", ""));
+            while (MOBILITY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("mobility", "", "", "", "", "", ""));
+            while (VISION.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("vision", "", "", "", "", "", ""));
         }
     }
 }

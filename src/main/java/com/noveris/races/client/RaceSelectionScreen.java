@@ -10,7 +10,8 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private RaceRealm realm = RaceRealm.ORVANNIS;
     private Race selected = Race.ELF;
     private DragonLineage lineage = DragonLineage.FIRE;
-    private Race ancestryA = Race.ELF, ancestryB = Race.HUMAN;
+    private FairyAffinity fairyAffinity = FairyAffinity.NATURE;
+    private Race ancestryA = Race.HUMAN, ancestryB = Race.ELF;
     private RaceSize size = RaceSize.MEDIUM;
     private boolean confirming;
     private int actionX, actionY, actionW, actionH, specialX, specialY, specialW, specialH;
@@ -70,9 +71,13 @@ public final class RaceSelectionScreen extends NoverisScreen {
             option(g,specialX,specialY,"FOGO",lineage==DragonLineage.FIRE,0xFFFF8A4B,mx,my);
             option(g,specialX+specialW+6,specialY,"GELO",lineage==DragonLineage.FROST,0xFF80D9FF,mx,my);
             option(g,specialX+(specialW+6)*2,specialY,"VENENO",lineage==DragonLineage.VENOM,0xFF86D48A,mx,my);
+        }else if(selected==Race.FAIRY){
+            option(g,specialX,specialY,"NATUREZA",fairyAffinity==FairyAffinity.NATURE,0xFF8ED081,mx,my);
+            option(g,specialX+specialW+6,specialY,"ÁGUA",fairyAffinity==FairyAffinity.WATER,0xFF75D6F5,mx,my);
+            option(g,specialX+(specialW+6)*2,specialY,"AR",fairyAffinity==FairyAffinity.AIR,0xFFE8F3F5,mx,my);
         }else if(selected==Race.HALF_BLOOD){
             specialW=128;
-            option(g,specialX,specialY,"1ª: "+ancestryA.title.toUpperCase(),true,ancestryA.color,mx,my);
+            option(g,specialX,specialY,"1ª: HUMANO (FIXA)",true,Race.HUMAN.color,mx,my);
             option(g,specialX+specialW+6,specialY,"2ª: "+ancestryB.title.toUpperCase(),true,ancestryB.color,mx,my);
             if (ancestryA==Race.DRAGONBORN||ancestryB==Race.DRAGONBORN)
                 option(g,specialX+(specialW+6)*2,specialY,lineage.title.toUpperCase(),true,0xFFFFC84A,mx,my);
@@ -98,7 +103,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
         int w=430,h=124,x=left+(panelWidth-w)/2,y=top+(panelHeight-h)/2;
         g.fill(x-3,y-3,x+w+3,y+h+3,BORDER);g.fill(x,y,x+w,y+h,0xFC0D0C09);
         g.drawCenteredString(font,"DESEJA REALMENTE ESCOLHER ESTA RAÇA?",x+w/2,y+24,WHITE);
-        String choice=selected.title+(selected==Race.DRAGONBORN?" — "+lineage.title:selected==Race.HALF_BLOOD?" — "+ancestryA.title+" + "+ancestryB.title:"")+" — "+size.title;
+        String choice=selected.title+(selected==Race.DRAGONBORN?" — "+lineage.title:selected==Race.FAIRY?" — "+fairyAffinity.title:selected==Race.HALF_BLOOD?" — Humano + "+ancestryB.title:"")+" — "+size.title;
         g.drawCenteredString(font,choice.toUpperCase(),x+w/2,y+47,selected.color);
         g.drawCenteredString(font,"Você iniciará o teste de 5 minutos.",x+w/2,y+64,MUTED);
         confirmX=x+34;confirmY=y+86;backX=x+226;backY=confirmY;
@@ -107,7 +112,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
 
     @Override public boolean mouseClicked(double mx,double my,int button){
         if(confirming){
-            if(inside(mx,my,confirmX,confirmY,170,26)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
+            if(inside(mx,my,confirmX,confirmY,170,26)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
             if(inside(mx,my,backX,backY,170,26)){confirming=false;return true;}return true;
         }
         if(inside(mx,my,actionX,actionY,actionW,actionH)){confirming=true;return true;}
@@ -122,8 +127,11 @@ public final class RaceSelectionScreen extends NoverisScreen {
             if(inside(mx,my,specialX,specialY,specialW,specialH)){lineage=DragonLineage.FIRE;return true;}
             if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH)){lineage=DragonLineage.FROST;return true;}
             if(inside(mx,my,specialX+(specialW+6)*2,specialY,specialW,specialH)){lineage=DragonLineage.VENOM;return true;}}
+        if(selected==Race.FAIRY){
+            if(inside(mx,my,specialX,specialY,specialW,specialH)){fairyAffinity=FairyAffinity.NATURE;return true;}
+            if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH)){fairyAffinity=FairyAffinity.WATER;return true;}
+            if(inside(mx,my,specialX+(specialW+6)*2,specialY,specialW,specialH)){fairyAffinity=FairyAffinity.AIR;return true;}}
         if(selected==Race.HALF_BLOOD){
-            if(inside(mx,my,specialX,specialY,specialW,specialH)){ancestryA=nextAncestry(ancestryA,ancestryB);return true;}
             if(inside(mx,my,specialX+specialW+6,specialY,specialW,specialH)){ancestryB=nextAncestry(ancestryB,ancestryA);return true;}
             if((ancestryA==Race.DRAGONBORN||ancestryB==Race.DRAGONBORN)
                     &&inside(mx,my,specialX+(specialW+6)*2,specialY,specialW,specialH)){
@@ -131,7 +139,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
                 return true;}}
         return super.mouseClicked(mx,my,button);
     }
-    private Race nextAncestry(Race current,Race other){Race[] valid=Arrays.stream(Race.values()).filter(Race::validAncestry).toArray(Race[]::new);int i=Arrays.asList(valid).indexOf(current);do{i=(i+1)%valid.length;}while(valid[i]==other);return valid[i];}
+    private Race nextAncestry(Race current,Race other){Race[] valid=Arrays.stream(Race.values()).filter(r->r.validAncestry()&&r!=Race.HUMAN&&r!=Race.NEPHILIM).toArray(Race[]::new);int i=Arrays.asList(valid).indexOf(current);do{i=(i+1)%valid.length;}while(valid[i]==other);return valid[i];}
     private float previewScale(RaceSize chosen){if(selected!=Race.HALF_BLOOD)return selected.scale(chosen);return Math.max(.85f,Math.min(1.15f,(ancestryA.scale(chosen)+ancestryB.scale(chosen))/2f));}
     private boolean inside(double x,double y,int bx,int by,int bw,int bh){return x>=bx&&x<bx+bw&&y>=by&&y<by+bh;}
     private Race[] racesForRealm(){return Arrays.stream(Race.values()).filter(r->r!=Race.NONE&&r.realm==realm).toArray(Race[]::new);}
@@ -139,8 +147,8 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private void drawLargeSymbol(GuiGraphics g,String s,int cx,int y,int color){g.pose().pushPose();g.pose().translate(cx,y,0);g.pose().scale(1.35f,1.35f,1f);g.drawCenteredString(font,s,0,0,color);g.pose().popPose();}
     private String symbol(Race r){return switch(r){case ELF->"⌁";case FAIRY->"✦";case SATYR->"♈";case THALASSIAN->"≈";case HUMAN->"●";case NEPHILIM->"◇";case VAMPIRE->"▼";case HALF_BLOOD->"∞";case TIEFLING->"♠";case LYCANTHROPE->"☾";case DRAGONBORN->"◆";case HARPY->"⌁";default->"?";};}
     private String description(Race r){return switch(r){case ELF->"Exploração, conhecimento, magia e combate à distância.";case FAIRY->"Magia, suporte e conexão com a natureza — sem voo.";case SATYR->"Mobilidade terrestre e sobrevivência natural.";case THALASSIAN->"Exploração oceânica e combate aquático.";case HUMAN->"Versatilidade, ferramentas e progressão.";case NEPHILIM->"Resistência sobrenatural equilibrada — sem voo.";case VAMPIRE->"Sustentação e combate noturno.";case HALF_BLOOD->"Duas heranças menores, nunca dois poderes completos.";case TIEFLING->"Sobrevivência infernal e retaliação.";case LYCANTHROPE->"Predador fortalecido pela noite.";case DRAGONBORN->"Tanque ofensivo de linhagem elemental.";case HARPY->"Exploração vertical sem voo verdadeiro.";default->"";};}
-    private String active(Race r){return switch(r){case ELF->"Disparo Perfurante";case FAIRY->"Percepção Feérica";case SATYR->"Vigor Silvestre";case THALASSIAN->"Guarda das Marés";case HUMAN->"Nenhuma habilidade ativa";case NEPHILIM->"Égide Sobrenatural";case VAMPIRE->"Drenagem de Sangue";case HALF_BLOOD->"Herança Combinada";case TIEFLING->"Pulso Infernal";case LYCANTHROPE->"Uivo de Caçada";case DRAGONBORN->"Sopro Elemental";case HARPY->"Rajada de Vento";default->"—";};}
-    private String mobility(Race r){return switch(r){case ELF->"Recuo Acrobático";case FAIRY->"Salto Floral";case SATYR->"Investida Caprina";case THALASSIAN->"Impulso Aquático";case HUMAN->"Nenhuma habilidade de mobilidade";case NEPHILIM->"Impulso Radiante";case VAMPIRE->"Passo Sombrio";case HALF_BLOOD->"Mobilidade Herdada reduzida";case TIEFLING->"Avanço em Fogo";case LYCANTHROPE->"Bote Predatório";case DRAGONBORN->"Investida Dracônica";case HARPY->"Impulso Alado";default->"—";};}
+    private String active(Race r){return switch(r){case ELF->"Disparo Perfurante";case FAIRY->switch(fairyAffinity){case WATER->"Bênção das Águas";case AIR->"Rajada Feérica";default->"Laço da Natureza";};case SATYR->"Vigor Silvestre";case THALASSIAN->"Guarda das Marés";case HUMAN->"Nenhuma habilidade ativa";case NEPHILIM->"Égide Sobrenatural";case VAMPIRE->"Drenagem de Sangue";case HALF_BLOOD->"Herança Combinada";case TIEFLING->"Pulso Infernal";case LYCANTHROPE->"Uivo de Caçada";case DRAGONBORN->"Sopro Elemental";case HARPY->"Rajada de Vento";default->"—";};}
+    private String mobility(Race r){return switch(r){case ELF->"Recuo Acrobático";case FAIRY->switch(fairyAffinity){case WATER->"Correnteza Feérica";case AIR->"Impulso de Brisa";default->"Salto Entre Folhas";};case SATYR->"Investida Caprina";case THALASSIAN->"Impulso Aquático";case HUMAN->"Nenhuma habilidade de mobilidade";case NEPHILIM->"Impulso Radiante";case VAMPIRE->"Passo Sombrio";case HALF_BLOOD->"Mobilidade Herdada reduzida";case TIEFLING->"Avanço em Fogo";case LYCANTHROPE->"Bote Predatório";case DRAGONBORN->"Investida Dracônica";case HARPY->"Impulso Alado";default->"—";};}
     private String[] passives(Race r){return switch(r){case ELF->new String[]{"Visão leve em ambientes escuros","Velocidade adicional em florestas"};case FAIRY->new String[]{"Regenera perto da natureza","Percepção remove um efeito negativo"};case SATYR->new String[]{"Rápido no natural; salto alto","Menos queda e regeneração florestal"};case THALASSIAN->new String[]{"Respiração, visão e mineração aquáticas","Nado rápido; resistência submersa"};case HUMAN->new String[]{"Pressa leve permanente","Sem poderes sobrenaturais"};case NEPHILIM->new String[]{"50% menos dano de fogo; Égide purifica","Força temporária com pouca vida"};case VAMPIRE->new String[]{"Visão noturna e roubo de vida","Força e velocidade à noite"};case HALF_BLOOD->new String[]{"Bônus menor de cada origem","Ativa e mobilidade dependem das ascendências"};case TIEFLING->new String[]{"Imunidade a fogo e lava","Visão escura e retaliação"};case LYCANTHROPE->new String[]{"Força e regeneração à noite","Faro para criaturas"};case DRAGONBORN->new String[]{"12% de resistência física","Resistência elemental e a empurrão"};case HARPY->new String[]{"Salto, planagem e queda reduzida","Mobilidade a céu aberto"};default->new String[0];};}
     private String[] weaknesses(Race r){return switch(r){case ELF->new String[]{"10% mais dano corpo a corpo","Golpes corpo a corpo fortes castigam"};case FAIRY->new String[]{"Ferro causa 30% mais dano","Lava bloqueia habilidades"};case SATYR->new String[]{"Armadura pesada reduz mobilidade","Penalidade subterrânea/artificial"};case THALASSIAN->new String[]{"Desidratação longe da água","Recebe 60% mais dano de fogo"};case HUMAN->new String[]{"Sem resistências sobrenaturais"};case NEPHILIM->new String[]{"Cura 20% menor","Égide custa fome e termina em Fraqueza"};case VAMPIRE->new String[]{"Sol suspende poderes noturnos; comida rende menos","Fogo causa dano adicional"};case HALF_BLOOD->new String[]{"Heranças são reduzidas","Nunca herda dois poderes principais"};case TIEFLING->new String[]{"Cura natural reduzida","Água causa fraqueza"};case LYCANTHROPE->new String[]{"Fome limita bônus e habilidades noturnas"};case DRAGONBORN->new String[]{"Lentidão, fome e elemento oposto"};case HARPY->new String[]{"Fragilidade, cavernas e armadura pesada"};default->new String[0];};}
 }

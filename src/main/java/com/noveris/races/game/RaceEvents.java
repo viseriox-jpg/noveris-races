@@ -83,6 +83,7 @@ public final class RaceEvents {
             RaceGame.sync(p);
         }
         if (p.tickCount % 40 == 0) ambientParticles(p, race);
+        RaceAbilities.tickVisuals(p);
         if (race == Race.TIEFLING && p.isOnFire()) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
         else if (race == Race.HALF_BLOOD && (RaceState.ancestryA(p) == Race.THALASSIAN

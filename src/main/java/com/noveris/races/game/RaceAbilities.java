@@ -47,6 +47,7 @@ public final class RaceAbilities {
             case HARPY -> { windGust(p); cooldown = 300; }
             default -> { return; }
         }
+        RaceState.customLong(p, "RaceVfxUntil", now + 30);
         RaceState.setPrimaryReady(p, now + cooldown);
         RaceGame.sync(p);
     }
@@ -119,6 +120,7 @@ public final class RaceAbilities {
             default -> { return; }
         }
         p.hurtMarked = true;
+        RaceState.customLong(p, "RaceVfxUntil", now + 24);
         if (race == Race.LYCANTHROPE)
             p.getFoodData().setFoodLevel(Math.max(0, p.getFoodData().getFoodLevel() - 3));
         else p.causeFoodExhaustion(1.0f);
@@ -413,5 +415,26 @@ public final class RaceAbilities {
             var type = BuiltInRegistries.PARTICLE_TYPE.getOptional(ResourceLocation.parse(id)).orElse(null);
             return type instanceof SimpleParticleType simple ? simple : fallback;
         } catch (Exception ignored) { return fallback; }
+    }
+
+    public static void tickVisuals(ServerPlayer p) {
+        long until = RaceState.customLong(p, "RaceVfxUntil");
+        if (until <= p.level().getGameTime() || p.tickCount % 4 != 0) return;
+        Race race = RaceState.race(p);
+        switch (race) {
+            case FAIRY -> {
+                if (RaceState.fairyAffinity(p) == FairyAffinity.WATER) particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 8, .55, .03);
+                else if (RaceState.fairyAffinity(p) == FairyAffinity.AIR) particles(p, ParticleTypes.CLOUD, 8, .7, .04);
+                else particles(p, external("hazennstuff:leaf_particle", ParticleTypes.HAPPY_VILLAGER), 8, .65, .03);
+            }
+            case VAMPIRE -> particles(p, external("irons_spellbooks:blood", ParticleTypes.DAMAGE_INDICATOR), 7, .45, .03);
+            case DRAGONBORN -> particles(p, RaceState.lineage(p) == DragonLineage.FIRE ? external("irons_spellbooks:dragon_fire", ParticleTypes.FLAME) : RaceState.lineage(p) == DragonLineage.FROST ? external("irons_spellbooks:snowflake", ParticleTypes.SNOWFLAKE) : new DustParticleOptions(new Vector3f(.1f, .9f, .18f), 1.25f), 8, .55, .03);
+            case TIEFLING -> particles(p, external("irons_spellbooks:fiery_smoke", ParticleTypes.SMOKE), 7, .55, .03);
+            case THALASSIAN -> particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 8, .55, .03);
+            case ELF -> particles(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), 7, .5, .03);
+            case SATYR -> particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 7, .55, .03);
+            case HARPY -> particles(p, ParticleTypes.CLOUD, 8, .65, .04);
+            default -> { }
+        }
     }
 }

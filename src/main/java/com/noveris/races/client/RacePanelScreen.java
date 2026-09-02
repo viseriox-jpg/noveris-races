@@ -73,6 +73,11 @@ public final class RacePanelScreen extends NoverisScreen {
         g.drawString(font, "CONDIÇÕES ATUAIS", right, y, WHITE, false);
         String[] conditions = conditions(race);
         for (int i=0;i<conditions.length;i++) g.drawString(font, "• " + conditions[i], right, y+18+i*16, i==0?LILAC:MUTED, false);
+        if (race == Race.THALASSIAN) {
+            int hydration = ClientRaceState.hydration;
+            int color = hydration > 50 ? LILAC : hydration > 25 ? 0xFFFFD84A : DANGER;
+            g.drawString(font, "HIDRATAÇÃO — " + hydration + "%", right, y + 66, color, false);
+        }
         if (hasRacialVision(race)) {
             String vision = !ClientRaceState.visionEnabled ? "DESATIVADA" : visionActive(race) ? "ATIVA" : "SUSPENSA";
             g.drawString(font, "VISÃO RACIAL", right, y + 98, WHITE, false);

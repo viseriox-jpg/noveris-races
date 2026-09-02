@@ -11,6 +11,7 @@ public final class RaceGame {
         PacketDistributor.sendToPlayer(p, new StatePayload(
                 RaceState.race(p).name(), RaceState.lineage(p).name(), RaceState.ancestryA(p).name(), RaceState.ancestryB(p).name(), RaceState.size(p).name(), RaceState.confirmed(p),
                 RaceState.trialRemaining(p), Math.max(0, RaceState.primaryReady(p) - now),
-                Math.max(0, RaceState.mobilityReady(p) - now), RaceState.inCombat(p), RaceState.visionEnabled(p)));
+                Math.max(0, RaceState.mobilityReady(p) - now), RaceState.inCombat(p), RaceState.visionEnabled(p),
+                (int)Math.max(0, 100 - RaceState.customLong(p, "DryTicks") * 100 / 14400)));
     }
 }

@@ -11,15 +11,19 @@ import net.minecraft.tags.BiomeTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potions;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.living.MobEffectEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
@@ -108,7 +112,7 @@ public final class RaceEvents {
         if (race == Race.FAIRY && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity fairyAttacker
                 && fairyAttacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount() * 1.25f);
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * .8f);
-        if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.3f);
+        if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.6f);
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
         if (race == Race.NEPHILIM && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .50f);
         if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.35f);
@@ -157,6 +161,17 @@ public final class RaceEvents {
                 && RaceState.customLong(p, "DryTicks") > 6000) event.setAmount(event.getAmount() * .6f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.FAIRY
                 && p.level().dimensionType().ultraWarm()) event.setAmount(event.getAmount() * .7f);
+    }
+
+    @SubscribeEvent
+    public static void drinkWater(LivingEntityUseItemEvent.Finish event) {
+        if (!(event.getEntity() instanceof ServerPlayer p) || RaceState.race(p) != Race.THALASSIAN
+                || !event.getItem().is(Items.POTION)) return;
+        var contents = event.getItem().get(DataComponents.POTION_CONTENTS);
+        if (contents == null || !contents.is(Potions.WATER)) return;
+        long dry = Math.max(0, RaceState.customLong(p, "DryTicks") - 2880);
+        RaceState.customLong(p, "DryTicks", dry);
+        p.displayClientMessage(Component.literal("Hidratação restaurada em 20%."), true);
     }
 
     @SubscribeEvent
@@ -327,10 +342,33 @@ public final class RaceEvents {
         return false;
     }
     private static void tickHydration(ServerPlayer p) {
-        long dry = p.isInWaterOrRain() ? 0 : RaceState.customLong(p, "DryTicks") + 1;
+        final long maximum = 14400;
+        long before = RaceState.customLong(p, "DryTicks");
+        long dry;
+        if (p.isInWater()) dry = Math.max(0, before - 48);
+        else if (p.isInWaterOrRain()) dry = Math.max(0, before - 4);
+        else dry = Math.min(maximum, before + 1);
         RaceState.customLong(p, "DryTicks", dry);
-        if (dry > 2400) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, dry > 6000 ? 1 : 0, false, false));
-        if (dry > 6000) p.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
+        if (dry >= 6000) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0, false, false));
+        if (dry >= 10800) p.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
+        if (dry >= maximum) {
+            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
+            if (p.tickCount % 200 == 0 && p.getHealth() > 2f) {
+                p.hurt(p.damageSources().dryOut(), Math.min(2f, p.getHealth() - 2f));
+                if (p.level() instanceof ServerLevel level)
+                    level.sendParticles(ParticleTypes.ASH, p.getX(), p.getY() + 1, p.getZ(), 12, .35, .5, .35, .03);
+                p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.GENERIC_HURT,
+                        net.minecraft.sounds.SoundSource.PLAYERS, .55f, 1.35f);
+            }
+        }
+        int warning = dry >= maximum ? 3 : dry >= 10800 ? 2 : dry >= 7200 ? 1 : 0;
+        int oldWarning = (int) RaceState.customLong(p, "HydrationWarning");
+        if (warning > oldWarning) {
+            String text = warning == 1 ? "Hidratação em 50%." : warning == 2
+                    ? "⚠ Hidratação em 25%." : "⚠ Hidratação esgotada!";
+            p.displayClientMessage(Component.literal(text), true);
+        }
+        RaceState.customLong(p, "HydrationWarning", warning);
     }
     private static void tickRacialHunger(ServerPlayer p, Race race) {
         int current=p.getFoodData().getFoodLevel();

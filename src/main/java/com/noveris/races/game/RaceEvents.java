@@ -214,7 +214,14 @@ public final class RaceEvents {
             case LYCANTHROPE -> {
                 if (p.level().isNight()) {
                     p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 0, false, false));
-                    if (p.getFoodData().getFoodLevel() > 6 && p.tickCount % 160 == 0) p.heal(1f);
+                    p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
+                    if (p.getFoodData().getFoodLevel() > 6 && p.getHealth() < p.getMaxHealth()
+                            && p.tickCount % 160 == 0) {
+                        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0, false, false));
+                        if (p.level() instanceof ServerLevel level)
+                            level.sendParticles(ParticleTypes.HEART, p.getX(), p.getY() + 1, p.getZ(),
+                                    4, .35, .45, .35, .02);
+                    }
                     p.causeFoodExhaustion(.035f);
                     for (var target : p.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class,
                             p.getBoundingBox().inflate(6), e -> e.isAlive() && p.distanceToSqr(e) <= 36))

@@ -243,8 +243,25 @@ public final class RaceEvents {
                 if (isForest(p)) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
             }
             case FAIRY -> {
-                if (nearFlowers(p) && !nearLava(p) && ironArmorPieces(p) < 4
-                        && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
+                switch (RaceState.fairyAffinity(p)) {
+                    case WATER -> {
+                        if (p.isInWater()) {
+                            p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false));
+                            p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false));
+                            if (p.tickCount % 160 == 0 && !RaceState.inCombat(p)) p.heal(1f);
+                        }
+                    }
+                    case AIR -> {
+                        if (p.level().canSeeSky(p.blockPosition())) {
+                            p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 60, 0, false, false));
+                            p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
+                        }
+                    }
+                    default -> {
+                        if (nearFlowers(p) && !nearLava(p) && ironArmorPieces(p) < 4
+                                && p.tickCount % 200 == 0 && !RaceState.inCombat(p)) p.heal(1f);
+                    }
+                }
             }
             case SATYR -> {
                 int heavy = heavyArmorPieces(p);

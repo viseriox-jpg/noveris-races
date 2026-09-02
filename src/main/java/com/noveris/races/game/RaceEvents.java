@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -245,8 +247,22 @@ public final class RaceEvents {
 
     private static int heavyArmorPieces(ServerPlayer p) {
         int count = 0;
-        for (var stack : p.getArmorSlots()) if (stack.is(HEAVY_ARMOR)) count++;
+        for (var stack : p.getArmorSlots()) if (isHeavyArmor(stack)) count++;
         return count;
+    }
+
+    private static boolean isHeavyArmor(ItemStack stack) {
+        if (stack.is(HEAVY_ARMOR)) return true;
+        if (!(stack.getItem() instanceof ArmorItem armor)) return false;
+
+        var material = armor.getMaterial().value();
+        int defense = material.defense().getOrDefault(armor.getType(), 0);
+        int threshold = Integer.MAX_VALUE;
+        if (armor.getType() == ArmorItem.Type.HELMET) threshold = 3;
+        else if (armor.getType() == ArmorItem.Type.CHESTPLATE) threshold = 7;
+        else if (armor.getType() == ArmorItem.Type.LEGGINGS) threshold = 6;
+        else if (armor.getType() == ArmorItem.Type.BOOTS) threshold = 3;
+        return defense >= threshold || material.toughness() >= 2.0f;
     }
 
     private static boolean isForest(ServerPlayer p) { return p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST); }

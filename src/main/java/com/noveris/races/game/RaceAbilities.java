@@ -145,7 +145,7 @@ public final class RaceAbilities {
             case TIEFLING -> particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 22, .55, .12);
             case LYCANTHROPE -> particles(p, ParticleTypes.POOF, 24, .7, .08);
             case DRAGONBORN -> particles(p, ParticleTypes.LARGE_SMOKE, 20, .65, .04);
-            case HARPY -> particles(p, external("irons_spellbooks:blastwave", ParticleTypes.CLOUD), 26, .8, .12);
+            case HARPY -> particles(p, external("irons_spellbooks:spark", ParticleTypes.CLOUD), 26, .8, .12);
             default -> { }
         }
         RaceGame.sync(p);
@@ -191,7 +191,7 @@ public final class RaceAbilities {
                     target.hurtMarked = true;
                 }
                 p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 120, 0));
-                particles(p, external("irons_spellbooks:blastwave", ParticleTypes.CLOUD), 46, 1.3, .16);
+                particles(p, external("irons_spellbooks:spark", ParticleTypes.CLOUD), 46, 1.3, .16);
             }
             default -> {
                 for (LivingEntity target : nearby(p, 9)) {
@@ -364,7 +364,7 @@ public final class RaceAbilities {
             Vec3 origin = p.getEyePosition();
             for (int step = 1; step <= 6; step++) {
                 Vec3 point = origin.add(look.scale(step));
-                level.sendParticles(external("irons_spellbooks:gust", ParticleTypes.CLOUD), point.x, point.y, point.z, 7, .3, .25, .3, .05);
+                level.sendParticles(external("irons_spellbooks:spark", ParticleTypes.CLOUD), point.x, point.y, point.z, 7, .3, .25, .3, .05);
             }
         }
         p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, .9f, .65f);
@@ -395,7 +395,7 @@ public final class RaceAbilities {
 
     private static ParticleOptions external(String id, ParticleOptions fallback) {
         try {
-            var type = BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(id));
+            var type = BuiltInRegistries.PARTICLE_TYPE.getOptional(ResourceLocation.parse(id)).orElse(null);
             return type instanceof SimpleParticleType simple ? simple : fallback;
         } catch (Exception ignored) { return fallback; }
     }

@@ -10,6 +10,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -63,6 +64,7 @@ public final class RaceEvents {
         if (p.tickCount % 20 == 0) {
             applyAttributes(p);
             applyPassives(p, race);
+            handleHeavyArmorMobility(p, race);
             handleLycanTransformation(p, race);
             RaceGame.sync(p);
         }
@@ -263,6 +265,21 @@ public final class RaceEvents {
         else if (armor.getType() == ArmorItem.Type.LEGGINGS) threshold = 6;
         else if (armor.getType() == ArmorItem.Type.BOOTS) threshold = 3;
         return defense >= threshold || material.toughness() >= 2.0f;
+    }
+
+    private static void handleHeavyArmorMobility(ServerPlayer p, Race race) {
+        boolean susceptible = race == Race.SATYR || race == Race.HARPY;
+        int pieces = susceptible ? heavyArmorPieces(p) : 0;
+        boolean blocked = susceptible && pieces >= 3;
+        boolean wasBlocked = RaceState.customLong(p, "HeavyMobilityBlocked") == 1;
+
+        if (blocked && (p.tickCount % 40 == 0 || !wasBlocked))
+            p.displayClientMessage(Component.literal("⚠ Mobilidade racial reduzida: armadura pesada ("
+                    + pieces + "/4 peças)"), true);
+        else if (!blocked && wasBlocked)
+            p.displayClientMessage(Component.literal("Mobilidade racial restaurada."), true);
+
+        RaceState.customLong(p, "HeavyMobilityBlocked", blocked ? 1 : 0);
     }
 
     private static boolean isForest(ServerPlayer p) { return p.level().getBiome(p.blockPosition()).is(BiomeTags.IS_FOREST); }

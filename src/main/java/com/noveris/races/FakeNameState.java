@@ -26,10 +26,7 @@ public final class FakeNameState {
         var tag = root(p);
         tag.putString("Nickname", clean(nickname, 20));
         tag.putString("Pronouns", clean(pronouns, 10));
-        tag.putString("Format", switch (format.toLowerCase()) {
-            case "bold", "italic", "underlined", "strikethrough", "uniform" -> format.toLowerCase();
-            default -> "normal";
-        });
+        tag.putString("Format", normalizeFormats(format));
         tag.putString("Color", validColor(color) ? color.toLowerCase() : "white");
         tag.putString("Prefix", validPrefix(prefix) ? prefix.toLowerCase() : "none");
     }
@@ -46,18 +43,29 @@ public final class FakeNameState {
         };
     }
     private static boolean validPrefix(String p) { return p != null && (p.equalsIgnoreCase("avarion") || p.equalsIgnoreCase("orvannis") || p.equalsIgnoreCase("none")); }
+    private static String normalizeFormats(String value) {
+        if (value == null || value.isBlank()) return "normal";
+        java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
+        for (String part : value.toLowerCase().split(",")) {
+            String f = part.trim();
+            if (f.equals("bold") || f.equals("italic") || f.equals("underlined") || f.equals("strikethrough") || f.equals("uniform")) out.add(f);
+        }
+        return out.isEmpty() ? "normal" : String.join(",", out);
+    }
     public static Component displayName(ServerPlayer p) {
         String name = nickname(p);
         if (name.isBlank()) name = p.getGameProfile().getName();
         String suffix = pronouns(p).isBlank() ? "" : " §7[" + pronouns(p) + "]";
         Style style = Style.EMPTY.withColor(ChatFormatting.getByName(color(p).isBlank() ? "white" : color(p)));
-        switch (format(p)) {
-            case "bold" -> style = style.withBold(true);
-            case "italic" -> style = style.withItalic(true);
-            case "underlined" -> style = style.withUnderlined(true);
-            case "strikethrough" -> style = style.withStrikethrough(true);
-            case "uniform" -> style = style.withFont(ResourceLocation.withDefaultNamespace("uniform"));
-            default -> { }
+        for (String f : format(p).split(",")) {
+            switch (f) {
+                case "bold" -> style = style.withBold(true);
+                case "italic" -> style = style.withItalic(true);
+                case "underlined" -> style = style.withUnderlined(true);
+                case "strikethrough" -> style = style.withStrikethrough(true);
+                case "uniform" -> style = style.withFont(ResourceLocation.withDefaultNamespace("uniform"));
+                default -> { }
+            }
         }
         MutableComponent prefixPart = switch (prefix(p).toLowerCase()) {
             case "avarion" -> Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);

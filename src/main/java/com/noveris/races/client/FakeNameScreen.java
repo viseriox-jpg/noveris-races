@@ -3,13 +3,18 @@ package com.noveris.races.client;
 import com.noveris.races.network.RaceNetwork.ActionPayload;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /** Editor visual do apelido; o nome real nunca é editado. */
 public final class FakeNameScreen extends NoverisScreen {
     private EditBox nickname, pronouns;
     private boolean pronounTab;
+    private boolean confirmReset;
     private String format, color, prefix;
     private static final String[] FORMATS = {"normal", "bold", "italic", "underlined", "strikethrough", "uniform"};
     private static final String[] COLORS = {"white", "yellow", "gold", "red", "green", "blue", "purple", "aqua", "gray"};
@@ -38,10 +43,10 @@ public final class FakeNameScreen extends NoverisScreen {
             g.drawString(font,"O nome real continua visível para a administração.",left+50,top+130,MUTED,false);
             g.drawString(font,"FORMATAÇÃO",left+50,top+154,WHITE,false);
             int formatW=Math.min(150,(panelWidth-120)/3);
-            for(int i=0;i<FORMATS.length;i++) button(g,left+50+(i%3)*(formatW+6),top+166+(i/3)*25,formatW,21,FORMATS[i].toUpperCase(),mx,my,format.equals(FORMATS[i]));
+            for(int i=0;i<FORMATS.length;i++) button(g,left+50+(i%3)*(formatW+6),top+166+(i/3)*25,formatW,21,FORMATS[i].toUpperCase(),mx,my,hasFormat(FORMATS[i]));
             g.drawString(font,"COR",left+50,top+220,WHITE,false);
             int colorW=Math.min(110,(panelWidth-120)/5);
-            for(int i=0;i<COLORS.length;i++) button(g,left+50+(i%5)*(colorW+6),top+232+(i/5)*24,colorW,21,COLORS[i].toUpperCase(),mx,my,color.equals(COLORS[i]));
+            for(int i=0;i<COLORS.length;i++) coloredButton(g,left+50+(i%5)*(colorW+6),top+232+(i/5)*24,colorW,21,COLORS[i],mx,my,color.equals(COLORS[i]));
         } else {
             g.drawString(font,"PRONOMES OU COMPLEMENTO (ATÉ 10 LETRAS)",left+50,top+88,WHITE,false);
             g.drawString(font,"Exemplo: ela, ele ou título curto. Pode deixar vazio.",left+50,top+132,MUTED,false);
@@ -56,8 +61,16 @@ public final class FakeNameScreen extends NoverisScreen {
         dangerButton(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
+        drawPreview(g);
+        if (confirmReset) drawResetConfirmation(g,mx,my);
     }
     @Override public boolean mouseClicked(double mx,double my,int btn) {
+        if (confirmReset) {
+            int cx=left+panelWidth/2-170, cy=top+panelHeight/2+18;
+            if(inside(mx,my,cx,cy,150,26)){ FakeNameClientState.nickname=""; FakeNameClientState.pronouns=""; FakeNameClientState.prefix="none"; FakeNameClientState.format="normal"; FakeNameClientState.color="white"; nickname.setValue(""); pronouns.setValue(""); send("fakename_reset"); onClose(); }
+            else if(inside(mx,my,cx+190,cy,150,26)) confirmReset=false;
+            return true;
+        }
         if(super.mouseClicked(mx,my,btn)) return true;
         if(btn!=0) return false;
         int tabW=(panelWidth-74)/2;
@@ -65,7 +78,7 @@ public final class FakeNameScreen extends NoverisScreen {
         if(inside(mx,my,left+34,top+50,tabW,28)){ pronounTab=false; updateFieldVisibility(); return true; }
         if(!pronounTab){
             int formatW=Math.min(150,(panelWidth-120)/3);
-            for(int i=0;i<FORMATS.length;i++) if(inside(mx,my,left+50+(i%3)*(formatW+6),top+166+(i/3)*25,formatW,21)){format=FORMATS[i];return true;}
+            for(int i=0;i<FORMATS.length;i++) if(inside(mx,my,left+50+(i%3)*(formatW+6),top+166+(i/3)*25,formatW,21)){toggleFormat(FORMATS[i]);return true;}
             int colorW=Math.min(110,(panelWidth-120)/5);
             for(int i=0;i<COLORS.length;i++) if(inside(mx,my,left+50+(i%5)*(colorW+6),top+232+(i/5)*24,colorW,21)){color=COLORS[i];return true;}
         } else {
@@ -74,7 +87,7 @@ public final class FakeNameScreen extends NoverisScreen {
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
         int bottomY=top+panelHeight-36;
-        if(inside(mx,my,left+50,bottomY,260,26)){ FakeNameClientState.nickname=""; nickname.setValue(""); pronouns.setValue(""); send("fakename_reset"); onClose(); return true; }
+        if(inside(mx,my,left+50,bottomY,260,26)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
     }
@@ -83,6 +96,33 @@ public final class FakeNameScreen extends NoverisScreen {
         boolean hover=inside(mx,my,x,y,w,h);
         g.fill(x,y,x+w,y+h,hover?0xFFBE3E50:0xFF8F2435);
         g.drawCenteredString(font,text,x+w/2,y+9,WHITE);
+    }
+    private boolean hasFormat(String f){ return format.equals(f) || format.contains(","+f) || format.contains(f+","); }
+    private void toggleFormat(String f){
+        if(f.equals("normal")){ format="normal"; return; }
+        java.util.LinkedHashSet<String> set=new java.util.LinkedHashSet<>();
+        for(String s:format.split(",")) if(!s.isBlank()&&!s.equals("normal")) set.add(s);
+        if(!set.add(f)) set.remove(f);
+        format=set.isEmpty()?"normal":String.join(",",set);
+    }
+    private void coloredButton(GuiGraphics g,int x,int y,int w,int h,String value,double mx,double my,boolean active){
+        button(g,x,y,w,h,value.toUpperCase(),mx,my,active);
+        int swatch=colorValue(value); g.fill(x+5,y+5,x+15,y+h-5,swatch);
+    }
+    private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFAF52DE;case "aqua"->0xFF32D7E8;case "gray"->0xFF9B9B9B;default->0xFFFFFFFF;}; }
+    private Component preview(){
+        String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
+        Style style=Style.EMPTY.withColor(ChatFormatting.getByName(color));
+        for(String f:format.split(",")) switch(f){case "bold"->style=style.withBold(true);case "italic"->style=style.withItalic(true);case "underlined"->style=style.withUnderlined(true);case "strikethrough"->style=style.withStrikethrough(true);case "uniform"->style=style.withFont(ResourceLocation.withDefaultNamespace("uniform"));default->{}};
+        MutableComponent c=switch(prefix){case "avarion"->Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);case "orvannis"->Component.literal("Orvannis ").withStyle(ChatFormatting.DARK_PURPLE);default->Component.empty();};
+        return c.append(Component.literal(name).withStyle(style)).append(pronouns.getValue().isBlank()?Component.empty():Component.literal(" ["+pronouns.getValue()+"]").withStyle(ChatFormatting.GRAY));
+    }
+    private void drawPreview(GuiGraphics g){ int x=left+panelWidth-360; int y=top+88; g.drawString(font,"PRÉVIA",x,y,WHITE,false); g.drawString(font,preview(),x,y+20,WHITE,false); }
+    private void drawResetConfirmation(GuiGraphics g,double mx,double my){
+        g.fill(left+40,top+40,left+panelWidth-40,top+panelHeight-40,0xF0100E0A);
+        String title="RESTAURAR NOME REAL?"; g.drawCenteredString(font,title,left+panelWidth/2,top+panelHeight/2-28,DANGER);
+        g.drawCenteredString(font,"O apelido, prefixo e complemento serão removidos.",left+panelWidth/2,top+panelHeight/2-8,WHITE);
+        int cx=left+panelWidth/2-170,cy=top+panelHeight/2+18; dangerButton(g,cx,cy,150,26,"CONFIRMAR",mx,my); button(g,cx+190,cy,150,26,"CANCELAR",mx,my,true);
     }
     private static boolean inside(double mx,double my,int x,int y,int w,int h){return mx>=x&&mx<x+w&&my>=y&&my<y+h;}
 }

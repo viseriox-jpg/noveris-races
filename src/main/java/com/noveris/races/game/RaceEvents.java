@@ -273,20 +273,15 @@ public final class RaceEvents {
             case FAIRY -> {
                 switch (RaceState.fairyAffinity(p)) {
                     case WATER -> {
-                        if (p.isInWater()) {
-                            p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false));
-                            p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false));
-                            if (p.tickCount % 160 == 0 && !RaceState.inCombat(p)) p.heal(1f);
-                        }
+                        if (p.isInWaterOrRain())
+                            p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 40, 0, false, false));
                     }
                     case AIR -> {
-                        if (p.level().canSeeSky(p.blockPosition())) {
-                            p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 60, 0, false, false));
-                            p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false));
-                        }
+                        if (!p.onGround() && p.getDeltaMovement().y < -0.08)
+                            p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 30, 0, false, false));
                     }
                     default -> {
-                        // A Nature fairy regenerates through plant food via fairyPlantFood().
+                        if (isNaturalGround(p) && !nearLava(p)) p.removeEffect(MobEffects.POISON);
                     }
                 }
             }

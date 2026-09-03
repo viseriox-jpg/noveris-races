@@ -180,8 +180,14 @@ public final class RaceAbilities {
     private static void fairyPower(ServerPlayer p) {
         switch (RaceState.fairyAffinity(p)) {
             case WATER -> {
+                Vec3 center = p.position();
+                for (LivingEntity target : nearby(p, 4.5)) {
+                    Vec3 away = target.position().subtract(center).normalize();
+                    target.push(away.x * 1.15, .22, away.z * 1.15);
+                    target.hurtMarked = true;
+                }
+                p.clearFire();
                 cleanseOneHarmfulEffect(p);
-                p.heal(4f);
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
                 particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.SPLASH), 42, 1.1, .12);
                 particles(p, external("irons_spellbooks:acid_bubble", ParticleTypes.BUBBLE), 24, .8, .08);
@@ -200,10 +206,11 @@ public final class RaceAbilities {
                 particles(p, ParticleTypes.SWEEP_ATTACK, 8, .7, .02);
             }
             default -> {
-                for (LivingEntity target : nearby(p, 9)) {
-                    if (p.hasLineOfSight(target)) target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+                for (LivingEntity target : nearby(p, 5)) {
+                    if (p.hasLineOfSight(target)) {
+                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+                    }
                 }
-                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 80, 0));
                 particles(p, external("irons_spellbooks:cleanse", ParticleTypes.HAPPY_VILLAGER), 38, 1.1, .08);
                 particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 26, .9, .05);
             }
@@ -216,8 +223,8 @@ public final class RaceAbilities {
         particles(p, ParticleTypes.FALLING_SPORE_BLOSSOM, 18, .8, .02);
     }
     private static void tidalGuard(ServerPlayer p) {
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, p.isInWater() ? 1 : 0));
-        if (p.isInWater()) p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 120, 0));
+        p.clearFire();
+        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
         particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 36, .9, .08);
         particles(p, ParticleTypes.FALLING_WATER, 16, .8, .03);
     }

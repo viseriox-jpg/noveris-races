@@ -50,7 +50,7 @@ public final class FakeNameScreen extends NoverisScreen {
             button(g,left+50,top+186,150,24,"NENHUM",mx,my,prefix.equals("none"));
             button(g,left+206,top+186,150,24,"AVARION",mx,my,prefix.equals("avarion"));
             button(g,left+362,top+186,150,24,"ORVANNIS",mx,my,prefix.equals("orvannis"));
-            g.drawString(font,"Avarion: verde escuro   •   Orvannis: azul",left+50,top+222,MUTED,false);
+            g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
         }
         int bottomY=top+panelHeight-36;
         dangerButton(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my);

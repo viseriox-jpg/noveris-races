@@ -61,7 +61,7 @@ public final class FakeNameState {
         }
         MutableComponent prefixPart = switch (prefix(p).toLowerCase()) {
             case "avarion" -> Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);
-            case "orvannis" -> Component.literal("Orvannis ").withStyle(ChatFormatting.BLUE);
+            case "orvannis" -> Component.literal("Orvannis ").withStyle(ChatFormatting.DARK_PURPLE);
             default -> Component.empty();
         };
         return prefixPart.append(Component.literal(name).withStyle(style)).append(Component.literal(suffix));

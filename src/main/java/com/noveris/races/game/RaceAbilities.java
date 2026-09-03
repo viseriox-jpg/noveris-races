@@ -120,7 +120,8 @@ public final class RaceAbilities {
             default -> { return; }
         }
         p.hurtMarked = true;
-        RaceState.customLong(p, "RaceVfxUntil", now + 24);
+        // Mantém o rastro visível por alguns segundos, permitindo ver as camadas do efeito.
+        RaceState.customLong(p, "RaceVfxUntil", now + 80);
         if (race == Race.LYCANTHROPE)
             p.getFoodData().setFoodLevel(Math.max(0, p.getFoodData().getFoodLevel() - 3));
         else p.causeFoodExhaustion(1.0f);
@@ -423,8 +424,15 @@ public final class RaceAbilities {
     }
 
     private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {
-        if (p.level() instanceof ServerLevel level)
+        if (p.level() instanceof ServerLevel level) {
             level.sendParticles(particle, p.getX(), p.getY() + 1, p.getZ(), count, spread, spread, spread, speed);
+            // Um brilho secundário dá profundidade ao efeito sem substituir a partícula temática.
+            if (particle != ParticleTypes.FLAME && particle != ParticleTypes.SMALL_FLAME
+                    && particle != ParticleTypes.SOUL_FIRE_FLAME && particle != ParticleTypes.SMOKE
+                    && particle != ParticleTypes.LARGE_SMOKE)
+                level.sendParticles(ParticleTypes.END_ROD, p.getX(), p.getY() + 1, p.getZ(),
+                        Math.max(4, count / 4), spread * .72, spread * .72, spread * .72, Math.max(.01, speed * .55));
+        }
     }
 
     private static void particlesAt(ServerPlayer p, ParticleOptions particle, double x, double y, double z, int count, double dx, double dy, double dz, double speed) {

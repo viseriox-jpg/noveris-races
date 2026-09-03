@@ -33,7 +33,8 @@ public final class FakeNameState {
     public static void reset(ServerPlayer p) { p.getPersistentData().remove(ROOT); }
     private static String clean(String value, int max) {
         if (value == null) return "";
-        return value.replaceAll("[\\n\\r\\t]", "").trim().substring(0, Math.min(max, value.trim().length()));
+        String cleaned = value.replaceAll("[\\n\\r\\t]", "").trim();
+        return cleaned.substring(0, Math.min(max, cleaned.length()));
     }
     private static boolean validColor(String c) {
         return c != null && switch (c.toLowerCase()) {

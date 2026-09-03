@@ -14,7 +14,7 @@ public final class FakeNameEvents {
     @SubscribeEvent
     public static void name(PlayerEvent.NameFormat event) {
         if (event.getEntity() instanceof ServerPlayer p && !FakeNameState.nickname(p).isBlank())
-            event.setDisplayName(FakeNameState.displayName(p));
+            event.setDisplayname(FakeNameState.displayName(p));
     }
 
     @SubscribeEvent

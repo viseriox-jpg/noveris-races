@@ -55,6 +55,6 @@ public final class FakeNameScreen extends NoverisScreen {
         if(inside(mx,my,left+panelWidth-330,top+panelHeight-58,280,34)){ send("fakename_save"); onClose(); return true; }
         return true;
     }
-    private void send(String action){ PacketDistributor.sendToServer(new ActionPayload(action, nickname.getValue(), pronouns.getValue(), format, color, "", "", "")); }
+    private void send(String action){ PacketDistributor.sendToServer(new ActionPayload(action, nickname.getValue(), pronouns.getValue(), format, color, "", "")); }
     private static boolean inside(double mx,double my,int x,int y,int w,int h){return mx>=x&&mx<x+w&&my>=y&&my<y+h;}
 }

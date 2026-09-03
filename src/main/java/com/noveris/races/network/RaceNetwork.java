@@ -81,10 +81,14 @@ public final class RaceNetwork {
                 case "sync" -> RaceGame.sync(player);
                 case "fakename_save" -> {
                     FakeNameState.save(player, payload.race(), payload.lineage(), payload.fairyAffinity(), payload.ancestryA());
+                    player.refreshDisplayName();
+                    player.refreshTabListName();
                     RaceGame.syncFakeName(player, false);
                 }
                 case "fakename_reset" -> {
                     FakeNameState.reset(player);
+                    player.refreshDisplayName();
+                    player.refreshTabListName();
                     RaceGame.syncFakeName(player, false);
                 }
             }

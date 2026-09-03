@@ -21,38 +21,52 @@ public final class FakeNameScreen extends NoverisScreen {
         panelWidth = Math.min(width - 32, 1080); panelHeight = Math.min(height - 30, 650);
         left = (width - panelWidth) / 2; top = (height - panelHeight) / 2;
         int x=left+50;
-        nickname = new EditBox(font, x, top+92, 420, 22, Component.literal("Apelido")); nickname.setMaxLength(20); nickname.setValue(FakeNameClientState.nickname); addRenderableWidget(nickname);
-        pronouns = new EditBox(font, x, top+150, 420, 22, Component.literal("Complemento")); pronouns.setMaxLength(10); pronouns.setValue(FakeNameClientState.pronouns); addRenderableWidget(pronouns);
+        int fieldW = Math.min(520, panelWidth - 100);
+        nickname = new EditBox(font, x, top+82, fieldW, 22, Component.literal("Apelido"));
+        nickname.setMaxLength(20); nickname.setValue(FakeNameClientState.nickname); addRenderableWidget(nickname);
+        pronouns = new EditBox(font, x, top+82, fieldW, 22, Component.literal("Complemento"));
+        pronouns.setMaxLength(10); pronouns.setValue(FakeNameClientState.pronouns); addRenderableWidget(pronouns);
+        updateFieldVisibility();
     }
+    private void updateFieldVisibility() { nickname.visible = !pronounTab; nickname.active = !pronounTab; pronouns.visible = pronounTab; pronouns.active = pronounTab; }
     @Override public void render(GuiGraphics g, int mx, int my, float partial) {
         frame(g, "APELIDO DE NOVERIS");
-        button(g,left+34,top+50,480,32,"APELIDO",mx,my,!pronounTab); button(g,left+520,top+50,480,32,"PRONOMES / COMPLEMENTO",mx,my,pronounTab);
+        int tabW=(panelWidth-74)/2;
+        button(g,left+34,top+50,tabW,28,"APELIDO",mx,my,!pronounTab); button(g,left+40+tabW,top+50,tabW,28,"PRONOMES / COMPLEMENTO",mx,my,pronounTab);
         if (!pronounTab) {
             g.drawString(font,"APELIDO (ATÉ 20 CARACTERES)",left+50,top+76,WHITE,false);
-            g.drawString(font,"O nome real continua visível para a administração.",left+50,top+125,MUTED,false);
-            g.drawString(font,"FORMATAÇÃO",left+50,top+195,WHITE,false);
-            for(int i=0;i<FORMATS.length;i++) button(g,left+50+(i%3)*155,top+215+(i/3)*32,145,26,FORMATS[i].toUpperCase(),mx,my,format.equals(FORMATS[i]));
-            g.drawString(font,"COR",left+50,top+325,WHITE,false);
-            for(int i=0;i<COLORS.length;i++) button(g,left+50+(i%5)*140,top+345+(i/5)*32,130,26,COLORS[i].toUpperCase(),mx,my,color.equals(COLORS[i]));
+            g.drawString(font,"O nome real continua visível para a administração.",left+50,top+112,MUTED,false);
+            g.drawString(font,"FORMATAÇÃO",left+50,top+140,WHITE,false);
+            int formatW=Math.min(150,(panelWidth-120)/3);
+            for(int i=0;i<FORMATS.length;i++) button(g,left+50+(i%3)*(formatW+6),top+152+(i/3)*27,formatW,23,FORMATS[i].toUpperCase(),mx,my,format.equals(FORMATS[i]));
+            g.drawString(font,"COR",left+50,top+214,WHITE,false);
+            int colorW=Math.min(110,(panelWidth-120)/5);
+            for(int i=0;i<COLORS.length;i++) button(g,left+50+(i%5)*(colorW+6),top+226+(i/5)*25,colorW,22,COLORS[i].toUpperCase(),mx,my,color.equals(COLORS[i]));
         } else {
             g.drawString(font,"PRONOMES OU COMPLEMENTO (ATÉ 10 LETRAS)",left+50,top+76,WHITE,false);
-            g.drawString(font,"Exemplo: ela, ele, elu ou título curto. Pode deixar vazio.",left+50,top+184,MUTED,false);
+            g.drawString(font,"Exemplo: ela, ele, elu ou título curto. Pode deixar vazio.",left+50,top+122,MUTED,false);
+            g.drawString(font,"Será exibido ao lado do apelido no chat e no tab.",left+50,top+148,MUTED,false);
         }
-        button(g,left+50,top+panelHeight-58,260,34,"RESTAURAR NOME REAL",mx,my,true);
-        button(g,left+panelWidth-330,top+panelHeight-58,280,34,"SALVAR",mx,my,true);
+        int bottomY=top+panelHeight-36;
+        button(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my,true);
+        button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
     }
     @Override public boolean mouseClicked(double mx,double my,int btn) {
         if(super.mouseClicked(mx,my,btn)) return true;
         if(btn!=0) return false;
-        if(inside(mx,my,left+520,top+50,480,32)){ pronounTab=true; return true; }
-        if(inside(mx,my,left+34,top+50,480,32)){ pronounTab=false; return true; }
+        int tabW=(panelWidth-74)/2;
+        if(inside(mx,my,left+40+tabW,top+50,tabW,28)){ pronounTab=true; updateFieldVisibility(); return true; }
+        if(inside(mx,my,left+34,top+50,tabW,28)){ pronounTab=false; updateFieldVisibility(); return true; }
         if(!pronounTab){
-            for(int i=0;i<FORMATS.length;i++) if(inside(mx,my,left+50+(i%3)*155,top+215+(i/3)*32,145,26)){format=FORMATS[i];return true;}
-            for(int i=0;i<COLORS.length;i++) if(inside(mx,my,left+50+(i%5)*140,top+345+(i/5)*32,130,26)){color=COLORS[i];return true;}
+            int formatW=Math.min(150,(panelWidth-120)/3);
+            for(int i=0;i<FORMATS.length;i++) if(inside(mx,my,left+50+(i%3)*(formatW+6),top+152+(i/3)*27,formatW,23)){format=FORMATS[i];return true;}
+            int colorW=Math.min(110,(panelWidth-120)/5);
+            for(int i=0;i<COLORS.length;i++) if(inside(mx,my,left+50+(i%5)*(colorW+6),top+226+(i/5)*25,colorW,22)){color=COLORS[i];return true;}
         }
-        if(inside(mx,my,left+50,top+panelHeight-58,260,34)){ FakeNameClientState.nickname=""; nickname.setValue(""); send("fakename_reset"); onClose(); return true; }
-        if(inside(mx,my,left+panelWidth-330,top+panelHeight-58,280,34)){ send("fakename_save"); onClose(); return true; }
+        int bottomY=top+panelHeight-36;
+        if(inside(mx,my,left+50,bottomY,260,26)){ FakeNameClientState.nickname=""; nickname.setValue(""); pronouns.setValue(""); send("fakename_reset"); onClose(); return true; }
+        if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
     }
     private void send(String action){ PacketDistributor.sendToServer(new ActionPayload(action, nickname.getValue(), pronouns.getValue(), format, color, "", "")); }

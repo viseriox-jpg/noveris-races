@@ -137,16 +137,16 @@ public final class RaceAbilities {
                 ? "Mobilidade: " + charges + "/3 cargas restantes."
                 : "Mobilidade esgotada: recarga de " + (mobilityCooldown / 20) + " segundos."), true);
         switch (race) {
-            case ELF -> { particles(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), 28, .7, .04); particles(p, ParticleTypes.CRIT, 10, .5, .08); }
-            case FAIRY -> particles(p, RaceState.fairyAffinity(p) == FairyAffinity.NATURE ? ParticleTypes.HAPPY_VILLAGER
-                    : RaceState.fairyAffinity(p) == FairyAffinity.WATER ? ParticleTypes.SPLASH : ParticleTypes.CLOUD, 22, .65, .07);
-            case SATYR -> { particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 28, .75, .06); particles(p, ParticleTypes.FALLING_SPORE_BLOSSOM, 12, .55, .02); }
-            case THALASSIAN -> { particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 34, .8, .1); particles(p, ParticleTypes.SPLASH, 16, .65, .06); }
-            case NEPHILIM -> { particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 26, .7, .04); particles(p, ParticleTypes.TOTEM_OF_UNDYING, 10, .5, .03); }
-            case VAMPIRE -> { particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 30, .7, .05); particles(p, ParticleTypes.DAMAGE_INDICATOR, 10, .5, .04); }
-            case HALF_BLOOD -> { particles(p, ParticleTypes.ENCHANTED_HIT, 26, .7, .05); particles(p, ParticleTypes.END_ROD, 12, .45, .03); }
+            case ELF -> { particles(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), 28, .7, .04); particles(p, ParticleTypes.END_ROD, 10, .5, .03); particles(p, ParticleTypes.CRIT, 10, .5, .08); }
+            case FAIRY -> { particles(p, RaceState.fairyAffinity(p) == FairyAffinity.NATURE ? ParticleTypes.HAPPY_VILLAGER
+                    : RaceState.fairyAffinity(p) == FairyAffinity.WATER ? ParticleTypes.SPLASH : ParticleTypes.CLOUD, 22, .65, .07); particles(p, ParticleTypes.END_ROD, 8, .5, .03); }
+            case SATYR -> { particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 28, .75, .06); particles(p, ParticleTypes.FALLING_SPORE_BLOSSOM, 12, .55, .02); particles(p, ParticleTypes.END_ROD, 8, .5, .03); }
+            case THALASSIAN -> { particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 34, .8, .1); particles(p, ParticleTypes.SPLASH, 16, .65, .06); particles(p, ParticleTypes.BUBBLE_POP, 8, .45, .03); }
+            case NEPHILIM -> { particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 26, .7, .04); particles(p, ParticleTypes.END_ROD, 10, .5, .03); particles(p, ParticleTypes.TOTEM_OF_UNDYING, 10, .5, .03); }
+            case VAMPIRE -> { particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 30, .7, .05); particles(p, ParticleTypes.DAMAGE_INDICATOR, 10, .5, .04); particles(p, ParticleTypes.SQUID_INK, 8, .55, .03); }
+            case HALF_BLOOD -> particles(p, ParticleTypes.ENCHANTED_HIT, 26, .7, .05);
             case TIEFLING -> particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 22, .55, .12);
-            case LYCANTHROPE -> { particles(p, ParticleTypes.POOF, 30, .8, .1); particles(p, ParticleTypes.CRIT, 16, .7, .12); }
+            case LYCANTHROPE -> { particles(p, ParticleTypes.POOF, 30, .8, .1); particles(p, ParticleTypes.CRIT, 16, .7, .12); particles(p, ParticleTypes.ASH, 10, .55, .03); }
             case DRAGONBORN -> { particles(p, ParticleTypes.LARGE_SMOKE, 26, .7, .05); particles(p, ParticleTypes.ELECTRIC_SPARK, 12, .55, .04); }
             case HARPY -> particles(p, external("irons_spellbooks:spark", ParticleTypes.CLOUD), 26, .8, .12);
             default -> { }
@@ -426,12 +426,6 @@ public final class RaceAbilities {
     private static void particles(ServerPlayer p, ParticleOptions particle, int count, double spread, double speed) {
         if (p.level() instanceof ServerLevel level) {
             level.sendParticles(particle, p.getX(), p.getY() + 1, p.getZ(), count, spread, spread, spread, speed);
-            // Um brilho secundário dá profundidade ao efeito sem substituir a partícula temática.
-            if (particle != ParticleTypes.FLAME && particle != ParticleTypes.SMALL_FLAME
-                    && particle != ParticleTypes.SOUL_FIRE_FLAME && particle != ParticleTypes.SMOKE
-                    && particle != ParticleTypes.LARGE_SMOKE)
-                level.sendParticles(ParticleTypes.END_ROD, p.getX(), p.getY() + 1, p.getZ(),
-                        Math.max(4, count / 4), spread * .72, spread * .72, spread * .72, Math.max(.01, speed * .55));
         }
     }
 
@@ -456,14 +450,19 @@ public final class RaceAbilities {
                 if (RaceState.fairyAffinity(p) == FairyAffinity.WATER) particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 8, .55, .03);
                 else if (RaceState.fairyAffinity(p) == FairyAffinity.AIR) particles(p, ParticleTypes.CLOUD, 8, .7, .04);
                 else particles(p, external("hazennstuff:leaf_particle", ParticleTypes.HAPPY_VILLAGER), 8, .65, .03);
+                particles(p, ParticleTypes.END_ROD, 3, .35, .02);
             }
-            case VAMPIRE -> particles(p, external("irons_spellbooks:blood", ParticleTypes.DAMAGE_INDICATOR), 7, .45, .03);
-            case DRAGONBORN -> particles(p, RaceState.lineage(p) == DragonLineage.FIRE ? external("irons_spellbooks:dragon_fire", ParticleTypes.FLAME) : RaceState.lineage(p) == DragonLineage.FROST ? external("irons_spellbooks:snowflake", ParticleTypes.SNOWFLAKE) : new DustParticleOptions(new Vector3f(.1f, .9f, .18f), 1.25f), 8, .55, .03);
+            case VAMPIRE -> { particles(p, external("irons_spellbooks:blood", ParticleTypes.DAMAGE_INDICATOR), 10, .5, .04); particles(p, ParticleTypes.SQUID_INK, 3, .35, .02); }
+            case DRAGONBORN -> {
+                if (RaceState.lineage(p) == DragonLineage.FIRE) particles(p, external("irons_spellbooks:dragon_fire", ParticleTypes.FLAME), 8, .55, .03);
+                else if (RaceState.lineage(p) == DragonLineage.FROST) { particles(p, external("irons_spellbooks:snowflake", ParticleTypes.SNOWFLAKE), 8, .55, .03); particles(p, ParticleTypes.SNOWFLAKE, 4, .4, .02); }
+                else { particles(p, new DustParticleOptions(new Vector3f(.1f, .9f, .18f), 1.25f), 10, .55, .03); particles(p, ParticleTypes.BUBBLE, 3, .3, .02); }
+            }
             case TIEFLING -> particles(p, external("irons_spellbooks:fiery_smoke", ParticleTypes.SMOKE), 7, .55, .03);
-            case THALASSIAN -> particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 8, .55, .03);
-            case ELF -> particles(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), 7, .5, .03);
-            case SATYR -> particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 7, .55, .03);
-            case HARPY -> particles(p, ParticleTypes.CLOUD, 8, .65, .04);
+            case THALASSIAN -> { particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 10, .6, .04); particles(p, ParticleTypes.BUBBLE_POP, 4, .35, .02); }
+            case ELF -> { particles(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), 7, .5, .03); particles(p, ParticleTypes.END_ROD, 3, .3, .02); }
+            case SATYR -> { particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 9, .6, .04); particles(p, ParticleTypes.END_ROD, 3, .3, .02); }
+            case HARPY -> { particles(p, ParticleTypes.CLOUD, 10, .7, .05); particles(p, ParticleTypes.GUST, 3, .35, .02); }
             default -> { }
         }
     }

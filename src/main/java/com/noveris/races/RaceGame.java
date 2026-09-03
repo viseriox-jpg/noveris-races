@@ -1,6 +1,7 @@
 package com.noveris.races;
 
 import com.noveris.races.network.RaceNetwork.StatePayload;
+import com.noveris.races.network.RaceNetwork.FakeNamePayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -14,5 +15,9 @@ public final class RaceGame {
                 Math.max(0, RaceState.mobilityReady(p) - now),
                 (int)RaceState.customLong(p, "MobilityCharges"), RaceState.inCombat(p), RaceState.visionEnabled(p),
                 (int)Math.max(0, 100 - RaceState.customLong(p, "DryTicks") * 100 / 9600)));
+    }
+    public static void syncFakeName(ServerPlayer p, boolean open) {
+        PacketDistributor.sendToPlayer(p, new FakeNamePayload(FakeNameState.nickname(p), FakeNameState.pronouns(p),
+                FakeNameState.format(p), FakeNameState.color(p), open));
     }
 }

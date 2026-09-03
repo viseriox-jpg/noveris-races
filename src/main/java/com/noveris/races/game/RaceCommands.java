@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.Collection;
 
@@ -21,6 +22,7 @@ public final class RaceCommands {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> d = event.getDispatcher();
+        d.register(Commands.literal("apelido").executes(c -> openNickname(c.getSource())));
         d.register(Commands.literal("noverisraces").requires(s -> s.hasPermission(2))
             .then(Commands.literal("reset").then(Commands.argument("jogador", EntityArgument.player())
                 .executes(c -> reset(c.getSource(), EntityArgument.getPlayer(c, "jogador")))))
@@ -33,6 +35,12 @@ public final class RaceCommands {
                         .executes(c -> set(c.getSource(), EntityArgument.getPlayer(c, "jogador"), StringArgumentType.getString(c, "raça"), StringArgumentType.getString(c, "linhagem")))))))
             .then(Commands.literal("listar").then(Commands.argument("raça", StringArgumentType.word())
                 .executes(c -> list(c.getSource(), StringArgumentType.getString(c, "raça"))))));
+    }
+
+    private static int openNickname(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        RaceGame.syncFakeName(player, true);
+        return 1;
     }
 
     private static int reset(CommandSourceStack source, ServerPlayer target) {

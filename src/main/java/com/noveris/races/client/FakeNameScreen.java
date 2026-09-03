@@ -17,7 +17,7 @@ public final class FakeNameScreen extends NoverisScreen {
     private boolean confirmReset;
     private String format, color, prefix;
     private static final String[] FORMATS = {"normal", "bold", "italic", "underlined", "strikethrough", "uniform"};
-    private static final String[] COLORS = {"white", "yellow", "gold", "red", "green", "blue", "purple", "aqua", "gray"};
+    private static final String[] COLORS = {"white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "aqua", "gray"};
 
     public FakeNameScreen() { super("APELIDO DE NOVERIS"); format=FakeNameClientState.format; color=FakeNameClientState.color; prefix=FakeNameClientState.prefix; }
     /** A tela já desenha o painel opaco; o background padrão do Screen adicionaria blur por cima dele. */
@@ -45,8 +45,8 @@ public final class FakeNameScreen extends NoverisScreen {
             int formatW=Math.min(150,(panelWidth-120)/3);
             for(int i=0;i<FORMATS.length;i++) button(g,left+50+(i%3)*(formatW+6),top+166+(i/3)*25,formatW,21,FORMATS[i].toUpperCase(),mx,my,hasFormat(FORMATS[i]));
             g.drawString(font,"COR",left+50,top+220,WHITE,false);
-            int colorW=Math.min(110,(panelWidth-120)/5);
-            for(int i=0;i<COLORS.length;i++) coloredButton(g,left+50+(i%5)*(colorW+6),top+232+(i/5)*24,colorW,21,COLORS[i],mx,my,color.equals(COLORS[i]));
+            int colorW=Math.min(110,(panelWidth-120)/6);
+            for(int i=0;i<COLORS.length;i++) coloredButton(g,left+50+(i%6)*(colorW+6),top+232+(i/6)*24,colorW,21,COLORS[i],mx,my,color.equals(COLORS[i]));
         } else {
             g.drawString(font,"PRONOMES OU COMPLEMENTO (ATÉ 10 LETRAS)",left+50,top+88,WHITE,false);
             g.drawString(font,"Exemplo: ela, ele ou título curto. Pode deixar vazio.",left+50,top+132,MUTED,false);
@@ -57,7 +57,7 @@ public final class FakeNameScreen extends NoverisScreen {
             button(g,left+362,top+186,150,24,"ORVANNIS",mx,my,prefix.equals("orvannis"));
             g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
         }
-        int bottomY=top+panelHeight-36;
+        int bottomY=top+panelHeight-26;
         dangerButton(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
@@ -79,14 +79,14 @@ public final class FakeNameScreen extends NoverisScreen {
         if(!pronounTab){
             int formatW=Math.min(150,(panelWidth-120)/3);
             for(int i=0;i<FORMATS.length;i++) if(inside(mx,my,left+50+(i%3)*(formatW+6),top+166+(i/3)*25,formatW,21)){toggleFormat(FORMATS[i]);return true;}
-            int colorW=Math.min(110,(panelWidth-120)/5);
-            for(int i=0;i<COLORS.length;i++) if(inside(mx,my,left+50+(i%5)*(colorW+6),top+232+(i/5)*24,colorW,21)){color=COLORS[i];return true;}
+            int colorW=Math.min(110,(panelWidth-120)/6);
+            for(int i=0;i<COLORS.length;i++) if(inside(mx,my,left+50+(i%6)*(colorW+6),top+232+(i/6)*24,colorW,21)){color=COLORS[i];return true;}
         } else {
             if(inside(mx,my,left+50,top+186,150,24)){prefix="none";return true;}
             if(inside(mx,my,left+206,top+186,150,24)){prefix="avarion";return true;}
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
-        int bottomY=top+panelHeight-36;
+        int bottomY=top+panelHeight-26;
         if(inside(mx,my,left+50,bottomY,260,26)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
@@ -106,10 +106,11 @@ public final class FakeNameScreen extends NoverisScreen {
         format=set.isEmpty()?"normal":String.join(",",set);
     }
     private void coloredButton(GuiGraphics g,int x,int y,int w,int h,String value,double mx,double my,boolean active){
-        button(g,x,y,w,h,value.toUpperCase(),mx,my,active);
+        button(g,x,y,w,h,colorLabel(value),mx,my,active);
         int swatch=colorValue(value); g.fill(x+5,y+5,x+15,y+h-5,swatch);
     }
-    private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFAF52DE;case "aqua"->0xFF32D7E8;case "gray"->0xFF9B9B9B;default->0xFFFFFFFF;}; }
+    private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "dark_red"->0xFF8F2435;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFAF52DE;case "aqua"->0xFF32D7E8;case "gray"->0xFF9B9B9B;default->0xFFFFFFFF;}; }
+    private String colorLabel(String value){ return switch(value){case "dark_red"->"VERMELHO ESCURO"; default->value.toUpperCase();}; }
     private Component preview(){
         String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
         Style style=Style.EMPTY.withColor(ChatFormatting.getByName(color));

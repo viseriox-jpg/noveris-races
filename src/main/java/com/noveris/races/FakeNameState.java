@@ -38,7 +38,7 @@ public final class FakeNameState {
     }
     private static boolean validColor(String c) {
         return c != null && switch (c.toLowerCase()) {
-            case "white", "yellow", "gold", "red", "green", "blue", "purple", "aqua", "gray" -> true;
+            case "white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "aqua", "gray" -> true;
             default -> false;
         };
     }

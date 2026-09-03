@@ -1,110 +1,134 @@
-# Noveris Races — Design da Interface
+# Design System Noveris
 
-Documento de referência visual e funcional para as telas do mod **Noveris Races**. A interface segue o padrão do Noveris Staff Call: painel escuro, moldura luminosa, tipografia pixelada e hierarquia simples, legível e responsiva.
+Guia reutilizável para interfaces de mods do universo Noveris. Define a identidade visual compartilhada entre mods, mantendo a aparência do Noveris Staff Call, do painel do Destino e do Noveris Races.
 
-## Direção visual
+## Princípios
 
-- **Fundo:** quase preto, `#0D0C09`, com transparência aproximada de 92%.
-- **Cor de destaque:** amarelo vivo, nunca marrom: `#FFD84D`.
-- **Destaque ativo/hover:** `#D6A800` e `#F2C94C`.
-- **Texto principal:** branco quente `#FFFBEB`.
-- **Texto secundário:** bege claro `#C9BE9B`.
-- **Texto de alerta:** amarelo intenso `#FFC928`.
-- **Cores de afinidade:** fogo `#FF8A4B`, gelo `#80D9FF`, veneno `#86D48A`, natureza `#8ED081`, água `#75D6F5`, ar `#E8F3F5`.
+1. A interface deve parecer um painel diegético do universo Noveris, não uma tela vanilla.
+2. A informação deve ser legível antes de ser decorativa.
+3. Cada tela tem hierarquia clara: título, estado, conteúdo e ação.
+4. Nenhum texto, botão ou ícone pode se sobrepor.
+5. O mesmo componente deve ter o mesmo comportamento em todos os mods.
 
-A moldura usa uma linha de 3–4 px, símbolos `+` nos quatro cantos e uma divisória horizontal abaixo do cabeçalho. Botões ativos usam preenchimento amarelo e texto branco; botões inativos usam preenchimento quase preto e texto branco/secundário. Texto escuro sobre amarelo não deve ser usado.
+## Identidade visual
+
+### Cores oficiais
+
+| Função | Cor | Hex |
+|---|---|---|
+| Fundo principal | Preto quente | `#0D0C09` |
+| Fundo secundário | Preto amarronzado | `#17140E` |
+| Moldura e linha | Amarelo vivo | `#FFD84D` |
+| Botão ativo | Amarelo profundo | `#D6A800` |
+| Hover | Amarelo claro | `#F2C94C` |
+| Texto principal | Branco quente | `#FFFBEB` |
+| Texto secundário | Bege claro | `#C9BE9B` |
+| Alerta | Amarelo forte | `#FFC928` |
+| Erro/perigo | Vermelho-alaranjado | `#FF6B5E` |
+
+O amarelo deve permanecer luminoso e saturado. Não usar marrom escuro como destaque. Texto escuro sobre amarelo é proibido; textos de botões permanecem brancos.
+
+### Moldura
+
+- Painel centralizado com fundo `#0D0C09` e opacidade aproximada de 92%.
+- Borda de 3–4 px em `#FFD84D`.
+- Símbolo `+` nos quatro cantos internos.
+- Linha horizontal amarela separando cabeçalho e conteúdo.
+- O mundo do Minecraft pode permanecer visível atrás, sem competir com o texto.
 
 ## Tipografia e espaçamento
 
-- Usar a fonte pixelada do mod em títulos, rótulos e botões.
-- Títulos: 16–20 px; subtítulos: 12–14 px; corpo: 10–12 px.
-- Altura mínima entre linhas: 18 px; separação entre blocos: 24 px.
-- Textos longos devem ser quebrados antes de desenhar; nunca podem atravessar outro bloco.
+- Usar uma fonte pixelada única em todos os mods Noveris.
+- Títulos: 16–20 px; seções: 12–14 px; corpo: 10–12 px.
+- Texto principal em `#FFFBEB`; descrições em `#C9BE9B`.
+- Altura mínima entre linhas: 18 px.
+- Separação mínima entre blocos: 24 px.
+- Quebrar texto pela largura da coluna; nunca deixar uma frase atravessar outro componente.
 
-## Tela de seleção de raça
-
-### Cabeçalho e abas
-
-- Esquerda: `LINHAGENS DE NOVERIS`.
-- Direita: reino atual, por exemplo `REINO DE ORVANNIS`.
-- Abas alinhadas e com largura igual: `[ ORVANNIS ] [ NEUTROS ] [ AVARION ]`.
-- Somente a aba ativa usa destaque; a grade é atualizada sem mover o painel de detalhes.
-
-### Grade de raças
-
-- Até quatro cartões por linha em telas largas.
-- Cartões com largura igual, espaçamento constante e altura fixa.
-- Cada cartão contém símbolo, nome e estado selecionado.
-- O cartão selecionado recebe moldura/preenchimento amarelo.
-- Meio-Sangue usa uma área própria para ascendências abaixo dos detalhes, nunca sobre o botão principal.
-
-### Painel de detalhes
-
-O painel tem duas colunas:
-
-- **Esquerda:** nome, reino, corações, limite de altura, descrição, habilidades ativas e mobilidade.
-- **Direita:** passivas, fraquezas/debuffs e condições especiais.
-
-Quando o conteúdo exceder a altura disponível, mostrar `VER PODERES E FRAQUEZAS` e abrir uma segunda página. Não reduzir a fonte para caber tudo.
-
-### Altura e ação principal
-
-Mostrar uma única linha com `[ MENOR ] [ MÉDIO ] [ MAIOR ]`. O valor atual aparece acima: `PORTE — 95%`. Os botões alteram imediatamente a prévia e respeitam o limite máximo da raça, nunca acima de 115%.
-
-`SELECIONAR RAÇA` fica centralizado no rodapé, separado dos controles de altura por pelo menos 20 px. Nunca deve compartilhar a linha de textos de fraqueza ou linhagem.
-
-## Tela de teste e painel da raça
+## Estrutura padrão de tela
 
 ### Cabeçalho
 
-- Esquerda: `SANGUE DE [RAÇA]`.
-- Direita: `EM TESTE 4:59` ou o estado definitivo.
+- Esquerda: nome da tela ou sistema, por exemplo `TRIBUNAL DAS ALMAS`.
+- Direita: estado atual, jogador, reino ou contador.
 - Divisória horizontal abaixo do cabeçalho.
 
-### Página 1 — resumo
+### Conteúdo
 
-- **Esquerda:** resumo, vida, porte e condições relevantes.
-- **Direita:** condições atuais e efeitos ativos.
-- Rodapé: lista curta de passivas e `ABRIR PODERES E FRAQUEZAS`.
+Usar uma ou duas colunas com larguras calculadas pela área disponível. Cada bloco tem título curto, conteúdo limitado e espaço reservado para seu crescimento.
 
-### Página 2 — poderes e fraquezas
+### Rodapé
 
-- Coluna esquerda: habilidades com ícone, nome, descrição, tecla e recarga.
-- Coluna direita: passivas detalhadas, fraquezas, condições de ativação e penalidades.
-- Rodapé: `VOLTAR` e, durante o teste, `TESTAR OUTRA RAÇA` ou `CONFIRMAR RAÇA`.
-- Cada habilidade tem no máximo três linhas visuais; descrições maiores continuam abaixo do próprio título.
+Reservar o rodapé antes de desenhar o conteúdo. Ação principal fica centralizada; ações secundárias ficam nas laterais. Nenhuma descrição pode ocupar essa faixa.
 
-### Visão racial
+## Componentes reutilizáveis
 
-O painel deve mostrar sempre um estado inequívoco: `VISÃO RACIAL — ATIVA` ou `VISÃO RACIAL — SUSPENSA`. A tecla separada alterna apenas essa visão; o ícone e o texto mudam imediatamente. O efeito só é aplicado em baixa luz quando estiver ativa.
+### Abas
 
-## Confirmação e teste temporário
+Formato: `[ ABA 1 ] [ ABA 2 ] [ ABA 3 ]`.
 
-Ao clicar em `SELECIONAR RAÇA`, abrir: `DESEJA REALMENTE ESCOLHER ESTA RAÇA?` com `[ CONFIRMAR ] [ VOLTAR ]`.
+- Todas têm a mesma largura e altura.
+- Ativa: fundo `#D6A800`, texto branco.
+- Inativa: fundo `#17140E`, texto branco/bege.
+- Hover: `#F2C94C`.
+- Trocar de aba não move o painel principal.
 
-O teste dura cinco minutos, é cancelado ao desconectar, continua após morte e permite trocar de raça fora de combate. Ao terminar, o painel pede confirmação definitiva.
+### Cartões
 
-## Regras de interação
+- Largura e altura uniformes.
+- Símbolo no topo e nome centralizado.
+- Selecionado com preenchimento amarelo.
+- Espaçamento constante.
+- Em telas estreitas, usar menos cartões por linha ou paginação.
 
-- Mostrar as teclas primária, secundária, mobilidade e visão racial.
-- Mobilidades usam até três cargas, intervalo mínimo de 3 segundos entre cargas e recarga de 45 segundos após esgotar.
-- Exibir combate, hidratação, afinidade elemental e penalidade de armadura em `CONDIÇÕES ATUAIS`.
-- Mensagens temporárias usam a barra de ação, sem criar linhas permanentes sobre o painel.
-- Clique, foco do teclado e estado ativo têm feedback amarelo.
+### Botões
 
-## Responsividade e prevenção de bugs
+- Altura mínima: 36 px.
+- Texto centralizado, branco e em caixa alta.
+- Primário: `#D6A800`; secundário: `#17140E`; hover: `#F2C94C`.
+- Rótulos de confirmação e perigo devem ser explícitos.
+- Nunca colocar botão sobre texto, divisória ou outro botão.
 
-- Calcular posições a partir de `left`, `top`, `contentWidth` e `contentHeight`; não depender de coordenadas fixas.
-- Reservar o rodapé antes de desenhar habilidades e fraquezas.
-- Aplicar quebra de texto e `maxLines` por coluna.
-- Nunca desenhar controles depois de iniciar o rodapé.
-- Em resoluções menores, reduzir cartões por linha ou usar paginação, nunca sobreposição.
-- O botão principal deve permanecer dentro da moldura em 854×480, 1280×720 e 1920×1080.
+### Listas e estados
 
-## Símbolos, partículas e fluxo
+- `•` para listas e `◆` para habilidades.
+- Estados explícitos: `ATIVO`, `SUSPENSO`, `EM TESTE`, `BLOQUEADO`, `RECARREGANDO`.
+- Mensagens rápidas usam a barra de ação do Minecraft, não linhas permanentes no painel.
 
-- Usar ícones consistentes para vida, passiva, habilidade, mobilidade, fraqueza e recarga.
-- Partículas são feedback complementar, nunca a única indicação de uma habilidade.
-- Cores de elemento acompanham texto e partícula, especialmente veneno verde e fogo laranja/vermelho.
+## Segunda página e paginação
 
-Fluxo: seleção obrigatória ao entrar → reino → raça → afinidade/linhagem → porte → confirmação → teste → confirmação definitiva. A tecla do painel abre o resumo da raça escolhida a qualquer momento.
+Quando houver muitos detalhes, manter a primeira página simples e adicionar `VER DETALHES` ou `PODERES E FRAQUEZAS`. A segunda página preserva cabeçalho, moldura, dimensões e rodapé, com `VOLTAR`. Nunca diminuir a fonte até ficar ilegível para evitar paginação.
+
+## Estados visuais
+
+Todo componente interativo deve diferenciar normal, hover/foco, selecionado/ativo, desativado/bloqueado, recarga e erro/confirmação pendente. O estado deve aparecer por cor e também por texto ou ícone; partículas e sons são complementares.
+
+## Layout responsivo e anti-sobreposição
+
+- Calcular posições a partir de `left`, `top`, `contentWidth` e `contentHeight`.
+- Não usar coordenadas fixas de uma única resolução.
+- Reservar cabeçalho e rodapé antes de distribuir conteúdo.
+- Definir `maxLines` e largura máxima para cada bloco.
+- Usar espaçamento vertical previsível entre título, descrição, lista e controles.
+- Em resoluções menores, usar paginação, rolagem controlada ou grade menor.
+- Testar em 854×480, 1280×720 e 1920×1080.
+- Moldura e botão principal devem permanecer totalmente visíveis.
+
+## Feedback, partículas e sons
+
+- Partículas reforçam a função da habilidade ou estado e usam a cor do tema.
+- Uma ação tem feedback visual imediato no jogador, no painel e, quando apropriado, no mundo.
+- Sons recorrentes são discretos; confirmação, erro e conclusão podem ser mais marcantes.
+- Partículas nunca são a única indicação de uma alteração importante.
+
+## Checklist para novos mods
+
+- [ ] Fundo preto quente e amarelo `#FFD84D`.
+- [ ] Moldura, símbolos de canto, divisória e fonte pixelada do padrão Noveris.
+- [ ] Texto claro e contraste alto.
+- [ ] Estados normal, hover, ativo, bloqueado e recarga.
+- [ ] Rodapé reservado antes do conteúdo.
+- [ ] Textos quebrados sem sobreposição.
+- [ ] Segunda página ou paginação quando necessário.
+- [ ] Teste nas três resoluções.
+- [ ] Partículas e sons complementam o texto.

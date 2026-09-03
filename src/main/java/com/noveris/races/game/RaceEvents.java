@@ -76,6 +76,8 @@ public final class RaceEvents {
         }
         updateScale(p);
         handleHeavyArmorMobility(p, race);
+        if (race == Race.FAIRY && ironArmorPieces(p) >= 4)
+            p.removeEffect(MobEffects.REGENERATION);
         if (p.tickCount % 20 == 0) {
             applyAttributes(p);
             applyPassives(p, race);
@@ -109,6 +111,8 @@ public final class RaceEvents {
                 || pieces >= 4 && effect.equals(MobEffects.JUMP));
         blocked |= race == Race.HARPY && (effect.equals(MobEffects.MOVEMENT_SPEED)
                 || pieces >= 4 && (effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING)));
+        // Quatro peças de ferro bloqueiam toda regeneração do Feérico.
+        blocked |= race == Race.FAIRY && pieces >= 4 && effect.equals(MobEffects.REGENERATION);
         if (blocked) event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
 
@@ -138,7 +142,7 @@ public final class RaceEvents {
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.IS_FALL)
                 && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil")) event.setAmount(event.getAmount() * .35f);
         if (race == Race.FAIRY && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity fairyAttacker
-                && fairyAttacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount() * 1.30f);
+                && isIronWeapon(fairyAttacker.getMainHandItem())) event.setAmount(event.getAmount() * 1.30f);
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * .8f);
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.6f);
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
@@ -208,6 +212,10 @@ public final class RaceEvents {
         boolean hybridFairy = RaceState.race(p) == Race.HALF_BLOOD
                 && (RaceState.ancestryA(p) == Race.FAIRY || RaceState.ancestryB(p) == Race.FAIRY);
         if ((fairy || hybridFairy) && isPlantFood(event.getItem())) {
+            if (fairy && ironArmorPieces(p) >= 4) {
+                p.displayClientMessage(Component.literal("O ferro bloqueia a regeneração feérica."), true);
+                return;
+            }
             p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, fairy ? 60 : 35, 0, false, true));
             p.displayClientMessage(Component.literal("Seiva Vital: regeneração fortalecida."), true);
             if (p.level() instanceof ServerLevel level)
@@ -221,6 +229,13 @@ public final class RaceEvents {
                 || stack.is(Items.BAKED_POTATO) || stack.is(Items.BEETROOT) || stack.is(Items.MELON_SLICE)
                 || stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES) || stack.is(Items.CHORUS_FRUIT)
                 || stack.is(Items.DRIED_KELP) || stack.is(Items.COOKIE) || stack.is(Items.PUMPKIN_PIE);
+    }
+
+    private static boolean isIronWeapon(ItemStack stack) {
+        return stack.is(IRON_WEAPONS)
+                || stack.is(Items.IRON_SWORD) || stack.is(Items.IRON_AXE)
+                || stack.is(Items.IRON_PICKAXE) || stack.is(Items.IRON_SHOVEL)
+                || stack.is(Items.IRON_HOE);
     }
 
     @SubscribeEvent
@@ -510,7 +525,7 @@ public final class RaceEvents {
         else if (has.test(Race.HARPY)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
             event.setAmount(event.getAmount()*1.06f);
         if (has.test(Race.FAIRY)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(IRON_WEAPONS)) event.setAmount(event.getAmount()*1.15f);
+                && isIronWeapon(attacker.getMainHandItem())) event.setAmount(event.getAmount()*1.15f);
         if (has.test(Race.LYCANTHROPE)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
                 && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount()*1.25f);
     }

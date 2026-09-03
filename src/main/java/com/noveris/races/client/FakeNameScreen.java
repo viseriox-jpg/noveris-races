@@ -34,8 +34,8 @@ public final class FakeNameScreen extends NoverisScreen {
         int tabW=(panelWidth-74)/2;
         button(g,left+34,top+50,tabW,28,"APELIDO",mx,my,!pronounTab); button(g,left+40+tabW,top+50,tabW,28,"PRONOMES / COMPLEMENTO",mx,my,pronounTab);
         if (!pronounTab) {
-            g.drawString(font,"APELIDO (ATÉ 20 CARACTERES)",left+50,top+76,WHITE,false);
-            g.drawString(font,"O nome real continua visível para a administração.",left+50,top+112,MUTED,false);
+            g.drawString(font,"APELIDO (ATÉ 20 CARACTERES)",left+50,top+68,WHITE,false);
+            g.drawString(font,"O nome real continua visível para a administração.",left+50,top+114,MUTED,false);
             g.drawString(font,"FORMATAÇÃO",left+50,top+140,WHITE,false);
             int formatW=Math.min(150,(panelWidth-120)/3);
             for(int i=0;i<FORMATS.length;i++) button(g,left+50+(i%3)*(formatW+6),top+152+(i/3)*27,formatW,23,FORMATS[i].toUpperCase(),mx,my,format.equals(FORMATS[i]));
@@ -43,12 +43,12 @@ public final class FakeNameScreen extends NoverisScreen {
             int colorW=Math.min(110,(panelWidth-120)/5);
             for(int i=0;i<COLORS.length;i++) button(g,left+50+(i%5)*(colorW+6),top+226+(i/5)*25,colorW,22,COLORS[i].toUpperCase(),mx,my,color.equals(COLORS[i]));
         } else {
-            g.drawString(font,"PRONOMES OU COMPLEMENTO (ATÉ 10 LETRAS)",left+50,top+76,WHITE,false);
-            g.drawString(font,"Exemplo: ela, ele, elu ou título curto. Pode deixar vazio.",left+50,top+122,MUTED,false);
+            g.drawString(font,"PRONOMES OU COMPLEMENTO (ATÉ 10 LETRAS)",left+50,top+68,WHITE,false);
+            g.drawString(font,"Exemplo: ela, ele ou título curto. Pode deixar vazio.",left+50,top+122,MUTED,false);
             g.drawString(font,"Será exibido ao lado do apelido no chat e no tab.",left+50,top+148,MUTED,false);
         }
         int bottomY=top+panelHeight-36;
-        button(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my,true);
+        dangerButton(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
     }
@@ -70,5 +70,10 @@ public final class FakeNameScreen extends NoverisScreen {
         return true;
     }
     private void send(String action){ PacketDistributor.sendToServer(new ActionPayload(action, nickname.getValue(), pronouns.getValue(), format, color, "", "")); }
+    private void dangerButton(GuiGraphics g,int x,int y,int w,int h,String text,double mx,double my){
+        boolean hover=inside(mx,my,x,y,w,h);
+        g.fill(x,y,x+w,y+h,hover?0xFFBE3E50:0xFF8F2435);
+        g.drawCenteredString(font,text,x+w/2,y+9,WHITE);
+    }
     private static boolean inside(double mx,double my,int x,int y,int w,int h){return mx>=x&&mx<x+w&&my>=y&&my<y+h;}
 }

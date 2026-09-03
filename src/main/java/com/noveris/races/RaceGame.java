@@ -18,6 +18,6 @@ public final class RaceGame {
     }
     public static void syncFakeName(ServerPlayer p, boolean open) {
         PacketDistributor.sendToPlayer(p, new FakeNamePayload(FakeNameState.nickname(p), FakeNameState.pronouns(p),
-                FakeNameState.format(p), FakeNameState.color(p), open));
+                FakeNameState.format(p), FakeNameState.color(p), FakeNameState.prefix(p), open));
     }
 }

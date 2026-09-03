@@ -33,11 +33,11 @@ public final class RaceNetwork {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
-    public record FakeNamePayload(String nickname, String pronouns, String format, String color, boolean open) implements CustomPacketPayload {
+    public record FakeNamePayload(String nickname, String pronouns, String format, String color, String prefix, boolean open) implements CustomPacketPayload {
         public static final Type<FakeNamePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "fake_name"));
         public static final StreamCodec<RegistryFriendlyByteBuf, FakeNamePayload> CODEC = StreamCodec.of(
-                (buf, v) -> { buf.writeUtf(v.nickname); buf.writeUtf(v.pronouns); buf.writeUtf(v.format); buf.writeUtf(v.color); buf.writeBoolean(v.open); },
-                buf -> new FakeNamePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean()));
+                (buf, v) -> { buf.writeUtf(v.nickname); buf.writeUtf(v.pronouns); buf.writeUtf(v.format); buf.writeUtf(v.color); buf.writeUtf(v.prefix); buf.writeBoolean(v.open); },
+                buf -> new FakeNamePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean()));
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
@@ -48,7 +48,7 @@ public final class RaceNetwork {
                 context.enqueueWork(() -> ClientRaceState.accept(payload)));
         registrar.playToClient(FakeNamePayload.TYPE, FakeNamePayload.CODEC, (payload, context) ->
                 context.enqueueWork(() -> {
-                    FakeNameClientState.accept(payload.nickname(), payload.pronouns(), payload.format(), payload.color(), payload.open());
+                    FakeNameClientState.accept(payload.nickname(), payload.pronouns(), payload.format(), payload.color(), payload.prefix(), payload.open());
                     if (payload.open() && net.minecraft.client.Minecraft.getInstance().screen == null)
                         net.minecraft.client.Minecraft.getInstance().setScreen(new com.noveris.races.client.FakeNameScreen());
                 }));
@@ -80,7 +80,7 @@ public final class RaceNetwork {
                 case "vision" -> { RaceState.toggleVision(player); RaceGame.sync(player); }
                 case "sync" -> RaceGame.sync(player);
                 case "fakename_save" -> {
-                    FakeNameState.save(player, payload.race(), payload.lineage(), payload.fairyAffinity(), payload.ancestryA());
+                    FakeNameState.save(player, payload.race(), payload.lineage(), payload.fairyAffinity(), payload.ancestryA(), payload.ancestryB());
                     player.refreshDisplayName();
                     player.refreshTabListName();
                     RaceGame.syncFakeName(player, false);

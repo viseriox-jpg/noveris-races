@@ -20,7 +20,8 @@ public final class FakeNameState {
     public static String pronouns(ServerPlayer p) { return root(p).getString("Pronouns"); }
     public static String format(ServerPlayer p) { return root(p).getString("Format"); }
     public static String color(ServerPlayer p) { return root(p).getString("Color"); }
-    public static void save(ServerPlayer p, String nickname, String pronouns, String format, String color) {
+    public static String prefix(ServerPlayer p) { return root(p).getString("Prefix"); }
+    public static void save(ServerPlayer p, String nickname, String pronouns, String format, String color, String prefix) {
         var tag = root(p);
         tag.putString("Nickname", clean(nickname, 20));
         tag.putString("Pronouns", clean(pronouns, 10));
@@ -29,6 +30,7 @@ public final class FakeNameState {
             default -> "normal";
         });
         tag.putString("Color", validColor(color) ? color.toLowerCase() : "white");
+        tag.putString("Prefix", validPrefix(prefix) ? prefix.toLowerCase() : "none");
     }
     public static void reset(ServerPlayer p) { p.getPersistentData().remove(ROOT); }
     private static String clean(String value, int max) {
@@ -42,6 +44,7 @@ public final class FakeNameState {
             default -> false;
         };
     }
+    private static boolean validPrefix(String p) { return p != null && (p.equalsIgnoreCase("avarion") || p.equalsIgnoreCase("orvannis") || p.equalsIgnoreCase("none")); }
     public static Component displayName(ServerPlayer p) {
         String name = nickname(p);
         if (name.isBlank()) name = p.getGameProfile().getName();
@@ -55,6 +58,11 @@ public final class FakeNameState {
             case "uniform" -> style = style.withFont(ResourceLocation.withDefaultNamespace("uniform"));
             default -> { }
         }
-        return Component.literal(name).withStyle(style).append(Component.literal(suffix));
+        Component prefixPart = switch (prefix(p).toLowerCase()) {
+            case "avarion" -> Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);
+            case "orvannis" -> Component.literal("Orvannis ").withStyle(ChatFormatting.BLUE);
+            default -> Component.empty();
+        };
+        return prefixPart.append(Component.literal(name).withStyle(style)).append(Component.literal(suffix));
     }
 }

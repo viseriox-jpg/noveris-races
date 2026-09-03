@@ -114,6 +114,16 @@ public final class RaceEvents {
 
     @SubscribeEvent
     public static void damage(LivingIncomingDamageEvent event) {
+        // O ataque normal do Vampiro pode recuperar uma pequena quantidade de vida
+        // contra qualquer entidade viva, mas somente durante a noite.
+        if (event.getSource().getEntity() instanceof ServerPlayer attacker
+                && RaceState.race(attacker) == Race.VAMPIRE
+                && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)
+                && attacker.level().isNight()
+                && attacker.level().getGameTime() >= RaceState.customLong(attacker, "VampireBiteReady")) {
+            attacker.heal(Math.min(1f, event.getAmount() * .08f));
+            RaceState.customLong(attacker, "VampireBiteReady", attacker.level().getGameTime() + 20);
+        }
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
         Race race = RaceState.race(victim);
         if (race == Race.HALF_BLOOD) applyHybridDamage(victim, event);
@@ -157,12 +167,6 @@ public final class RaceEvents {
         }
         if (race == Race.LYCANTHROPE && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
                 && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount() * 1.35f);
-        if (event.getSource().getEntity() instanceof ServerPlayer attacker && RaceState.race(attacker) == Race.VAMPIRE
-                && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)
-                && attacker.level().isNight() && attacker.level().getGameTime() >= RaceState.customLong(attacker, "VampireBiteReady")) {
-            attacker.heal(Math.min(1f, event.getAmount() * .08f));
-            RaceState.customLong(attacker, "VampireBiteReady", attacker.level().getGameTime() + 20);
-        }
         RaceState.markCombat(victim);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) RaceState.markCombat(attacker);
     }

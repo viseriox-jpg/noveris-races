@@ -33,8 +33,6 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class RaceEvents {
     private static final TagKey<net.minecraft.world.item.Item> SILVER_WEAPONS = TagKey.create(Registries.ITEM,
             ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "silver_weapons"));
-    private static final TagKey<net.minecraft.world.item.Item> IRON_WEAPONS = TagKey.create(Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "iron_weapons"));
     private static final TagKey<net.minecraft.world.item.Item> HEAVY_ARMOR = TagKey.create(Registries.ITEM,
             ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "heavy_armor"));
     private RaceEvents() {}
@@ -76,7 +74,8 @@ public final class RaceEvents {
         }
         updateScale(p);
         handleHeavyArmorMobility(p, race);
-        if (race == Race.FAIRY && ironArmorPieces(p) >= 4)
+        // No Nether, a afinidade feérica não consegue sustentar regeneração.
+        if (race == Race.FAIRY && p.level().dimensionType().ultraWarm())
             p.removeEffect(MobEffects.REGENERATION);
         if (p.tickCount % 20 == 0) {
             applyAttributes(p);
@@ -111,8 +110,9 @@ public final class RaceEvents {
                 || pieces >= 4 && effect.equals(MobEffects.JUMP));
         blocked |= race == Race.HARPY && (effect.equals(MobEffects.MOVEMENT_SPEED)
                 || pieces >= 4 && (effect.equals(MobEffects.JUMP) || effect.equals(MobEffects.SLOW_FALLING)));
-        // Quatro peças de ferro bloqueiam toda regeneração do Feérico.
-        blocked |= race == Race.FAIRY && pieces >= 4 && effect.equals(MobEffects.REGENERATION);
+        // A fraqueza feérica é dimensional, não depende de armadura ou tags de itens.
+        blocked |= race == Race.FAIRY && p.level().dimensionType().ultraWarm()
+                && effect.equals(MobEffects.REGENERATION);
         if (blocked) event.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
     }
 
@@ -135,19 +135,22 @@ public final class RaceEvents {
         if (race == Race.HALF_BLOOD) applyHybridDamage(victim, event);
         if (race == Race.ELF && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity
                 && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)) {
-            event.setAmount(event.getAmount() * 1.10f);
             if (event.getAmount() >= 6f) victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0));
         }
         if (race == Race.SATYR && event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .5f);
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.IS_FALL)
                 && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil")) event.setAmount(event.getAmount() * .35f);
-        if (race == Race.FAIRY && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity fairyAttacker
-                && isIronWeapon(fairyAttacker.getMainHandItem())) event.setAmount(event.getAmount() * 1.30f);
+        // No Nether, dano mágico deixa o Feérico enfraquecido por alguns segundos.
+        if (race == Race.FAIRY && victim.level().dimensionType().ultraWarm()
+                && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
+            victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * .8f);
-        if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.6f);
+        if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE))
+            victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
         if (race == Race.NEPHILIM && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .50f);
-        if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.35f);
+        if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE))
+            victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.TIEFLING && event.getSource().is(DamageTypeTags.IS_FIRE)) {
             event.setCanceled(true);
             long now = victim.level().getGameTime();
@@ -162,17 +165,22 @@ public final class RaceEvents {
         if (race == Race.DRAGONBORN) {
             DragonLineage lineage = RaceState.lineage(victim);
             if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .4f);
-            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * 1.3f);
-            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * 1.3f);
+            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING))
+                victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 0, false, false));
+            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE))
+                victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
             if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * .4f);
-            if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * 1.25f);
+            if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
+                victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         }
         if (race == Race.HARPY) {
             if (event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .2f);
-            else if (!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * 1.12f);
+            else if (!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
+                victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
         }
         if (race == Race.LYCANTHROPE && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount() * 1.35f);
+                && attacker.getMainHandItem().is(SILVER_WEAPONS))
+            victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         RaceState.markCombat(victim);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) RaceState.markCombat(attacker);
     }
@@ -212,10 +220,6 @@ public final class RaceEvents {
         boolean hybridFairy = RaceState.race(p) == Race.HALF_BLOOD
                 && (RaceState.ancestryA(p) == Race.FAIRY || RaceState.ancestryB(p) == Race.FAIRY);
         if ((fairy || hybridFairy) && isPlantFood(event.getItem())) {
-            if (fairy && ironArmorPieces(p) >= 4) {
-                p.displayClientMessage(Component.literal("O ferro bloqueia a regeneração feérica."), true);
-                return;
-            }
             p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, fairy ? 60 : 35, 0, false, true));
             p.displayClientMessage(Component.literal("Seiva Vital: regeneração fortalecida."), true);
             if (p.level() instanceof ServerLevel level)
@@ -229,13 +233,6 @@ public final class RaceEvents {
                 || stack.is(Items.BAKED_POTATO) || stack.is(Items.BEETROOT) || stack.is(Items.MELON_SLICE)
                 || stack.is(Items.SWEET_BERRIES) || stack.is(Items.GLOW_BERRIES) || stack.is(Items.CHORUS_FRUIT)
                 || stack.is(Items.DRIED_KELP) || stack.is(Items.COOKIE) || stack.is(Items.PUMPKIN_PIE);
-    }
-
-    private static boolean isIronWeapon(ItemStack stack) {
-        return stack.is(IRON_WEAPONS)
-                || stack.is(Items.IRON_SWORD) || stack.is(Items.IRON_AXE)
-                || stack.is(Items.IRON_PICKAXE) || stack.is(Items.IRON_SHOVEL)
-                || stack.is(Items.IRON_HOE);
     }
 
     @SubscribeEvent
@@ -511,23 +508,25 @@ public final class RaceEvents {
         if (has.test(Race.DRAGONBORN)) {
             DragonLineage lineage = RaceState.lineage(p);
             if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING))
-                event.setAmount(event.getAmount()*1.15f);
+                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, false, false));
             if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE))
-                event.setAmount(event.getAmount()*1.15f);
+                p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
             if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
-                event.setAmount(event.getAmount()*1.15f);
+                p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
         }
         if (has.test(Race.ELF)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity
-                && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)) event.setAmount(event.getAmount()*1.05f);
-        if (has.test(Race.THALASSIAN)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.15f);
-        if (has.test(Race.VAMPIRE)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*1.15f);
+                && !event.getSource().is(DamageTypeTags.IS_PROJECTILE))
+            p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, false, false));
+        if (has.test(Race.THALASSIAN)&&event.getSource().is(DamageTypeTags.IS_FIRE))
+            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
+        if (has.test(Race.VAMPIRE)&&event.getSource().is(DamageTypeTags.IS_FIRE))
+            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
         if (has.test(Race.HARPY)&&event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount()*.6f);
         else if (has.test(Race.HARPY)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
-            event.setAmount(event.getAmount()*1.06f);
-        if (has.test(Race.FAIRY)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && isIronWeapon(attacker.getMainHandItem())) event.setAmount(event.getAmount()*1.15f);
+            p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
         if (has.test(Race.LYCANTHROPE)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(SILVER_WEAPONS)) event.setAmount(event.getAmount()*1.25f);
+                && attacker.getMainHandItem().is(SILVER_WEAPONS))
+            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
     }
 
     private static void ambientParticles(ServerPlayer p, Race race) {

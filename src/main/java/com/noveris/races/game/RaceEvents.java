@@ -31,8 +31,6 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = NoverisRaces.MOD_ID)
 public final class RaceEvents {
-    private static final TagKey<net.minecraft.world.item.Item> SILVER_WEAPONS = TagKey.create(Registries.ITEM,
-            ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "silver_weapons"));
     private static final TagKey<net.minecraft.world.item.Item> HEAVY_ARMOR = TagKey.create(Registries.ITEM,
             ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "heavy_armor"));
     private RaceEvents() {}
@@ -178,9 +176,6 @@ public final class RaceEvents {
             else if (!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
         }
-        if (race == Race.LYCANTHROPE && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(SILVER_WEAPONS))
-            victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         RaceState.markCombat(victim);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) RaceState.markCombat(attacker);
     }
@@ -524,9 +519,6 @@ public final class RaceEvents {
         if (has.test(Race.HARPY)&&event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount()*.6f);
         else if (has.test(Race.HARPY)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
             p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
-        if (has.test(Race.LYCANTHROPE)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity attacker
-                && attacker.getMainHandItem().is(SILVER_WEAPONS))
-            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
     }
 
     private static void ambientParticles(ServerPlayer p, Race race) {
@@ -534,19 +526,27 @@ public final class RaceEvents {
         switch (race) {
             case TIEFLING -> {
                 if (p.isInLava() || p.isOnFire())
-                    level.sendParticles(ParticleTypes.SMALL_FLAME, p.getX(), p.getY() + .8, p.getZ(), 4, .28, .45, .28, .01);
+                    level.sendParticles(ParticleTypes.SMALL_FLAME, p.getX(), p.getY() + .8, p.getZ(), 12, .42, .7, .42, .025);
+                if (p.isInLava() || p.isOnFire())
+                    level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, p.getX(), p.getY() + .7, p.getZ(), 5, .32, .55, .32, .012);
             }
             case LYCANTHROPE -> {
                 if (p.level().isNight() && p.isSprinting())
-                    level.sendParticles(ParticleTypes.ASH, p.getX(), p.getY() + .25, p.getZ(), 5, .3, .12, .3, .02);
+                    level.sendParticles(ParticleTypes.ASH, p.getX(), p.getY() + .25, p.getZ(), 10, .38, .18, .38, .035);
+                if (p.level().isNight() && p.isSprinting())
+                    level.sendParticles(ParticleTypes.CRIT, p.getX(), p.getY() + .75, p.getZ(), 5, .32, .42, .32, .08);
             }
             case DRAGONBORN -> {
                 if (p.getHealth() < p.getMaxHealth() * .4f)
-                    level.sendParticles(ParticleTypes.ENCHANTED_HIT, p.getX(), p.getY() + 1, p.getZ(), 3, .3, .5, .3, .01);
+                    level.sendParticles(ParticleTypes.ENCHANTED_HIT, p.getX(), p.getY() + 1, p.getZ(), 9, .42, .65, .42, .025);
+                if (p.getHealth() < p.getMaxHealth() * .4f)
+                    level.sendParticles(ParticleTypes.ELECTRIC_SPARK, p.getX(), p.getY() + 1, p.getZ(), 5, .3, .55, .3, .04);
             }
             case HARPY -> {
                 if (!p.onGround() && p.getDeltaMovement().y < 0)
-                    level.sendParticles(ParticleTypes.CLOUD, p.getX(), p.getY() + .2, p.getZ(), 4, .35, .08, .35, .01);
+                    level.sendParticles(ParticleTypes.CLOUD, p.getX(), p.getY() + .2, p.getZ(), 12, .48, .12, .48, .03);
+                if (!p.onGround() && p.getDeltaMovement().y < 0)
+                    level.sendParticles(ParticleTypes.GUST, p.getX(), p.getY() + .35, p.getZ(), 3, .3, .1, .3, .02);
             }
             default -> { }
         }

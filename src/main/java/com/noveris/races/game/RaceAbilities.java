@@ -251,7 +251,12 @@ public final class RaceAbilities {
         float healthStolen = Math.min(6f, damageDealt);
         if (healthStolen > 0f && p.getHealth() < p.getMaxHealth()) {
             p.setHealth(Math.min(p.getMaxHealth(), p.getHealth() + healthStolen));
-            p.displayClientMessage(Component.literal(String.format("Vida drenada: %.1f coração(ões)", healthStolen / 2f)), true);
+            float hearts = healthStolen / 2f;
+            String amount = Math.abs(hearts - Math.round(hearts)) < .01f
+                    ? String.format(java.util.Locale.ROOT, "%.0f", hearts)
+                    : String.format(java.util.Locale.ROOT, "%.1f", hearts);
+            String unit = Math.abs(hearts - 1f) < .01f ? "coração" : "corações";
+            p.displayClientMessage(Component.literal("Vida drenada: " + amount + " " + unit + "."), true);
         } else if (p.getHealth() >= p.getMaxHealth()) {
             p.displayClientMessage(Component.literal("Dano causado, mas sua vida já está cheia."), true);
         }

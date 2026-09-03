@@ -2,6 +2,7 @@ package com.noveris.races;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,7 +59,7 @@ public final class FakeNameState {
             case "uniform" -> style = style.withFont(ResourceLocation.withDefaultNamespace("uniform"));
             default -> { }
         }
-        Component prefixPart = switch (prefix(p).toLowerCase()) {
+        MutableComponent prefixPart = switch (prefix(p).toLowerCase()) {
             case "avarion" -> Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);
             case "orvannis" -> Component.literal("Orvannis ").withStyle(ChatFormatting.BLUE);
             default -> Component.empty();

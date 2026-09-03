@@ -1,10 +1,8 @@
 package com.noveris.races.client;
 
-import com.noveris.races.NoverisRaces;
 import com.noveris.races.network.RaceNetwork.ActionPayload;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -17,6 +15,8 @@ public final class FakeNameScreen extends NoverisScreen {
     private static final String[] COLORS = {"white", "yellow", "gold", "red", "green", "blue", "purple", "aqua", "gray"};
 
     public FakeNameScreen() { super("APELIDO DE NOVERIS"); format=FakeNameClientState.format; color=FakeNameClientState.color; }
+    /** A tela já desenha o painel opaco; o background padrão do Screen adicionaria blur por cima dele. */
+    @Override protected void renderBackground(GuiGraphics g, int mx, int my, float partial) { }
     @Override protected void init() {
         panelWidth = Math.min(width - 32, 1080); panelHeight = Math.min(height - 30, 650);
         left = (width - panelWidth) / 2; top = (height - panelHeight) / 2;

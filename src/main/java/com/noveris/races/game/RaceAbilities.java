@@ -136,17 +136,17 @@ public final class RaceAbilities {
                 ? "Mobilidade: " + charges + "/3 cargas restantes."
                 : "Mobilidade esgotada: recarga de " + (mobilityCooldown / 20) + " segundos."), true);
         switch (race) {
-            case ELF -> particles(p, external("irons_spellbooks:wisp", ParticleTypes.HAPPY_VILLAGER), 18, .6, .03);
+            case ELF -> { particles(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), 28, .7, .04); particles(p, ParticleTypes.CRIT, 10, .5, .08); }
             case FAIRY -> particles(p, RaceState.fairyAffinity(p) == FairyAffinity.NATURE ? ParticleTypes.HAPPY_VILLAGER
                     : RaceState.fairyAffinity(p) == FairyAffinity.WATER ? ParticleTypes.SPLASH : ParticleTypes.CLOUD, 22, .65, .07);
-            case SATYR -> particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 20, .65, .05);
-            case THALASSIAN -> particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 24, .7, .08);
-            case NEPHILIM -> particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 18, .6, .03);
-            case VAMPIRE -> particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 22, .6, .04);
-            case HALF_BLOOD -> particles(p, ParticleTypes.ENCHANTED_HIT, 18, .6, .04);
+            case SATYR -> { particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 28, .75, .06); particles(p, ParticleTypes.FALLING_SPORE_BLOSSOM, 12, .55, .02); }
+            case THALASSIAN -> { particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 34, .8, .1); particles(p, ParticleTypes.SPLASH, 16, .65, .06); }
+            case NEPHILIM -> { particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 26, .7, .04); particles(p, ParticleTypes.TOTEM_OF_UNDYING, 10, .5, .03); }
+            case VAMPIRE -> { particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 30, .7, .05); particles(p, ParticleTypes.DAMAGE_INDICATOR, 10, .5, .04); }
+            case HALF_BLOOD -> { particles(p, ParticleTypes.ENCHANTED_HIT, 26, .7, .05); particles(p, ParticleTypes.END_ROD, 12, .45, .03); }
             case TIEFLING -> particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 22, .55, .12);
-            case LYCANTHROPE -> particles(p, ParticleTypes.POOF, 24, .7, .08);
-            case DRAGONBORN -> particles(p, ParticleTypes.LARGE_SMOKE, 20, .65, .04);
+            case LYCANTHROPE -> { particles(p, ParticleTypes.POOF, 30, .8, .1); particles(p, ParticleTypes.CRIT, 16, .7, .12); }
+            case DRAGONBORN -> { particles(p, ParticleTypes.LARGE_SMOKE, 26, .7, .05); particles(p, ParticleTypes.ELECTRIC_SPARK, 12, .55, .04); }
             case HARPY -> particles(p, external("irons_spellbooks:spark", ParticleTypes.CLOUD), 26, .8, .12);
             default -> { }
         }
@@ -371,9 +371,19 @@ public final class RaceAbilities {
                 level.sendParticles(breathParticle, point.x, point.y, point.z, 6, .22, .22, .22, .02);
             }
         }
-        particles(p, lineage == DragonLineage.VENOM ? external("irons_spellbooks:acid", ParticleTypes.SNEEZE) : ParticleTypes.SMOKE, 20, .5, .02);
-        if (lineage == DragonLineage.VENOM) particles(p, new DustParticleOptions(new Vector3f(.1f, .9f, .18f), 1.4f), 18, .65, .04);
-        p.level().playSound(null, p.blockPosition(), SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.PLAYERS, 1.0f, .9f);
+        if (lineage == DragonLineage.FIRE) {
+            particles(p, ParticleTypes.SMOKE, 24, .55, .03);
+            p.level().playSound(null, p.blockPosition(), SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.PLAYERS, 1.0f, .9f);
+        } else if (lineage == DragonLineage.FROST) {
+            particles(p, external("irons_spellbooks:snow_dust", ParticleTypes.SNOWFLAKE), 28, .7, .04);
+            particles(p, ParticleTypes.SNOWFLAKE, 18, .55, .02);
+            p.level().playSound(null, p.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, .9f, 1.6f);
+        } else {
+            particles(p, external("irons_spellbooks:acid", ParticleTypes.SNEEZE), 28, .6, .04);
+            particles(p, new DustParticleOptions(new Vector3f(.08f, .95f, .16f), 1.5f), 24, .7, .05);
+            particles(p, ParticleTypes.BUBBLE, 10, .45, .03);
+            p.level().playSound(null, p.blockPosition(), SoundEvents.BREWING_STAND_BREW, SoundSource.PLAYERS, .9f, .8f);
+        }
     }
 
     private static void windGust(ServerPlayer p) {

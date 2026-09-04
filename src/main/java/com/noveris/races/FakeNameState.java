@@ -38,7 +38,7 @@ public final class FakeNameState {
     }
     private static boolean validColor(String c) {
         return c != null && switch (c.toLowerCase()) {
-            case "white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "aqua", "gray" -> true;
+            case "white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "dark_purple", "aqua" -> true;
             default -> false;
         };
     }
@@ -78,6 +78,7 @@ public final class FakeNameState {
         if (value == null || value.isBlank()) return ChatFormatting.WHITE;
         if (value.equalsIgnoreCase("purple")) return ChatFormatting.LIGHT_PURPLE;
         if (value.equalsIgnoreCase("dark_red")) return ChatFormatting.DARK_RED;
+        if (value.equalsIgnoreCase("dark_purple")) return ChatFormatting.DARK_PURPLE;
         ChatFormatting parsed = ChatFormatting.getByName(value.toLowerCase());
         return parsed == null ? ChatFormatting.WHITE : parsed;
     }

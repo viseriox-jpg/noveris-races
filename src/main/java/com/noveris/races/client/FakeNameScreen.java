@@ -16,7 +16,7 @@ public final class FakeNameScreen extends NoverisScreen {
     private boolean pronounTab;
     private String format, color, prefix;
     private static final String[] FORMATS = {"normal", "bold", "italic", "underlined", "strikethrough", "uniform"};
-    private static final String[] COLORS = {"white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "aqua", "gray"};
+    private static final String[] COLORS = {"white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "dark_purple", "aqua"};
 
     public FakeNameScreen() { super("APELIDO DE NOVERIS"); format=FakeNameClientState.format; color=FakeNameClientState.color; prefix=FakeNameClientState.prefix; }
     /** A tela já desenha o painel opaco; o background padrão do Screen adicionaria blur por cima dele. */
@@ -94,14 +94,15 @@ public final class FakeNameScreen extends NoverisScreen {
         button(g,x,y,w,h,colorLabel(value),mx,my,active);
         int swatch=colorValue(value); g.fill(x+5,y+5,x+15,y+h-5,swatch);
     }
-    private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "dark_red"->0xFF8F2435;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFAF52DE;case "aqua"->0xFF32D7E8;case "gray"->0xFF9B9B9B;default->0xFFFFFFFF;}; }
+    private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "dark_red"->0xFF8F2435;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFFF69B4;case "dark_purple"->0xFF5B2C83;case "aqua"->0xFF32D7E8;default->0xFFFFFFFF;}; }
     private ChatFormatting colorFormatting(String value){
         if ("purple".equals(value)) return ChatFormatting.LIGHT_PURPLE;
         if ("dark_red".equals(value)) return ChatFormatting.DARK_RED;
+        if ("dark_purple".equals(value)) return ChatFormatting.DARK_PURPLE;
         ChatFormatting parsed=ChatFormatting.getByName(value);
         return parsed==null?ChatFormatting.WHITE:parsed;
     }
-    private String colorLabel(String value){ return switch(value){case "dark_red"->"DARK RED"; default->value.toUpperCase();}; }
+    private String colorLabel(String value){ return switch(value){case "purple"->"PINK";case "dark_red"->"DARK RED";case "dark_purple"->"DARK PURPLE";default->value.toUpperCase();}; }
     private Component preview(){
         String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
         Style style=Style.EMPTY.withColor(colorFormatting(color));

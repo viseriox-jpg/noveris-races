@@ -68,8 +68,8 @@ public final class FakeNameState {
             }
         }
         MutableComponent prefixPart = switch (prefix(p).toLowerCase()) {
-            case "avarion" -> Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);
-            case "orvannis" -> Component.literal("Orvannis ").withStyle(ChatFormatting.DARK_PURPLE);
+            case "avarion" -> Component.literal("Avarion ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withBold(true));
+            case "orvannis" -> Component.literal("Orvannis ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withBold(true));
             default -> Component.empty();
         };
         return prefixPart.append(Component.literal(name).withStyle(style)).append(Component.literal(suffix));

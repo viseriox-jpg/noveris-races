@@ -58,7 +58,7 @@ public final class FakeNameScreen extends NoverisScreen {
             g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
         }
         int bottomY=top+panelHeight-34;
-        dangerButton(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my);
+        dangerButton(g,left+panelWidth/2+20,top+132,260,26,"RESTAURAR NOME REAL",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
         drawPreview(g);
@@ -87,7 +87,7 @@ public final class FakeNameScreen extends NoverisScreen {
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
         int bottomY=top+panelHeight-34;
-        if(inside(mx,my,left+50,bottomY,260,26)){ confirmReset=true; return true; }
+        if(inside(mx,my,left+panelWidth/2+20,top+132,260,26)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
     }
@@ -115,7 +115,7 @@ public final class FakeNameScreen extends NoverisScreen {
         String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
         Style style=Style.EMPTY.withColor(ChatFormatting.getByName(color));
         for(String f:format.split(",")) switch(f){case "bold"->style=style.withBold(true);case "italic"->style=style.withItalic(true);case "underlined"->style=style.withUnderlined(true);case "strikethrough"->style=style.withStrikethrough(true);case "uniform"->style=style.withFont(ResourceLocation.withDefaultNamespace("uniform"));default->{}};
-        MutableComponent c=switch(prefix){case "avarion"->Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);case "orvannis"->Component.literal("Orvannis ").withStyle(ChatFormatting.DARK_PURPLE);default->Component.empty();};
+        MutableComponent c=switch(prefix){case "avarion"->Component.literal("Avarion ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withBold(true));case "orvannis"->Component.literal("Orvannis ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withBold(true));default->Component.empty();};
         return c.append(Component.literal(name).withStyle(style)).append(pronouns.getValue().isBlank()?Component.empty():Component.literal(" ["+pronouns.getValue()+"]").withStyle(ChatFormatting.GRAY));
     }
     private void drawPreview(GuiGraphics g){

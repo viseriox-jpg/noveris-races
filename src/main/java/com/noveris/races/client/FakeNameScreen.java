@@ -58,7 +58,7 @@ public final class FakeNameScreen extends NoverisScreen {
             g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
         }
         int bottomY=top+panelHeight-34;
-        dangerButton(g,left+panelWidth/2+20,top+132,260,26,"RESTAURAR NOME REAL",mx,my);
+        dangerButton(g,left+panelWidth-184,top+112,140,22,"RESTAURAR",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
         drawPreview(g);
@@ -87,7 +87,7 @@ public final class FakeNameScreen extends NoverisScreen {
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
         int bottomY=top+panelHeight-34;
-        if(inside(mx,my,left+panelWidth/2+20,top+132,260,26)){ confirmReset=true; return true; }
+        if(inside(mx,my,left+panelWidth-184,top+112,140,22)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
     }
@@ -95,7 +95,7 @@ public final class FakeNameScreen extends NoverisScreen {
     private void dangerButton(GuiGraphics g,int x,int y,int w,int h,String text,double mx,double my){
         boolean hover=inside(mx,my,x,y,w,h);
         g.fill(x,y,x+w,y+h,hover?0xFFBE3E50:0xFF8F2435);
-        g.drawCenteredString(font,text,x+w/2,y+9,WHITE);
+        g.drawCenteredString(font,text,x+w/2,y+(h-8)/2,WHITE);
     }
     private boolean hasFormat(String f){ return format.equals(f) || format.contains(","+f) || format.contains(f+","); }
     private void toggleFormat(String f){

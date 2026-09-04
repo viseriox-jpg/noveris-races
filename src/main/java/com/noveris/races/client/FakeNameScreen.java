@@ -26,7 +26,7 @@ public final class FakeNameScreen extends NoverisScreen {
         panelWidth = Math.min(width - 32, 1080); panelHeight = Math.min(height - 30, 650);
         left = (width - panelWidth) / 2; top = (height - panelHeight) / 2;
         int x=left+50;
-        int fieldW = Math.min(520, panelWidth - 100);
+        int fieldW = Math.min(420, panelWidth / 2 - 80);
         nickname = new EditBox(font, x, top+100, fieldW, 22, Component.literal("Apelido"));
         nickname.setMaxLength(20); nickname.setValue(FakeNameClientState.nickname); addRenderableWidget(nickname);
         pronouns = new EditBox(font, x, top+100, fieldW, 22, Component.literal("Complemento"));
@@ -57,7 +57,7 @@ public final class FakeNameScreen extends NoverisScreen {
             button(g,left+362,top+186,150,24,"ORVANNIS",mx,my,prefix.equals("orvannis"));
             g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
         }
-        int bottomY=top+panelHeight-26;
+        int bottomY=top+panelHeight-34;
         dangerButton(g,left+50,bottomY,260,26,"RESTAURAR NOME REAL",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
@@ -86,7 +86,7 @@ public final class FakeNameScreen extends NoverisScreen {
             if(inside(mx,my,left+206,top+186,150,24)){prefix="avarion";return true;}
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
-        int bottomY=top+panelHeight-26;
+        int bottomY=top+panelHeight-34;
         if(inside(mx,my,left+50,bottomY,260,26)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
@@ -110,7 +110,7 @@ public final class FakeNameScreen extends NoverisScreen {
         int swatch=colorValue(value); g.fill(x+5,y+5,x+15,y+h-5,swatch);
     }
     private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "dark_red"->0xFF8F2435;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFAF52DE;case "aqua"->0xFF32D7E8;case "gray"->0xFF9B9B9B;default->0xFFFFFFFF;}; }
-    private String colorLabel(String value){ return switch(value){case "dark_red"->"VERMELHO ESCURO"; default->value.toUpperCase();}; }
+    private String colorLabel(String value){ return switch(value){case "dark_red"->"DARK RED"; default->value.toUpperCase();}; }
     private Component preview(){
         String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
         Style style=Style.EMPTY.withColor(ChatFormatting.getByName(color));
@@ -118,7 +118,13 @@ public final class FakeNameScreen extends NoverisScreen {
         MutableComponent c=switch(prefix){case "avarion"->Component.literal("Avarion ").withStyle(ChatFormatting.DARK_GREEN);case "orvannis"->Component.literal("Orvannis ").withStyle(ChatFormatting.DARK_PURPLE);default->Component.empty();};
         return c.append(Component.literal(name).withStyle(style)).append(pronouns.getValue().isBlank()?Component.empty():Component.literal(" ["+pronouns.getValue()+"]").withStyle(ChatFormatting.GRAY));
     }
-    private void drawPreview(GuiGraphics g){ int x=left+panelWidth-360; int y=top+88; g.drawString(font,"PRÉVIA",x,y,WHITE,false); g.drawString(font,preview(),x,y+20,WHITE,false); }
+    private void drawPreview(GuiGraphics g){
+        int x=left+panelWidth/2+20; int y=top+88;
+        g.drawString(font,"PRÉVIA",x,y,WHITE,false);
+        g.enableScissor(x,y+14,left+panelWidth-34,y+42);
+        g.drawString(font,preview(),x,y+20,WHITE,false);
+        g.disableScissor();
+    }
     private void drawResetConfirmation(GuiGraphics g,double mx,double my){
         g.fill(left+40,top+40,left+panelWidth-40,top+panelHeight-40,0xF0100E0A);
         String title="RESTAURAR NOME REAL?"; g.drawCenteredString(font,title,left+panelWidth/2,top+panelHeight/2-28,DANGER);

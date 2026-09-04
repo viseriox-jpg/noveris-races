@@ -38,7 +38,7 @@ public final class RaceAbilities {
             case FAIRY -> { fairyPower(p); cooldown = 300; }
             case SATYR -> { woodlandVigor(p); cooldown = 300; }
             case THALASSIAN -> { tidalGuard(p); cooldown = 300; }
-            case NEPHILIM -> { supernaturalAegis(p); cooldown = 300; }
+            case NEPHILIM -> { radiantBurst(p); cooldown = 300; }
             case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = 300; }
             case TIEFLING -> { infernalPulse(p); cooldown = 300; }
             case LYCANTHROPE -> { huntingHowl(p); cooldown = 300; }
@@ -143,7 +143,7 @@ public final class RaceAbilities {
                     : external("irons_spellbooks:shockwave", ParticleTypes.CLOUD); particles(p, fae, 24, .7, .06); particles(p, ParticleTypes.END_ROD, 4, .4, .025); }
             case SATYR -> { particles(p, external("hazennstuff:nature_slash_particle", ParticleTypes.COMPOSTER), 26, .75, .055); particles(p, ParticleTypes.END_ROD, 4, .4, .025); }
             case THALASSIAN -> particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 32, .78, .08);
-            case NEPHILIM -> { particles(p, external("irons_spellbooks:absorption", ParticleTypes.END_ROD), 24, .68, .04); particles(p, ParticleTypes.END_ROD, 5, .42, .025); }
+            case NEPHILIM -> { particles(p, external("irons_spellbooks:heal", ParticleTypes.END_ROD), 24, .68, .04); particles(p, ParticleTypes.END_ROD, 5, .42, .025); }
             case VAMPIRE -> { particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 28, .68, .05); particles(p, external("irons_spellbooks:siphon", ParticleTypes.DAMAGE_INDICATOR), 8, .45, .03); }
             case TIEFLING -> particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 22, .55, .12);
             case LYCANTHROPE -> { particles(p, ParticleTypes.POOF, 30, .8, .1); particles(p, ParticleTypes.CRIT, 16, .7, .12); particles(p, ParticleTypes.ASH, 10, .55, .03); }
@@ -229,14 +229,28 @@ public final class RaceAbilities {
         particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 36, .9, .08);
         particles(p, ParticleTypes.FALLING_WATER, 16, .8, .03);
     }
-    private static void supernaturalAegis(ServerPlayer p) {
-        cleanseOneHarmfulEffect(p);
-        p.getFoodData().setFoodLevel(Math.max(0, p.getFoodData().getFoodLevel() - 2));
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 0));
-        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 0));
-        RaceState.customLong(p, "AegisWeaknessAt", p.level().getGameTime() + 200);
-        particles(p, external("irons_spellbooks:cleanse", ParticleTypes.END_ROD), 28, .9, .03);
-        particles(p, external("irons_spellbooks:absorption", ParticleTypes.END_ROD), 18, .6, .03);
+    private static void radiantBurst(ServerPlayer p) {
+        Vec3 origin = p.getEyePosition();
+        Vec3 direction = p.getLookAngle().normalize();
+        double range = 10.0;
+        for (LivingEntity target : nearby(p, range)) {
+            Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0);
+            Vec3 relative = center.subtract(origin);
+            double alongRay = relative.dot(direction);
+            if (alongRay < 0 || alongRay > range || !p.hasLineOfSight(target)) continue;
+            double distanceFromRay = relative.subtract(direction.scale(alongRay)).length();
+            if (distanceFromRay <= Math.max(.8, target.getBbWidth() * .7)) {
+                target.hurt(p.damageSources().playerAttack(p), 4f);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 0, false, false));
+            }
+        }
+        if (p.level() instanceof ServerLevel level) {
+            for (int step = 1; step <= 20; step++) {
+                Vec3 point = origin.add(direction.scale(step * (range / 20.0)));
+                level.sendParticles(external("irons_spellbooks:heal", ParticleTypes.END_ROD), point.x, point.y, point.z, 3, .08, .08, .08, .01);
+            }
+        }
+        p.level().playSound(null, p.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, .8f, 1.5f);
     }
     private static boolean bloodDrain(ServerPlayer p) {
         if (!p.level().isNight()) {

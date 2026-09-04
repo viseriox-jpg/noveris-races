@@ -85,11 +85,6 @@ public final class RaceEvents {
         RaceAbilities.tickVisuals(p);
         if (race == Race.TIEFLING && p.isOnFire()) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
-        long aegisWeakness = RaceState.customLong(p, "AegisWeaknessAt");
-        if (race == Race.NEPHILIM && aegisWeakness > 0 && p.level().getGameTime() >= aegisWeakness) {
-            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
-            RaceState.customLong(p, "AegisWeaknessAt", 0);
-        }
         tickRacialHunger(p, race);
         if (race == Race.HARPY && p.getDeltaMovement().y < -0.12 && heavyArmorPieces(p) < 4)
             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 8, 0, false, false));

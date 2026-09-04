@@ -49,7 +49,6 @@ public final class RaceState {
         tag.putLong("MobilityChargeSystem", 1);
         tag.putLong("MobilityReady", 0);
         tag.putLong("MobilityBurstReady", 0);
-        tag.putLong("AegisWeaknessAt", 0);
         tag.putLong("DryTicks", 0);
         tag.putLong("HydrationWarning", 0);
         tag.putBoolean("VisionEnabled", true);

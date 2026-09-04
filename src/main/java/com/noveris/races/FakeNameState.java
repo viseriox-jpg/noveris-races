@@ -56,7 +56,7 @@ public final class FakeNameState {
         String name = nickname(p);
         if (name.isBlank()) name = p.getGameProfile().getName();
         String suffix = pronouns(p).isBlank() ? "" : " §7[" + pronouns(p) + "]";
-        Style style = Style.EMPTY.withColor(ChatFormatting.getByName(color(p).isBlank() ? "white" : color(p)));
+        Style style = Style.EMPTY.withColor(displayColor(color(p)));
         for (String f : format(p).split(",")) {
             switch (f) {
                 case "bold" -> style = style.withBold(true);
@@ -73,5 +73,12 @@ public final class FakeNameState {
             default -> Component.empty();
         };
         return prefixPart.append(Component.literal(name).withStyle(style)).append(Component.literal(suffix));
+    }
+    private static ChatFormatting displayColor(String value) {
+        if (value == null || value.isBlank()) return ChatFormatting.WHITE;
+        if (value.equalsIgnoreCase("purple")) return ChatFormatting.LIGHT_PURPLE;
+        if (value.equalsIgnoreCase("dark_red")) return ChatFormatting.DARK_RED;
+        ChatFormatting parsed = ChatFormatting.getByName(value.toLowerCase());
+        return parsed == null ? ChatFormatting.WHITE : parsed;
     }
 }

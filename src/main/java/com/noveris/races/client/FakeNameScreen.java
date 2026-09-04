@@ -95,10 +95,16 @@ public final class FakeNameScreen extends NoverisScreen {
         int swatch=colorValue(value); g.fill(x+5,y+5,x+15,y+h-5,swatch);
     }
     private int colorValue(String value){ return switch(value){case "yellow"->0xFFFFE83B;case "gold"->0xFFFFB300;case "red"->0xFFFF3B30;case "dark_red"->0xFF8F2435;case "green"->0xFF35C759;case "blue"->0xFF368AFF;case "purple"->0xFFAF52DE;case "aqua"->0xFF32D7E8;case "gray"->0xFF9B9B9B;default->0xFFFFFFFF;}; }
+    private ChatFormatting colorFormatting(String value){
+        if ("purple".equals(value)) return ChatFormatting.LIGHT_PURPLE;
+        if ("dark_red".equals(value)) return ChatFormatting.DARK_RED;
+        ChatFormatting parsed=ChatFormatting.getByName(value);
+        return parsed==null?ChatFormatting.WHITE:parsed;
+    }
     private String colorLabel(String value){ return switch(value){case "dark_red"->"DARK RED"; default->value.toUpperCase();}; }
     private Component preview(){
         String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
-        Style style=Style.EMPTY.withColor(ChatFormatting.getByName(color));
+        Style style=Style.EMPTY.withColor(colorFormatting(color));
         for(String f:format.split(",")) switch(f){case "bold"->style=style.withBold(true);case "italic"->style=style.withItalic(true);case "underlined"->style=style.withUnderlined(true);case "strikethrough"->style=style.withStrikethrough(true);case "uniform"->style=style.withFont(ResourceLocation.withDefaultNamespace("uniform"));default->{}};
         MutableComponent c=switch(prefix){case "avarion"->Component.literal("Avarion ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withBold(true));case "orvannis"->Component.literal("Orvannis ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withBold(true));default->Component.empty();};
         return c.append(Component.literal(name).withStyle(style)).append(pronouns.getValue().isBlank()?Component.empty():Component.literal(" ["+pronouns.getValue()+"]").withStyle(ChatFormatting.GRAY));

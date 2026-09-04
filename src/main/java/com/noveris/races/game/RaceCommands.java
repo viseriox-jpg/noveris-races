@@ -22,7 +22,8 @@ public final class RaceCommands {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> d = event.getDispatcher();
-        d.register(Commands.literal("apelido").executes(c -> openNickname(c.getSource())));
+        d.register(Commands.literal("apelido").executes(c -> openNickname(c.getSource()))
+            .then(Commands.literal("reset").executes(c -> resetNickname(c.getSource()))));
         d.register(Commands.literal("noverisraces").requires(s -> s.hasPermission(2))
             .then(Commands.literal("reset").then(Commands.argument("jogador", EntityArgument.player())
                 .executes(c -> reset(c.getSource(), EntityArgument.getPlayer(c, "jogador")))))
@@ -40,6 +41,13 @@ public final class RaceCommands {
     private static int openNickname(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         RaceGame.syncFakeName(player, true);
+        return 1;
+    }
+    private static int resetNickname(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        FakeNameState.reset(player); player.refreshDisplayName(); player.refreshTabListName();
+        RaceGame.syncFakeName(player, false);
+        source.sendSuccess(() -> Component.literal("Apelido, prefixo e complemento restaurados ao nome real."), false);
         return 1;
     }
 

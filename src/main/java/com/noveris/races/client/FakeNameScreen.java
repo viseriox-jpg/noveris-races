@@ -56,9 +56,9 @@ public final class FakeNameScreen extends NoverisScreen {
             button(g,left+206,top+186,150,24,"AVARION",mx,my,prefix.equals("avarion"));
             button(g,left+362,top+186,150,24,"ORVANNIS",mx,my,prefix.equals("orvannis"));
             g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
+            dangerButton(g,left+50,top+252,180,22,"RESETAR APELIDO",mx,my);
         }
         int bottomY=top+panelHeight-34;
-        dangerButton(g,left+panelWidth-184,top+112,140,22,"RESTAURAR",mx,my);
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
         drawPreview(g);
@@ -87,7 +87,7 @@ public final class FakeNameScreen extends NoverisScreen {
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
         int bottomY=top+panelHeight-34;
-        if(inside(mx,my,left+panelWidth-184,top+112,140,22)){ confirmReset=true; return true; }
+        if(pronounTab && inside(mx,my,left+50,top+252,180,22)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
     }

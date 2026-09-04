@@ -14,7 +14,6 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class FakeNameScreen extends NoverisScreen {
     private EditBox nickname, pronouns;
     private boolean pronounTab;
-    private boolean confirmReset;
     private String format, color, prefix;
     private static final String[] FORMATS = {"normal", "bold", "italic", "underlined", "strikethrough", "uniform"};
     private static final String[] COLORS = {"white", "yellow", "gold", "red", "dark_red", "green", "blue", "purple", "aqua", "gray"};
@@ -56,21 +55,13 @@ public final class FakeNameScreen extends NoverisScreen {
             button(g,left+206,top+186,150,24,"AVARION",mx,my,prefix.equals("avarion"));
             button(g,left+362,top+186,150,24,"ORVANNIS",mx,my,prefix.equals("orvannis"));
             g.drawString(font,"Avarion: verde escuro   •   Orvannis: roxo escuro",left+50,top+222,MUTED,false);
-            dangerButton(g,left+50,top+252,180,22,"RESETAR APELIDO",mx,my);
         }
         int bottomY=top+panelHeight-34;
         button(g,left+panelWidth-310,bottomY,260,26,"SALVAR",mx,my,true);
         super.render(g,mx,my,partial);
         drawPreview(g);
-        if (confirmReset) drawResetConfirmation(g,mx,my);
     }
     @Override public boolean mouseClicked(double mx,double my,int btn) {
-        if (confirmReset) {
-            int cx=left+panelWidth/2-170, cy=top+panelHeight/2+18;
-            if(inside(mx,my,cx,cy,150,26)){ FakeNameClientState.nickname=""; FakeNameClientState.pronouns=""; FakeNameClientState.prefix="none"; FakeNameClientState.format="normal"; FakeNameClientState.color="white"; nickname.setValue(""); pronouns.setValue(""); send("fakename_reset"); onClose(); }
-            else if(inside(mx,my,cx+190,cy,150,26)) confirmReset=false;
-            return true;
-        }
         if(super.mouseClicked(mx,my,btn)) return true;
         if(btn!=0) return false;
         int tabW=(panelWidth-74)/2;
@@ -87,16 +78,10 @@ public final class FakeNameScreen extends NoverisScreen {
             if(inside(mx,my,left+362,top+186,150,24)){prefix="orvannis";return true;}
         }
         int bottomY=top+panelHeight-34;
-        if(pronounTab && inside(mx,my,left+50,top+252,180,22)){ confirmReset=true; return true; }
         if(inside(mx,my,left+panelWidth-310,bottomY,260,26)){ send("fakename_save"); onClose(); return true; }
         return true;
     }
     private void send(String action){ PacketDistributor.sendToServer(new ActionPayload(action, nickname.getValue(), pronouns.getValue(), format, color, prefix, "")); }
-    private void dangerButton(GuiGraphics g,int x,int y,int w,int h,String text,double mx,double my){
-        boolean hover=inside(mx,my,x,y,w,h);
-        g.fill(x,y,x+w,y+h,hover?0xFFBE3E50:0xFF8F2435);
-        g.drawCenteredString(font,text,x+w/2,y+(h-8)/2,WHITE);
-    }
     private boolean hasFormat(String f){ return format.equals(f) || format.contains(","+f) || format.contains(f+","); }
     private void toggleFormat(String f){
         if(f.equals("normal")){ format="normal"; return; }
@@ -124,12 +109,6 @@ public final class FakeNameScreen extends NoverisScreen {
         g.enableScissor(x,y+14,left+panelWidth-34,y+42);
         g.drawString(font,preview(),x,y+20,WHITE,false);
         g.disableScissor();
-    }
-    private void drawResetConfirmation(GuiGraphics g,double mx,double my){
-        g.fill(left+40,top+40,left+panelWidth-40,top+panelHeight-40,0xF0100E0A);
-        String title="RESTAURAR NOME REAL?"; g.drawCenteredString(font,title,left+panelWidth/2,top+panelHeight/2-28,DANGER);
-        g.drawCenteredString(font,"O apelido, prefixo e complemento serão removidos.",left+panelWidth/2,top+panelHeight/2-8,WHITE);
-        int cx=left+panelWidth/2-170,cy=top+panelHeight/2+18; dangerButton(g,cx,cy,150,26,"CONFIRMAR",mx,my); button(g,cx+190,cy,150,26,"CANCELAR",mx,my,true);
     }
     private static boolean inside(double mx,double my,int x,int y,int w,int h){return mx>=x&&mx<x+w&&my>=y&&my<y+h;}
 }

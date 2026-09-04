@@ -241,7 +241,9 @@ public final class RaceAbilities {
             double distanceFromRay = relative.subtract(direction.scale(alongRay)).length();
             if (distanceFromRay <= Math.max(.8, target.getBbWidth() * .7)) {
                 target.hurt(p.damageSources().playerAttack(p), 4f);
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 0, false, false));
+                // Lentidão II visível por 5 segundos; o efeito é aplicado mesmo
+                // quando o alvo bloqueia ou reduz o dano da rajada.
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1, true, true, true));
             }
         }
         if (p.level() instanceof ServerLevel level) {

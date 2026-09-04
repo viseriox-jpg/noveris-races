@@ -85,8 +85,6 @@ public final class RaceEvents {
         RaceAbilities.tickVisuals(p);
         if (race == Race.TIEFLING && p.isOnFire()) p.clearFire();
         if (race == Race.THALASSIAN) tickHydration(p);
-        else if (race == Race.HALF_BLOOD && (RaceState.ancestryA(p) == Race.THALASSIAN
-                || RaceState.ancestryB(p) == Race.THALASSIAN)) tickHybridHydration(p);
         long aegisWeakness = RaceState.customLong(p, "AegisWeaknessAt");
         if (race == Race.NEPHILIM && aegisWeakness > 0 && p.level().getGameTime() >= aegisWeakness) {
             p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
@@ -130,7 +128,6 @@ public final class RaceEvents {
         }
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
         Race race = RaceState.race(victim);
-        if (race == Race.HALF_BLOOD) applyHybridDamage(victim, event);
         if (race == Race.ELF && event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity
                 && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)) {
             if (event.getAmount() >= 6f) victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 0));
@@ -186,11 +183,6 @@ public final class RaceEvents {
                 && p.getFoodData().getFoodLevel() >= 18 && event.getAmount() <= 1.0f)
             event.setAmount(event.getAmount() * .75f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
-        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.HALF_BLOOD) {
-            Race a = RaceState.ancestryA(p), b = RaceState.ancestryB(p);
-            if (a == Race.NEPHILIM || b == Race.NEPHILIM) event.setAmount(event.getAmount() * .90f);
-            if (a == Race.TIEFLING || b == Race.TIEFLING) event.setAmount(event.getAmount() * .88f);
-        }
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.THALASSIAN
                 && RaceState.customLong(p, "DryTicks") > 6000) event.setAmount(event.getAmount() * .6f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.FAIRY
@@ -212,9 +204,7 @@ public final class RaceEvents {
     public static void fairyPlantFood(LivingEntityUseItemEvent.Finish event) {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         boolean fairy = RaceState.race(p) == Race.FAIRY && RaceState.fairyAffinity(p) == FairyAffinity.NATURE;
-        boolean hybridFairy = RaceState.race(p) == Race.HALF_BLOOD
-                && (RaceState.ancestryA(p) == Race.FAIRY || RaceState.ancestryB(p) == Race.FAIRY);
-        if ((fairy || hybridFairy) && isPlantFood(event.getItem())) {
+        if (fairy && isPlantFood(event.getItem())) {
             p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, fairy ? 60 : 35, 0, false, true));
             p.displayClientMessage(Component.literal("Seiva Vital: regeneração fortalecida."), true);
             if (p.level() instanceof ServerLevel level)
@@ -312,7 +302,6 @@ public final class RaceEvents {
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false));
                 if (p.level().isNight()) { p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 0, false, false)); }
             }
-            case HALF_BLOOD -> applyHybridPassives(p);
             case TIEFLING -> {
                 if (RaceState.visionEnabled(p) && isDark(p))
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 240, 0, false, false));
@@ -428,9 +417,6 @@ public final class RaceEvents {
     private static void tickHydration(ServerPlayer p) {
         tickHydration(p, false);
     }
-    private static void tickHybridHydration(ServerPlayer p) {
-        tickHydration(p, true);
-    }
     private static void tickHydration(ServerPlayer p, boolean hybrid) {
         final long maximum = 9600;
         long before = RaceState.customLong(p, "DryTicks");
@@ -468,7 +454,7 @@ public final class RaceEvents {
         RaceState.customLong(p,"LastFood",current);
     }
     private static void handleLycanTransformation(ServerPlayer p, Race race) {
-        boolean affected = race == Race.LYCANTHROPE || (race == Race.HALF_BLOOD && (RaceState.ancestryA(p) == Race.LYCANTHROPE || RaceState.ancestryB(p) == Race.LYCANTHROPE));
+        boolean affected = race == Race.LYCANTHROPE;
         if (!affected) { RaceState.customLong(p, "WasNight", p.level().isNight() ? 1 : 0); return; }
         long night = p.level().isNight() ? 1 : 0, before = RaceState.customLong(p, "WasNight");
         if (before != night && p.level() instanceof ServerLevel level) {
@@ -478,49 +464,6 @@ public final class RaceEvents {
         }
         RaceState.customLong(p, "WasNight", night);
     }
-    private static void applyHybridPassives(ServerPlayer p) {
-        Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);
-        if ((a==Race.ELF||b==Race.ELF) && RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION,80,0,false,false));
-        if (a==Race.THALASSIAN||b==Race.THALASSIAN) p.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING,60,0,false,false));
-        if ((a==Race.VAMPIRE||b==Race.VAMPIRE)&&p.level().isNight()) p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
-        if ((a==Race.SATYR||b==Race.SATYR)&&isNaturalGround(p)&&heavyArmorPieces(p)<4) p.addEffect(new MobEffectInstance(MobEffects.JUMP,40,0,false,false));
-        if (a==Race.HUMAN||b==Race.HUMAN) p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED,40,0,false,false));
-        if ((a==Race.NEPHILIM||b==Race.NEPHILIM)&&p.getHealth()<p.getMaxHealth()*.25f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST,40,0,false,false));
-        if ((a==Race.LYCANTHROPE||b==Race.LYCANTHROPE)&&p.level().isNight()) {
-            p.causeFoodExhaustion(.018f);
-            if (p.getFoodData().getFoodLevel() >= 6)
-                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED,40,0,false,false));
-            else p.removeEffect(MobEffects.MOVEMENT_SPEED);
-        }
-        if ((a==Race.HARPY||b==Race.HARPY)&&!p.onGround()&&p.getDeltaMovement().y<-.15) p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING,8,0,false,false));
-    }
-    private static void applyHybridDamage(ServerPlayer p, LivingIncomingDamageEvent event) {
-        Race a=RaceState.ancestryA(p),b=RaceState.ancestryB(p);
-        java.util.function.Predicate<Race> has=r->a==r||b==r;
-        if (has.test(Race.TIEFLING)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*.55f);
-        if (has.test(Race.NEPHILIM)&&event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount()*.8f);
-        if (has.test(Race.DRAGONBORN)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount()*.94f);
-        if (has.test(Race.DRAGONBORN)) {
-            DragonLineage lineage = RaceState.lineage(p);
-            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING))
-                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0, false, false));
-            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE))
-                p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
-            if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
-                p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
-        }
-        if (has.test(Race.ELF)&&event.getSource().getEntity() instanceof net.minecraft.world.entity.LivingEntity
-                && !event.getSource().is(DamageTypeTags.IS_PROJECTILE))
-            p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20, 0, false, false));
-        if (has.test(Race.THALASSIAN)&&event.getSource().is(DamageTypeTags.IS_FIRE))
-            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
-        if (has.test(Race.VAMPIRE)&&event.getSource().is(DamageTypeTags.IS_FIRE))
-            p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, false));
-        if (has.test(Race.HARPY)&&event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount()*.6f);
-        else if (has.test(Race.HARPY)&&!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
-            p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
-    }
-
     private static void ambientParticles(ServerPlayer p, Race race) {
         if (!(p.level() instanceof ServerLevel level)) return;
         switch (race) {

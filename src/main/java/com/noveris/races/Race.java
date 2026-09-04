@@ -11,7 +11,6 @@ public enum Race {
     HUMAN("Humano", RaceRealm.NEUTRAL, 30.0, .90f, 1f, 1.05f, 0xFFD8CBB1),
     NEPHILIM("Nephilin", RaceRealm.NEUTRAL, 34.0, .90f, 1.05f, 1.10f, 0xFFE4D49A),
     VAMPIRE("Vampiro", RaceRealm.NEUTRAL, 34.0, .85f, 1f, 1.05f, 0xFFBFA3A3),
-    HALF_BLOOD("Meio-Sangue", RaceRealm.NEUTRAL, 34.0, .85f, 1f, 1.15f, 0xFFD1B98A),
     TIEFLING("Tiefling", RaceRealm.AVARION, 34.0, .98f, 1.03f, 1.08f, 0xFFE58B32),
     LYCANTHROPE("Licantropo", RaceRealm.AVARION, 36.0, .95f, 1f, 1.05f, 0xFFD7CDB4),
     DRAGONBORN("Draconato", RaceRealm.AVARION, 38.0, 1.05f, 1.10f, 1.15f, 0xFFD6A13A),
@@ -48,11 +47,10 @@ public enum Race {
         if (normalized.equals("humano")) return HUMAN;
         if (normalized.equals("nephilin")) return NEPHILIM;
         if (normalized.equals("vampiro")) return VAMPIRE;
-        if (normalized.equals("meio-sangue") || normalized.equals("meio_sangue")) return HALF_BLOOD;
         try { return valueOf(value.toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException ignored) { return NONE; }
     }
 
-    public boolean validAncestry() { return this != NONE && this != HALF_BLOOD; }
+    public boolean validAncestry() { return this != NONE; }
     public float scale(RaceSize size) { return switch (size) { case SMALL -> smallScale; case MEDIUM -> mediumScale; case LARGE -> maxScale; }; }
 }

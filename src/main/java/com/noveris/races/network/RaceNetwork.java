@@ -66,10 +66,8 @@ public final class RaceNetwork {
                     Race ancestryA = Race.parse(payload.ancestryA);
                     Race ancestryB = Race.parse(payload.ancestryB);
                     RaceSize size = RaceSize.parse(payload.size);
-                    boolean validHybrid = race != Race.HALF_BLOOD || (ancestryA == Race.HUMAN
-                            && ancestryB.validAncestry() && ancestryB != Race.HUMAN && ancestryB != Race.NEPHILIM);
                     boolean validFairy = race != Race.FAIRY || fairyAffinity != FairyAffinity.NONE;
-                    if (race != Race.NONE && (race != Race.DRAGONBORN || lineage != DragonLineage.NONE) && validHybrid && validFairy) {
+                    if (race != Race.NONE && (race != Race.DRAGONBORN || lineage != DragonLineage.NONE) && validFairy) {
                         RaceState.beginTrial(player, race, lineage, fairyAffinity, ancestryA, ancestryB, size);
                         RaceGame.sync(player);
                     }

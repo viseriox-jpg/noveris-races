@@ -31,21 +31,17 @@ public final class RaceState {
     public static boolean visionEnabled(ServerPlayer p) { CompoundTag tag=root(p); return !tag.contains("VisionEnabled") || tag.getBoolean("VisionEnabled"); }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage) {
-        beginTrial(p, race, lineage, FairyAffinity.NATURE,
-                race == Race.HALF_BLOOD ? Race.HUMAN : Race.NONE,
-                race == Race.HALF_BLOOD ? Race.ELF : Race.NONE, RaceSize.MEDIUM);
+        beginTrial(p, race, lineage, FairyAffinity.NATURE, Race.NONE, Race.NONE, RaceSize.MEDIUM);
     }
 
     public static void beginTrial(ServerPlayer p, Race race, DragonLineage lineage, FairyAffinity fairyAffinity, Race ancestryA, Race ancestryB, RaceSize size) {
         CompoundTag tag = root(p);
         tag.putString("Race", race.name());
-        boolean hybridDragon = race == Race.HALF_BLOOD
-                && (ancestryA == Race.DRAGONBORN || ancestryB == Race.DRAGONBORN);
-        tag.putString("Lineage", race == Race.DRAGONBORN || hybridDragon ? lineage.name() : DragonLineage.NONE.name());
+        tag.putString("Lineage", race == Race.DRAGONBORN ? lineage.name() : DragonLineage.NONE.name());
         tag.putString("FairyAffinity", race == Race.FAIRY ? fairyAffinity.name() : FairyAffinity.NONE.name());
         tag.putBoolean("Confirmed", false);
-        tag.putString("AncestryA", race == Race.HALF_BLOOD ? ancestryA.name() : Race.NONE.name());
-        tag.putString("AncestryB", race == Race.HALF_BLOOD ? ancestryB.name() : Race.NONE.name());
+        tag.putString("AncestryA", Race.NONE.name());
+        tag.putString("AncestryB", Race.NONE.name());
         tag.putString("Size", size.name());
         tag.putLong("TrialRemaining", TRIAL_TICKS);
         tag.putLong("PrimaryReady", 0);
@@ -101,14 +97,8 @@ public final class RaceState {
         Race race = race(p);
         RaceSize size = size(p);
         float scale;
-        if (race == Race.HALF_BLOOD) {
-            Race a = ancestryA(p), b = ancestryB(p);
-            scale = Math.max(.85f, Math.min(1.15f, (a.scale(size) + b.scale(size)) / 2f));
-            if (p.level().isNight() && (a == Race.LYCANTHROPE || b == Race.LYCANTHROPE)) scale = Math.min(1.15f, scale + .05f);
-        } else {
-            scale = race.scale(size);
-            if (race == Race.LYCANTHROPE && p.level().isNight()) scale = Math.min(1.10f, scale + .05f);
-        }
+        scale = race.scale(size);
+        if (race == Race.LYCANTHROPE && p.level().isNight()) scale = Math.min(1.10f, scale + .05f);
         return Math.min(1.15f, scale);
     }
 

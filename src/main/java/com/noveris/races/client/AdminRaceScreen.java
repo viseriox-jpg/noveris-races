@@ -23,14 +23,15 @@ public final class AdminRaceScreen extends NoverisScreen {
         divider(g, top + 56);
         int cardY = top + 86, cardW = 260, gap = 18;
         godX = left + panelWidth / 2 - cardW - gap / 2; npcX = left + panelWidth / 2 + gap / 2;
-        card(g, godX, cardY, cardW, "DEUS", Race.GOD, "200 de vida (100 corações)", "Regeneração VII • Resistência III", mx, my);
+        card(g, godX, cardY, cardW, "DEUS", Race.GOD, "1000 de vida (500 corações)", "Regeneração VII • Resistência III", mx, my);
         card(g, npcX, cardY, cardW, "NPC", Race.NPC, "80 de vida (40 corações)", "Regeneração III • Resistência II", mx, my);
         int infoY = top + 170;
         g.drawCenteredString(font, "RAÇA: " + selected.title.toUpperCase(), left + panelWidth / 2, infoY, selected.color);
         g.drawCenteredString(font, selected == Race.GOD ? "Julgamento Divino • Teleporte Celestial" : "Investida de Guarda • Cura de Emergência", left + panelWidth / 2, infoY + 22, LILAC);
         g.drawCenteredString(font, selected == Race.GOD ? "Raio a 20 blocos (7 corações) e teleporte a 28 blocos." : "Personagem secundário: investida com empurrão e cura a 25% de vida.", left + panelWidth / 2, infoY + 40, MUTED);
-        g.drawCenteredString(font, "ALTURA  " + Math.round(selected.scale(size) * 100) + "%", left + panelWidth / 2, infoY + 62, WHITE);
         sizeY = top + panelHeight - 76; int sizeW = 100, total = sizeW * 3 + 12; sizeX = left + (panelWidth - total) / 2;
+        // Mantém o rótulo claramente separado dos botões, inclusive em escalas menores.
+        g.drawCenteredString(font, "ALTURA  " + Math.round(selected.scale(size) * 100) + "%", left + panelWidth / 2, sizeY - 34, WHITE);
         sizeOption(g, sizeX, sizeY, sizeW, "MENOR", RaceSize.SMALL, mx, my);
         sizeOption(g, sizeX + sizeW + 6, sizeY, sizeW, "MÉDIO", RaceSize.MEDIUM, mx, my);
         sizeOption(g, sizeX + (sizeW + 6) * 2, sizeY, sizeW, "MAIOR", RaceSize.LARGE, mx, my);

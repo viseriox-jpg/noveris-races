@@ -47,15 +47,15 @@ public final class RaceCommands {
     private static java.util.List<String> raceSuggestions() {
         return Arrays.stream(Race.values())
                 .filter(r -> r != Race.NONE)
-                .flatMap(r -> java.util.stream.Stream.of(r.name().toLowerCase(Locale.ROOT), r.title.toLowerCase(Locale.ROOT)))
-                .distinct().toList();
+                .map(r -> r.title.toLowerCase(Locale.ROOT))
+                .toList();
     }
 
     private static java.util.List<String> lineageSuggestions() {
         return Arrays.stream(DragonLineage.values())
                 .filter(l -> l != DragonLineage.NONE)
-                .flatMap(l -> java.util.stream.Stream.of(l.name().toLowerCase(Locale.ROOT), l.title.toLowerCase(Locale.ROOT)))
-                .distinct().toList();
+                .map(l -> l.title.toLowerCase(Locale.ROOT))
+                .toList();
     }
 
     private static int openNickname(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

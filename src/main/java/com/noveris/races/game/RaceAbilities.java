@@ -20,6 +20,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.core.BlockPos;
 import org.joml.Vector3f;
 
 public final class RaceAbilities {
@@ -44,6 +46,8 @@ public final class RaceAbilities {
             case LYCANTHROPE -> { huntingHowl(p); cooldown = 300; }
             case DRAGONBORN -> { dragonBreath(p); cooldown = 300; }
             case HARPY -> { windGust(p); cooldown = 300; }
+            case GOD -> { divineJudgment(p); cooldown = 200; }
+            case NPC -> { guardCharge(p); cooldown = 240; }
             default -> { return; }
         }
         RaceState.customLong(p, "RaceVfxUntil", now + 30);
@@ -109,6 +113,8 @@ public final class RaceAbilities {
                 if (!p.onGround()) return;
                 p.setDeltaMovement(look.x * .65, 1.0, look.z * .65);
             }
+            case GOD -> { celestialTeleport(p); }
+            case NPC -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .9, .22, look.z * .9); }
             default -> { return; }
         }
         p.hurtMarked = true;
@@ -378,6 +384,56 @@ public final class RaceAbilities {
             }
         }
         p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, .9f, .65f);
+    }
+
+    private static void divineJudgment(ServerPlayer p) {
+        Vec3 origin = p.getEyePosition(), direction = p.getLookAngle().normalize();
+        for (LivingEntity target : nearby(p, 20.0)) {
+            Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0), relative = center.subtract(origin);
+            double along = relative.dot(direction);
+            if (along < 0 || along > 20 || !p.hasLineOfSight(target)) continue;
+            if (relative.subtract(direction.scale(along)).length() <= Math.max(.8, target.getBbWidth() * .7)) {
+                target.hurt(p.damageSources().playerAttack(p), 14f);
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 100, 0));
+            }
+        }
+        if (p.level() instanceof ServerLevel level) {
+            for (int step = 1; step <= 20; step++) {
+                Vec3 point = origin.add(direction.scale(step));
+                level.sendParticles(ParticleTypes.ELECTRIC_SPARK, point.x, point.y, point.z, 5, .12, .12, .12, .02);
+            }
+        }
+        p.level().playSound(null, p.blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, .8f, 1.15f);
+    }
+
+    private static void celestialTeleport(ServerPlayer p) {
+        Vec3 origin = p.getEyePosition(), direction = p.getLookAngle().normalize();
+        Vec3 hit = p.level().clip(new ClipContext(origin, origin.add(direction.scale(28)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p)).getLocation();
+        BlockPos base = BlockPos.containing(hit).relative(net.minecraft.core.Direction.DOWN);
+        for (int y = 2; y >= -1; y--) {
+            BlockPos feet = base.above(y);
+            var box = p.getDimensions(p.getPose()).makeBoundingBox(feet.getX() + .5, feet.getY(), feet.getZ() + .5);
+            if (p.level().noCollision(p, box)) {
+                p.teleportTo(feet.getX() + .5, feet.getY(), feet.getZ() + .5);
+                particles(p, ParticleTypes.END_ROD, 28, .7, .08);
+                p.level().playSound(null, p.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, .8f, 1.2f);
+                return;
+            }
+        }
+        p.displayClientMessage(Component.literal("Não há espaço seguro para o teleporte."), true);
+    }
+
+    private static void guardCharge(ServerPlayer p) {
+        Vec3 look = p.getLookAngle();
+        p.setDeltaMovement(look.x * 1.0, .22, look.z * 1.0);
+        p.hurtMarked = true;
+        for (LivingEntity target : nearby(p, 2.5)) {
+            target.push(look.x * 1.25, .25, look.z * 1.25);
+            target.hurtMarked = true;
+            target.hurt(p.damageSources().playerAttack(p), 3f);
+        }
+        particles(p, ParticleTypes.CLOUD, 18, .55, .08);
+        p.level().playSound(null, p.blockPosition(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, .8f, 1.1f);
     }
 
     private static java.util.List<LivingEntity> nearby(ServerPlayer p, double radius) {

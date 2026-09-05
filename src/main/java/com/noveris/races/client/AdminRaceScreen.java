@@ -23,8 +23,8 @@ public final class AdminRaceScreen extends NoverisScreen {
         divider(g, top + 56);
         int cardY = top + 86, cardW = 260, gap = 18;
         godX = left + panelWidth / 2 - cardW - gap / 2; npcX = left + panelWidth / 2 + gap / 2;
-        card(g, godX, cardY, cardW, "DEUS", Race.GOD, "80 de vida (40 corações)", "Regeneração V • Resistência II", mx, my);
-        card(g, npcX, cardY, cardW, "NPC", Race.NPC, "60 de vida (30 corações)", "Regeneração II • Resistência II", mx, my);
+        card(g, godX, cardY, cardW, "DEUS", Race.GOD, "200 de vida (100 corações)", "Regeneração VII • Resistência III", mx, my);
+        card(g, npcX, cardY, cardW, "NPC", Race.NPC, "80 de vida (40 corações)", "Regeneração III • Resistência II", mx, my);
         int infoY = top + 170;
         g.drawCenteredString(font, "RAÇA: " + selected.title.toUpperCase(), left + panelWidth / 2, infoY, selected.color);
         g.drawCenteredString(font, selected == Race.GOD ? "Poder absoluto e regeneração intensa." : "Resistência elevada para personagens não jogáveis.", left + panelWidth / 2, infoY + 22, LILAC);

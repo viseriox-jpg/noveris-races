@@ -335,11 +335,11 @@ public final class RaceEvents {
                 else if (heavy == 3) p.addEffect(new MobEffectInstance(MobEffects.JUMP, 40, 0, false, false));
             }
             case GOD -> {
-                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 4, false, false));
-                p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1, false, false));
+                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 6, false, false));
+                p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 2, false, false));
             }
             case NPC -> {
-                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 1, false, false));
+                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 2, false, false));
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1, false, false));
             }
             default -> {}

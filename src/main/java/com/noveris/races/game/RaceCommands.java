@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.noveris.races.*;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +17,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import com.noveris.races.network.RaceNetwork.AdminPanelPayload;
 
 import java.util.Collection;
+import java.util.Arrays;
+import java.util.Locale;
 
 @EventBusSubscriber(modid = NoverisRaces.MOD_ID)
 public final class RaceCommands {
@@ -32,13 +35,27 @@ public final class RaceCommands {
             .then(Commands.literal("consultar").then(Commands.argument("jogador", EntityArgument.player())
                 .executes(c -> inspect(c.getSource(), EntityArgument.getPlayer(c, "jogador")))))
             .then(Commands.literal("definir").then(Commands.argument("jogador", EntityArgument.player())
-                .then(Commands.argument("raça", StringArgumentType.word())
+                .then(Commands.argument("raça", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(raceSuggestions(), b))
                     .executes(c -> set(c.getSource(), EntityArgument.getPlayer(c, "jogador"), StringArgumentType.getString(c, "raça"), "none"))
-                    .then(Commands.argument("linhagem", StringArgumentType.word())
+                    .then(Commands.argument("linhagem", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(lineageSuggestions(), b))
                         .executes(c -> set(c.getSource(), EntityArgument.getPlayer(c, "jogador"), StringArgumentType.getString(c, "raça"), StringArgumentType.getString(c, "linhagem")))))))
-            .then(Commands.literal("listar").then(Commands.argument("raça", StringArgumentType.word())
+            .then(Commands.literal("listar").then(Commands.argument("raça", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(raceSuggestions(), b))
                 .executes(c -> list(c.getSource(), StringArgumentType.getString(c, "raça")))))
             .then(Commands.literal("painel").executes(c -> openAdminPanel(c.getSource()))));
+    }
+
+    private static java.util.List<String> raceSuggestions() {
+        return Arrays.stream(Race.values())
+                .filter(r -> r != Race.NONE)
+                .flatMap(r -> java.util.stream.Stream.of(r.name().toLowerCase(Locale.ROOT), r.title.toLowerCase(Locale.ROOT)))
+                .distinct().toList();
+    }
+
+    private static java.util.List<String> lineageSuggestions() {
+        return Arrays.stream(DragonLineage.values())
+                .filter(l -> l != DragonLineage.NONE)
+                .flatMap(l -> java.util.stream.Stream.of(l.name().toLowerCase(Locale.ROOT), l.title.toLowerCase(Locale.ROOT)))
+                .distinct().toList();
     }
 
     private static int openNickname(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

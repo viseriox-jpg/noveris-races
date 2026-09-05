@@ -66,12 +66,6 @@ public final class RaceAbilities {
             charges = 3;
             RaceState.customLong(p, "MobilityCharges", charges);
         }
-        long burstReady = RaceState.customLong(p, "MobilityBurstReady");
-        if (now < burstReady) {
-            long tenths = (burstReady - now + 1) / 2;
-            p.displayClientMessage(Component.literal("Aguarde " + (tenths / 10.0) + "s para usar outra carga."), true);
-            return;
-        }
         if (race == Race.FAIRY && nearLava(p)) {
             p.displayClientMessage(Component.literal("A proximidade da lava impede sua mobilidade feérica."), true);
             return;
@@ -125,7 +119,9 @@ public final class RaceAbilities {
         else p.causeFoodExhaustion(1.0f);
         charges--;
         RaceState.customLong(p, "MobilityCharges", charges);
-        RaceState.customLong(p, "MobilityBurstReady", charges > 0 ? now + 60 : 0);
+        // As três cargas podem ser usadas continuamente. O único cooldown
+        // permanece na recarga de 45s depois que todas forem consumidas.
+        RaceState.customLong(p, "MobilityBurstReady", 0);
         long mobilityCooldown = 900;
         int heavyPieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
         if ((race == Race.SATYR && heavyPieces >= 3) || (race == Race.HARPY && heavyPieces >= 4))
@@ -183,6 +179,7 @@ public final class RaceAbilities {
             case WATER -> {
                 Vec3 center = p.position();
                 for (LivingEntity target : nearby(p, 4.5)) {
+                    target.hurt(p.damageSources().playerAttack(p), 4f);
                     Vec3 away = target.position().subtract(center).normalize();
                     target.push(away.x * 1.15, .22, away.z * 1.15);
                     target.hurtMarked = true;
@@ -199,6 +196,7 @@ public final class RaceAbilities {
                 for (LivingEntity target : nearby(p, 8)) {
                     Vec3 toward = target.position().subtract(p.position()).normalize();
                     if (toward.dot(look) < .25 || !p.hasLineOfSight(target)) continue;
+                    target.hurt(p.damageSources().playerAttack(p), 4f);
                     target.push(toward.x * 1.15, .28, toward.z * 1.15);
                     target.hurtMarked = true;
                 }
@@ -209,6 +207,7 @@ public final class RaceAbilities {
             default -> {
                 for (LivingEntity target : nearby(p, 5)) {
                     if (p.hasLineOfSight(target)) {
+                        target.hurt(p.damageSources().playerAttack(p), 4f);
                         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
                     }
                 }

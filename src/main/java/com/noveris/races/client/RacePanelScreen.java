@@ -40,10 +40,8 @@ public final class RacePanelScreen extends NoverisScreen {
 
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             g.drawCenteredString(font, "SEU SANGUE RECONHECE ESTA LINHAGEM", left + panelWidth/2, top + panelHeight - 68, DANGER);
-            confirmW=230; confirmH=26; confirmX=left+panelWidth/2-245; confirmY=top+panelHeight-36;
-            changeW=230; changeH=26; changeX=left+panelWidth/2+15; changeY=confirmY;
+            confirmW=230; confirmH=26; confirmX=left+panelWidth/2-confirmW/2; confirmY=top+panelHeight-36;
             button(g, confirmX, confirmY, confirmW, confirmH, "CONFIRMAR RAÇA", mx, my, true);
-            button(g, changeX, changeY, changeW, changeH, "TESTAR OUTRA", mx, my, !ClientRaceState.combat);
         } else if (!ClientRaceState.confirmed) {
             changeW=230; changeH=26; changeX=left+panelWidth/2-changeW/2; changeY=top+panelHeight-36;
             button(g, changeX, changeY, changeW, changeH,
@@ -128,14 +126,9 @@ public final class RacePanelScreen extends NoverisScreen {
                 confirmationSent = true;
                 PacketDistributor.sendToServer(new ActionPayload("confirm", "", "", "", "", "", "")); return true;
             }
-            if (!ClientRaceState.combat && inside(mx,my,changeX,changeY,changeW,changeH)) {
-                minecraft.setScreen(new RaceSelectionScreen()); return true;
-            }
+
         }
-        if (!ClientRaceState.confirmed && ClientRaceState.trial > 0 && !ClientRaceState.combat
-                && inside(mx,my,changeX,changeY,changeW,changeH)) {
-            minecraft.setScreen(new RaceSelectionScreen()); return true;
-        }
+
         return super.mouseClicked(mx,my,button);
     }
 

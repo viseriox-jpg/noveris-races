@@ -27,11 +27,12 @@ public final class AdminRaceScreen extends NoverisScreen {
         card(g, npcX, cardY, cardW, "NPC", Race.NPC, "80 de vida (40 corações)", "Regeneração III • Resistência II", mx, my);
         int infoY = top + 170;
         g.drawCenteredString(font, "RAÇA: " + selected.title.toUpperCase(), left + panelWidth / 2, infoY, selected.color);
-        g.drawCenteredString(font, selected == Race.GOD ? "Julgamento Divino • Teleporte Celestial" : "Investida de Guarda • Cura de Emergência", left + panelWidth / 2, infoY + 22, LILAC);
-        g.drawCenteredString(font, selected == Race.GOD ? "Raio a 20 blocos (7 corações) e teleporte a 28 blocos." : "Personagem secundário: investida com empurrão e cura a 25% de vida.", left + panelWidth / 2, infoY + 40, MUTED);
-        sizeY = top + panelHeight - 76; int sizeW = 100, total = sizeW * 3 + 12; sizeX = left + (panelWidth - total) / 2;
-        // Mantém o rótulo claramente separado dos botões, inclusive em escalas menores.
-        g.drawCenteredString(font, "ALTURA  " + Math.round(selected.scale(size) * 100) + "%", left + panelWidth / 2, sizeY - 34, WHITE);
+        g.drawCenteredString(font, selected == Race.GOD ? "Julgamento Divino • Teleporte Celestial" : "Investida de Guarda", left + panelWidth / 2, infoY + 22, LILAC);
+        g.drawCenteredString(font, selected == Race.GOD ? "Raio a 20 blocos (7 corações) e teleporte a 28 blocos." : "Investida com empurrão e 1,5 coração de dano.", left + panelWidth / 2, infoY + 40, MUTED);
+        // O bloco de porte ocupa uma faixa própria no rodapé. O rótulo fica
+        // acima dos botões e nunca reutiliza a linha das habilidades.
+        sizeY = top + panelHeight - 90; int sizeW = 100, total = sizeW * 3 + 12; sizeX = left + (panelWidth - total) / 2;
+        g.drawCenteredString(font, "ALTURA  " + Math.round(selected.scale(size) * 100) + "%", left + panelWidth / 2, sizeY - 20, WHITE);
         sizeOption(g, sizeX, sizeY, sizeW, "MENOR", RaceSize.SMALL, mx, my);
         sizeOption(g, sizeX + sizeW + 6, sizeY, sizeW, "MÉDIO", RaceSize.MEDIUM, mx, my);
         sizeOption(g, sizeX + (sizeW + 6) * 2, sizeY, sizeW, "MAIOR", RaceSize.LARGE, mx, my);

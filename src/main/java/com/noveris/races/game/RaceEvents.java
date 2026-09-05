@@ -116,10 +116,10 @@ public final class RaceEvents {
                 && !event.getSource().is(DamageTypeTags.IS_PROJECTILE)
                 && attacker.level().isNight()
                 && attacker.level().getGameTime() >= RaceState.customLong(attacker, "VampireBiteReady")) {
-            // Cura fixa de 0,5 coração para o feedback ser perceptível;
-            // o intervalo de 1 segundo impede cura ilimitada por ataques rápidos.
+            // Cura fixa de 0,5 coração; o intervalo de 10 segundos impede
+            // que ataques rápidos transformem o Vampiro em uma fonte de cura.
             attacker.heal(1f);
-            RaceState.customLong(attacker, "VampireBiteReady", attacker.level().getGameTime() + 20);
+            RaceState.customLong(attacker, "VampireBiteReady", attacker.level().getGameTime() + 200);
         }
         if (!(event.getEntity() instanceof ServerPlayer victim)) return;
         Race race = RaceState.race(victim);

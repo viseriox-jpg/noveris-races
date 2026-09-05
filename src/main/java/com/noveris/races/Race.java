@@ -13,7 +13,7 @@ public enum Race {
     VAMPIRE("Vampiro", RaceRealm.NEUTRAL, 34.0, .85f, 1f, 1.05f, 0xFFBFA3A3),
     TIEFLING("Tiefling", RaceRealm.AVARION, 34.0, .98f, 1.03f, 1.08f, 0xFFE58B32),
     LYCANTHROPE("Licantropo", RaceRealm.AVARION, 36.0, .95f, 1f, 1.05f, 0xFFD7CDB4),
-    DRAGONBORN("Draconato", RaceRealm.AVARION, 38.0, 1.05f, 1.10f, 1.15f, 0xFFD6A13A),
+    DRAGONBORN("Draconato", RaceRealm.AVARION, 36.0, 1.05f, 1.10f, 1.15f, 0xFFD6A13A),
     HARPY("Harpia", RaceRealm.AVARION, 32.0, .85f, .90f, 1f, 0xFFE9DDBB);
 
     public final String title;

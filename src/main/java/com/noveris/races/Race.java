@@ -32,7 +32,9 @@ public enum Race {
         this.maxHealth = maxHealth;
         this.smallScale = smallScale;
         this.mediumScale = mediumScale;
-        this.maxScale = Math.min(1.15f, maxScale);
+        // Raças administrativas podem usar a altura definida pelo painel
+        // (o Deus chega a 120%); as raças jogáveis continuam limitadas a 115%.
+        this.maxScale = realm == RaceRealm.ADMIN ? maxScale : Math.min(1.15f, maxScale);
         this.color = color;
     }
 

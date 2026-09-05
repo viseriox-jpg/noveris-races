@@ -40,7 +40,8 @@ public final class ClientEvents {
             if (++syncTimer >= 40) { syncTimer = 0; PacketDistributor.sendToServer(new ActionPayload("sync", "", "", "", "", "", "")); }
             if (ClientRaceState.race == Race.NONE && !(mc.screen instanceof RaceSelectionScreen))
                 mc.setScreen(new RaceSelectionScreen());
-            else if (!ClientRaceState.confirmed && ClientRaceState.race != Race.NONE && ClientRaceState.trial <= 0 && !(mc.screen instanceof RacePanelScreen))
+            else if (!ClientRaceState.confirmed && ClientRaceState.race != Race.NONE && ClientRaceState.trial <= 0
+                    && !(mc.screen instanceof RacePanelScreen) && !(mc.screen instanceof RaceSelectionScreen))
                 mc.setScreen(new RacePanelScreen(true));
             while (PANEL.consumeClick()) mc.setScreen(ClientRaceState.race == Race.NONE ? new RaceSelectionScreen() : new RacePanelScreen(false));
             while (PRIMARY.consumeClick()) PacketDistributor.sendToServer(new ActionPayload("primary", "", "", "", "", "", ""));

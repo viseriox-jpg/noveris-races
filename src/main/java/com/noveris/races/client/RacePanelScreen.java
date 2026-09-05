@@ -7,6 +7,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class RacePanelScreen extends NoverisScreen {
     private final boolean forceConfirmation;
+    private boolean confirmationSent;
     private int confirmX, confirmY, confirmW, confirmH, changeX, changeY, changeW, changeH;
     private int page, summaryTabX, powersTabX, tabY, tabW, tabH;
 
@@ -19,6 +20,13 @@ public final class RacePanelScreen extends NoverisScreen {
 
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         super.render(g, mx, my, partialTick);
+        // O servidor confirma de forma assíncrona. Fechar somente depois que
+        // o estado confirmado chegar evita tanto o duplo clique quanto o
+        // painel permanecer aberto após uma confirmação válida.
+        if (confirmationSent && ClientRaceState.confirmed) {
+            minecraft.setScreen(null);
+            return;
+        }
         Race race = ClientRaceState.race;
         frame(g, "SANGUE DE " + race.title.toUpperCase());
         String status = ClientRaceState.confirmed ? "LINHAGEM CONFIRMADA" : ClientRaceState.trial > 0 ?
@@ -114,9 +122,8 @@ public final class RacePanelScreen extends NoverisScreen {
         if (inside(mx,my,powersTabX,tabY,tabW,tabH)) { page=1; return true; }
         if (!ClientRaceState.confirmed && ClientRaceState.trial <= 0) {
             if (inside(mx,my,confirmX,confirmY,confirmW,confirmH)) {
-                // Mantém o painel aberto até o sync do servidor chegar. Fechar a tela
-                // imediatamente fazia o ClientEvents reabri-la com o estado antigo,
-                // dando a impressão de que era necessário confirmar duas vezes.
+                // Mantém o painel aberto até o sync do servidor chegar.
+                confirmationSent = true;
                 PacketDistributor.sendToServer(new ActionPayload("confirm", "", "", "", "", "", "")); return true;
             }
             if (!ClientRaceState.combat && inside(mx,my,changeX,changeY,changeW,changeH)) {

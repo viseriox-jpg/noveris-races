@@ -38,7 +38,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
         renderRaceCards(g);
         renderDetails(g, mx, my);
         actionW=240; actionH=24; actionX=left+(panelWidth-actionW)/2; actionY=top+panelHeight-32;
-        button(g, actionX, actionY, actionW, actionH, "SELECIONAR RAÇA", mx, my, true);
+        button(g, actionX, actionY, actionW, actionH, "CONFIRMAR RAÇA", mx, my, true);
     }
 
     private void renderTabs(GuiGraphics g,int mx,int my){
@@ -120,7 +120,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
             if(inside(mx,my,confirmX,confirmY,confirmW,confirmH)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
             if(inside(mx,my,backX,backY,backW,backH)){confirming=false;return true;}return true;
         }
-        if(inside(mx,my,actionX,actionY,actionW,actionH)){confirming=true;return true;}
+        if(inside(mx,my,actionX,actionY,actionW,actionH)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
         int tabY=top+54,gap=6,tabW=(panelWidth-68-gap*2)/3;
         for(int i=0;i<3;i++)if(inside(mx,my,left+34+i*(tabW+gap),tabY,tabW,24)){realm=RaceRealm.values()[i];selected=racesForRealm()[0];return true;}
         Race[] races=racesForRealm();int cardY=top+94,cardW=(panelWidth-68-gap*(races.length-1))/races.length;

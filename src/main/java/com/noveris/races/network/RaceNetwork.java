@@ -69,7 +69,7 @@ public final class RaceNetwork {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
             switch (payload.action) {
-                case "trial" -> {
+                case "select", "trial" -> {
                     if (RaceState.inCombat(player)) return;
                     Race race = Race.parse(payload.race);
                     if ((race == Race.GOD || race == Race.NPC) && !player.hasPermissions(2)) return;

@@ -55,7 +55,7 @@ public final class RaceState {
     }
 
     public static void confirm(ServerPlayer p) {
-        if (race(p) != Race.NONE && trialRemaining(p) <= 0) root(p).putBoolean("Confirmed", true);
+        if (race(p) != Race.NONE) root(p).putBoolean("Confirmed", true);
     }
 
     public static void reset(ServerPlayer p) {

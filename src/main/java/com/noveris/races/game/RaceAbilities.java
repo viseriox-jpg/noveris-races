@@ -59,10 +59,7 @@ public final class RaceAbilities {
         Race race = RaceState.race(p);
         long now = p.level().getGameTime();
         if (race == Race.NONE) return;
-        if (race == Race.NPC) {
-            if (emergencyHeal(p)) RaceGame.sync(p);
-            return;
-        }
+        if (race == Race.NPC) return;
         if (RaceState.customLong(p, "MobilityChargeSystem") == 0) {
             RaceState.customLong(p, "MobilityChargeSystem", 1);
             RaceState.customLong(p, "MobilityCharges", 3);
@@ -438,20 +435,6 @@ public final class RaceAbilities {
         }
         particles(p, ParticleTypes.CLOUD, 18, .55, .08);
         p.level().playSound(null, p.blockPosition(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, .8f, 1.1f);
-    }
-
-    private static boolean emergencyHeal(ServerPlayer p) {
-        if (p.getHealth() > p.getMaxHealth() * .25f) {
-            p.displayClientMessage(Component.literal("A Cura de Emergência só ativa com pouca vida."), true);
-            return false;
-        }
-        long now = p.level().getGameTime();
-        if (now < RaceState.customLong(p, "NpcEmergencyReady")) return false;
-        p.heal(8f);
-        RaceState.customLong(p, "NpcEmergencyReady", now + 600);
-        p.displayClientMessage(Component.literal("Cura de Emergência ativada."), true);
-        particles(p, ParticleTypes.HEART, 12, .45, .04);
-        return true;
     }
 
     private static java.util.List<LivingEntity> nearby(ServerPlayer p, double radius) {

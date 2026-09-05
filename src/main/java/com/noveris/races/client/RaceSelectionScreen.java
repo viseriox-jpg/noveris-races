@@ -25,6 +25,12 @@ public final class RaceSelectionScreen extends NoverisScreen {
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         super.render(g, mx, my, partialTick);
         frame(g, "LINHAGENS DE NOVERIS");
+        // A confirmação substitui a seleção inteira; não renderize os
+        // componentes da tela anterior por baixo do modal.
+        if (confirming) {
+            renderConfirmation(g, mx, my);
+            return;
+        }
         String realmTitle = realm.title.toUpperCase();
         g.drawString(font, realmTitle, left + panelWidth - font.width(realmTitle) - 34, top + 28, DANGER, false);
         renderSizeControls(g, mx, my);
@@ -33,7 +39,6 @@ public final class RaceSelectionScreen extends NoverisScreen {
         renderDetails(g, mx, my);
         actionW=240; actionH=24; actionX=left+(panelWidth-actionW)/2; actionY=top+panelHeight-32;
         button(g, actionX, actionY, actionW, actionH, "SELECIONAR RAÇA", mx, my, true);
-        if (confirming) renderConfirmation(g, mx, my);
     }
 
     private void renderTabs(GuiGraphics g,int mx,int my){

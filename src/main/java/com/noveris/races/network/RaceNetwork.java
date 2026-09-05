@@ -41,16 +41,27 @@ public final class RaceNetwork {
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 
+    public record AdminPanelPayload(boolean open) implements CustomPacketPayload {
+        public static final Type<AdminPanelPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "admin_panel"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, AdminPanelPayload> CODEC = StreamCodec.of(
+                (buf, v) -> buf.writeBoolean(v.open), buf -> new AdminPanelPayload(buf.readBoolean()));
+        @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
+    }
+
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         registrar.playToServer(ActionPayload.TYPE, ActionPayload.CODEC, RaceNetwork::handleAction);
         registrar.playToClient(StatePayload.TYPE, StatePayload.CODEC, (payload, context) ->
                 context.enqueueWork(() -> ClientRaceState.accept(payload)));
-        registrar.playToClient(FakeNamePayload.TYPE, FakeNamePayload.CODEC, (payload, context) ->
+            registrar.playToClient(FakeNamePayload.TYPE, FakeNamePayload.CODEC, (payload, context) ->
                 context.enqueueWork(() -> {
                     FakeNameClientState.accept(payload.nickname(), payload.pronouns(), payload.format(), payload.color(), payload.prefix(), payload.open());
                     if (payload.open() && net.minecraft.client.Minecraft.getInstance().screen == null)
                         net.minecraft.client.Minecraft.getInstance().setScreen(new com.noveris.races.client.FakeNameScreen());
+                }));
+        registrar.playToClient(AdminPanelPayload.TYPE, AdminPanelPayload.CODEC, (payload, context) ->
+                context.enqueueWork(() -> {
+                    if (payload.open()) net.minecraft.client.Minecraft.getInstance().setScreen(new com.noveris.races.client.AdminRaceScreen());
                 }));
     }
 
@@ -61,6 +72,7 @@ public final class RaceNetwork {
                 case "trial" -> {
                     if (RaceState.inCombat(player)) return;
                     Race race = Race.parse(payload.race);
+                    if ((race == Race.GOD || race == Race.NPC) && !player.hasPermissions(2)) return;
                     DragonLineage lineage = DragonLineage.parse(payload.lineage);
                     FairyAffinity fairyAffinity = FairyAffinity.parse(payload.fairyAffinity);
                     Race ancestryA = Race.parse(payload.ancestryA);

@@ -12,6 +12,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import com.noveris.races.network.RaceNetwork.AdminPanelPayload;
 
 import java.util.Collection;
 
@@ -35,7 +37,8 @@ public final class RaceCommands {
                     .then(Commands.argument("linhagem", StringArgumentType.word())
                         .executes(c -> set(c.getSource(), EntityArgument.getPlayer(c, "jogador"), StringArgumentType.getString(c, "raça"), StringArgumentType.getString(c, "linhagem")))))))
             .then(Commands.literal("listar").then(Commands.argument("raça", StringArgumentType.word())
-                .executes(c -> list(c.getSource(), StringArgumentType.getString(c, "raça"))))));
+                .executes(c -> list(c.getSource(), StringArgumentType.getString(c, "raça")))))
+            .then(Commands.literal("painel").executes(c -> openAdminPanel(c.getSource()))));
     }
 
     private static int openNickname(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
@@ -48,6 +51,12 @@ public final class RaceCommands {
         FakeNameState.reset(player); player.refreshDisplayName(); player.refreshTabListName();
         RaceGame.syncFakeName(player, false);
         source.sendSuccess(() -> Component.literal("Apelido, prefixo e complemento restaurados ao nome real."), false);
+        return 1;
+    }
+
+    private static int openAdminPanel(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        PacketDistributor.sendToPlayer(player, new AdminPanelPayload(true));
         return 1;
     }
 

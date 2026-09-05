@@ -14,7 +14,9 @@ public enum Race {
     TIEFLING("Tiefling", RaceRealm.AVARION, 34.0, .98f, 1.03f, 1.08f, 0xFFE58B32),
     LYCANTHROPE("Licantropo", RaceRealm.AVARION, 36.0, .95f, 1f, 1.05f, 0xFFD7CDB4),
     DRAGONBORN("Draconato", RaceRealm.AVARION, 36.0, 1.05f, 1.10f, 1.15f, 0xFFD6A13A),
-    HARPY("Harpia", RaceRealm.AVARION, 32.0, .85f, .90f, 1f, 0xFFE9DDBB);
+    HARPY("Harpia", RaceRealm.AVARION, 32.0, .85f, .90f, 1f, 0xFFE9DDBB),
+    GOD("Deus", RaceRealm.ADMIN, 80.0, 1f, 1.10f, 1.20f, 0xFFFFE27A),
+    NPC("NPC", RaceRealm.ADMIN, 60.0, .90f, 1f, 1.15f, 0xFFB8C0CC);
 
     public final String title;
     public final RaceRealm realm;
@@ -47,6 +49,8 @@ public enum Race {
         if (normalized.equals("humano")) return HUMAN;
         if (normalized.equals("nephilin")) return NEPHILIM;
         if (normalized.equals("vampiro")) return VAMPIRE;
+        if (normalized.equals("deus")) return GOD;
+        if (normalized.equals("npc")) return NPC;
         try { return valueOf(value.toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException ignored) { return NONE; }
     }

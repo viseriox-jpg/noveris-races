@@ -16,7 +16,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private boolean confirming;
     private int actionX, actionY, actionW, actionH, specialX, specialY, specialW, specialH;
     private int sizeX, sizeY, sizeW, sizeH;
-    private int confirmX, confirmY, backX, backY;
+    private int confirmX, confirmY, backX, backY, confirmW, confirmH, backW, backH;
 
     public RaceSelectionScreen() { super("Linhagens de Noveris"); }
     @Override public boolean shouldCloseOnEsc() { return false; }
@@ -93,20 +93,24 @@ public final class RaceSelectionScreen extends NoverisScreen {
         g.drawCenteredString(font,label,x+specialW/2,y+7,active?WHITE:MUTED);
     }
     private void renderConfirmation(GuiGraphics g,int mx,int my){
-        int w=430,h=124,x=left+(panelWidth-w)/2,y=top+(panelHeight-h)/2;
+        // Modal amplo e com linhas fixas: o título completo não pode invadir
+        // a linha da raça nem os botões em fontes/resoluções diferentes.
+        int w=Math.min(650,panelWidth-44),h=170,x=left+(panelWidth-w)/2,y=top+(panelHeight-h)/2;
         g.fill(x-3,y-3,x+w+3,y+h+3,BORDER);g.fill(x,y,x+w,y+h,0xFC0D0C09);
-        g.drawCenteredString(font,"DESEJA REALMENTE ESCOLHER ESTA RAÇA?",x+w/2,y+24,WHITE);
+        g.drawCenteredString(font,"DESEJA REALMENTE ESCOLHER ESTA RAÇA?",x+w/2,y+20,WHITE);
         String choice=selected.title+(selected==Race.DRAGONBORN?" — "+lineage.title:selected==Race.FAIRY?" — "+fairyAffinity.title:"")+" — "+size.title;
-        g.drawCenteredString(font,choice.toUpperCase(),x+w/2,y+47,selected.color);
-        g.drawCenteredString(font,"Você iniciará o teste de 5 minutos.",x+w/2,y+64,MUTED);
-        confirmX=x+34;confirmY=y+86;backX=x+226;backY=confirmY;
-        button(g,confirmX,confirmY,170,26,"CONFIRMAR",mx,my,true);button(g,backX,backY,170,26,"VOLTAR",mx,my,true);
+        g.drawCenteredString(font,choice.toUpperCase(),x+w/2,y+50,selected.color);
+        g.drawCenteredString(font,"Você iniciará o teste de 5 minutos.",x+w/2,y+77,MUTED);
+        confirmW=220;confirmH=28;backW=220;backH=28;
+        int gap=16,buttonsWidth=confirmW+gap+backW;
+        confirmX=x+(w-buttonsWidth)/2;confirmY=y+116;backX=confirmX+confirmW+gap;backY=confirmY;
+        button(g,confirmX,confirmY,confirmW,confirmH,"CONFIRMAR",mx,my,true);button(g,backX,backY,backW,backH,"VOLTAR",mx,my,true);
     }
 
     @Override public boolean mouseClicked(double mx,double my,int button){
         if(confirming){
-            if(inside(mx,my,confirmX,confirmY,170,26)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
-            if(inside(mx,my,backX,backY,170,26)){confirming=false;return true;}return true;
+            if(inside(mx,my,confirmX,confirmY,confirmW,confirmH)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
+            if(inside(mx,my,backX,backY,backW,backH)){confirming=false;return true;}return true;
         }
         if(inside(mx,my,actionX,actionY,actionW,actionH)){confirming=true;return true;}
         int tabY=top+54,gap=6,tabW=(panelWidth-68-gap*2)/3;

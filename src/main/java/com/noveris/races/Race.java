@@ -15,7 +15,7 @@ public enum Race {
     LYCANTHROPE("Licantropo", RaceRealm.AVARION, 36.0, .95f, 1f, 1.05f, 0xFFD7CDB4),
     DRAGONBORN("Draconato", RaceRealm.AVARION, 36.0, 1.05f, 1.10f, 1.15f, 0xFFD6A13A),
     HARPY("Harpia", RaceRealm.AVARION, 32.0, .85f, .90f, 1f, 0xFFE9DDBB),
-    GOD("Deus", RaceRealm.ADMIN, 200.0, 1f, 1.10f, 1.20f, 0xFFFFE27A),
+    GOD("Deus", RaceRealm.ADMIN, 1000.0, 1f, 1.10f, 1.20f, 0xFFFFE27A),
     NPC("NPC", RaceRealm.ADMIN, 80.0, .90f, 1f, 1.15f, 0xFFB8C0CC);
 
     public final String title;

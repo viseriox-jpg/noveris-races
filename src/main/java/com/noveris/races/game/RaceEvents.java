@@ -341,14 +341,6 @@ public final class RaceEvents {
             case NPC -> {
                 p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 2, false, false));
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1, false, false));
-                if (p.getHealth() <= p.getMaxHealth() * .25f
-                        && p.level().getGameTime() >= RaceState.customLong(p, "NpcEmergencyReady")) {
-                    p.heal(8f);
-                    RaceState.customLong(p, "NpcEmergencyReady", p.level().getGameTime() + 600);
-                    p.displayClientMessage(Component.literal("Cura de Emergência ativada."), true);
-                    if (p.level() instanceof ServerLevel level)
-                        level.sendParticles(ParticleTypes.HEART, p.getX(), p.getY() + 1, p.getZ(), 8, .4, .5, .4, .03);
-                }
             }
             default -> {}
         }

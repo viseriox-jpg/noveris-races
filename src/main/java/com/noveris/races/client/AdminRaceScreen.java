@@ -32,7 +32,7 @@ public final class AdminRaceScreen extends NoverisScreen {
         // O bloco de porte ocupa uma faixa própria no rodapé. O rótulo fica
         // acima dos botões e nunca reutiliza a linha das habilidades.
         sizeY = top + panelHeight - 90; int sizeW = 100, total = sizeW * 3 + 12; sizeX = left + (panelWidth - total) / 2;
-        g.drawCenteredString(font, "ALTURA  " + Math.round(selected.scale(size) * 100) + "%", left + panelWidth / 2, sizeY - 20, WHITE);
+        g.drawCenteredString(font, "ALTURA  " + Math.round(selected.scale(size) * 100) + "%", left + panelWidth / 2, sizeY - 10, WHITE);
         sizeOption(g, sizeX, sizeY, sizeW, "MENOR", RaceSize.SMALL, mx, my);
         sizeOption(g, sizeX + sizeW + 6, sizeY, sizeW, "MÉDIO", RaceSize.MEDIUM, mx, my);
         sizeOption(g, sizeX + (sizeW + 6) * 2, sizeY, sizeW, "MAIOR", RaceSize.LARGE, mx, my);

@@ -93,6 +93,9 @@ public final class RaceSelectionScreen extends NoverisScreen {
         g.drawCenteredString(font,label,x+specialW/2,y+7,active?WHITE:MUTED);
     }
     private void renderConfirmation(GuiGraphics g,int mx,int my){
+        // A confirmação é uma tela modal de verdade: cobre completamente o
+        // painel de seleção para que nenhum texto ou botão de trás atravesse.
+        g.fill(0, 0, width, height, 0xFF0D0C09);
         // Modal amplo e com linhas fixas: o título completo não pode invadir
         // a linha da raça nem os botões em fontes/resoluções diferentes.
         int w=Math.min(650,panelWidth-44),h=170,x=left+(panelWidth-w)/2,y=top+(panelHeight-h)/2;

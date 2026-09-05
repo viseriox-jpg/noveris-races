@@ -11,6 +11,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.nbt.CompoundTag;
@@ -160,7 +161,7 @@ public final class RaceCommands {
         }
 
         if (totalPages > 1) {
-            Component navigation = Component.literal("Páginas: ");
+            MutableComponent navigation = Component.literal("Páginas: ");
             if (page > 1) navigation = navigation.append(pageLink("« anterior", race, page - 1));
             if (page > 1 && page < totalPages) navigation = navigation.append(Component.literal("  "));
             if (page < totalPages) navigation = navigation.append(pageLink("próxima »", race, page + 1));

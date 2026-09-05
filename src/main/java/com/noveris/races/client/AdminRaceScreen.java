@@ -61,7 +61,7 @@ public final class AdminRaceScreen extends NoverisScreen {
         if (inside(mx, my, sizeX + sizeW + 6, sizeY, sizeW, 22)) { size = RaceSize.MEDIUM; return true; }
         if (inside(mx, my, sizeX + (sizeW + 6) * 2, sizeY, sizeW, 22)) { size = RaceSize.LARGE; return true; }
         if (inside(mx, my, actionX, actionY, 260, 26)) {
-            PacketDistributor.sendToServer(new ActionPayload("trial", selected.name(), "NONE", "NONE", "NONE", "NONE", size.name()));
+            PacketDistributor.sendToServer(new ActionPayload("select", selected.name(), "NONE", "NONE", "NONE", "NONE", size.name()));
             minecraft.setScreen(null); return true;
         }
         return super.mouseClicked(mx, my, button);

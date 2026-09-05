@@ -24,6 +24,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
 
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         super.render(g, mx, my, partialTick);
+        if (ClientRaceState.selectionPending && ClientRaceState.confirmed) { minecraft.setScreen(null); return; }
         frame(g, "LINHAGENS DE NOVERIS");
         // A confirmação substitui a seleção inteira; não renderize os
         // componentes da tela anterior por baixo do modal.
@@ -108,7 +109,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
         g.drawCenteredString(font,"DESEJA REALMENTE ESCOLHER ESTA RAÇA?",x+w/2,y+20,WHITE);
         String choice=selected.title+(selected==Race.DRAGONBORN?" — "+lineage.title:selected==Race.FAIRY?" — "+fairyAffinity.title:"")+" — "+size.title;
         g.drawCenteredString(font,choice.toUpperCase(),x+w/2,y+50,selected.color);
-        g.drawCenteredString(font,"Você iniciará o teste de 5 minutos.",x+w/2,y+77,MUTED);
+        g.drawCenteredString(font,"A raça será escolhida imediatamente.",x+w/2,y+77,MUTED);
         confirmW=220;confirmH=28;backW=220;backH=28;
         int gap=16,buttonsWidth=confirmW+gap+backW;
         confirmX=x+(w-buttonsWidth)/2;confirmY=y+116;backX=confirmX+confirmW+gap;backY=confirmY;
@@ -117,7 +118,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
 
     @Override public boolean mouseClicked(double mx,double my,int button){
         if(confirming){
-            if(inside(mx,my,confirmX,confirmY,confirmW,confirmH)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
+            if(inside(mx,my,confirmX,confirmY,confirmW,confirmH)){PacketDistributor.sendToServer(new ActionPayload("select",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));ClientRaceState.selectionPending=true;return true;}
             if(inside(mx,my,backX,backY,backW,backH)){confirming=false;return true;}return true;
         }
         if(inside(mx,my,actionX,actionY,actionW,actionH)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}

@@ -58,34 +58,30 @@ public final class ClientEvents {
 
     @EventBusSubscriber(modid = NoverisRaces.MOD_ID, value = Dist.CLIENT)
     public static final class HudBus {
-        private static final int BAR_WIDTH = 96;
+        private static final int BAR_WIDTH = 120;
         private static final int GOLD = 0xFFFFD84D;
-        private static final int GOLD_DARK = 0xFF6E5700;
-        private static final int PANEL = 0xCC0D0C09;
-
+        
         @SubscribeEvent
         public static void render(RenderGuiEvent.Post event) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.options.hideGui || ClientRaceState.race == Race.NONE) return;
-            int y = mc.getWindow().getGuiScaledHeight() / 2 - 24;
+            int y = mc.getWindow().getGuiScaledHeight() / 2 - 22;
             if (ClientRaceState.primaryCooldown > 0) {
                 int max = ClientRaceState.race == Race.GOD ? 200 : ClientRaceState.race == Race.NPC ? 240 : 300;
-                drawCooldown(event.getGuiGraphics(), mc, 8, y, "P", ClientRaceState.primaryCooldown, max);
+                drawCooldown(event.getGuiGraphics(), mc, 8, y, "PRIMÁRIA", ClientRaceState.primaryCooldown, max);
                 y += 24;
             }
             if (ClientRaceState.mobilityCooldown > 0)
-                drawCooldown(event.getGuiGraphics(), mc, 8, y, "M", ClientRaceState.mobilityCooldown, 900);
+                drawCooldown(event.getGuiGraphics(), mc, 8, y, "MOBILIDADE", ClientRaceState.mobilityCooldown, 900);
         }
 
         private static void drawCooldown(net.minecraft.client.gui.GuiGraphics g, Minecraft mc, int x, int y,
                                          String label, long remaining, int maximum) {
-            int barY = y + 13;
+            int barY = y + 14;
             double progress = Math.max(0.0, Math.min(1.0, 1.0 - (double) remaining / maximum));
             int filled = (int) Math.round(BAR_WIDTH * progress);
-            g.fill(x, y, x + BAR_WIDTH + 16, y + 20, PANEL);
-            g.drawString(mc.font, label + " " + String.format(java.util.Locale.ROOT, "%.1fs", remaining / 20.0), x + 6, y + 2, 0xFFFFF1B8, false);
-            g.fill(x + 6, barY, x + 6 + BAR_WIDTH, barY + 3, GOLD_DARK);
-            if (filled > 0) g.fill(x + 6, barY, x + 6 + filled, barY + 3, GOLD);
+            g.drawString(mc.font, label + " " + String.format(java.util.Locale.ROOT, "%.1fs", remaining / 20.0), x, y + 1, 0xFFFFF1B8, false);
+            if (filled > 0) g.fill(x, barY, x + filled, barY + 3, GOLD);
         }
     }
 }

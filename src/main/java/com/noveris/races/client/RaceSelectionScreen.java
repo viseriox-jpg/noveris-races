@@ -151,4 +151,3 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private String[] passives(Race r){return RaceInfo.passives(r);}
     private String[] weaknesses(Race r){return RaceInfo.weaknesses(r, lineage);}
 }
-}

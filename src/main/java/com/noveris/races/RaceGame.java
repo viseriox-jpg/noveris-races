@@ -9,11 +9,13 @@ public final class RaceGame {
     private RaceGame() {}
     public static void sync(ServerPlayer p) {
         long now = p.level().getGameTime();
+        Race race = RaceState.race(p);
         PacketDistributor.sendToPlayer(p, new StatePayload(
-                RaceState.race(p).name(), RaceState.lineage(p).name(), RaceState.fairyAffinity(p).name(), RaceState.ancestryA(p).name(), RaceState.ancestryB(p).name(), RaceState.size(p).name(), RaceState.confirmed(p),
+                race.name(), RaceState.lineage(p).name(), RaceState.fairyAffinity(p).name(), RaceState.ancestryA(p).name(), RaceState.ancestryB(p).name(), RaceState.size(p).name(), RaceState.confirmed(p),
                 RaceState.trialRemaining(p), Math.max(0, RaceState.primaryReady(p) - now),
                 Math.max(0, RaceState.mobilityReady(p) - now),
-                (int)RaceState.customLong(p, "MobilityCharges"), RaceState.inCombat(p), RaceState.visionEnabled(p),
+                (int)RaceState.customLong(p, "MobilityCharges"), RaceConfig.primaryCooldownTicks(race), RaceConfig.mobilityCooldownTicks(),
+                RaceState.inCombat(p), RaceState.visionEnabled(p),
                 (int)Math.max(0, 100 - RaceState.customLong(p, "DryTicks") * 100 / 9600)));
     }
     public static void syncFakeName(ServerPlayer p, boolean open) {

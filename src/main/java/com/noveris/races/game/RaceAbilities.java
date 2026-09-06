@@ -160,7 +160,7 @@ public final class RaceAbilities {
     private static void piercingShot(ServerPlayer p) {
         Vec3 origin = p.getEyePosition();
         Vec3 direction = p.getLookAngle().normalize();
-        double range = 16.0;
+        double range = 18.0;
         for (LivingEntity target : nearby(p, range)) {
             Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0);
             Vec3 relative = center.subtract(origin);

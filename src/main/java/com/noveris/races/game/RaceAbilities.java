@@ -36,18 +36,18 @@ public final class RaceAbilities {
         }
         int cooldown;
         switch (race) {
-            case ELF -> { piercingShot(p); cooldown = 300; }
-            case FAIRY -> { fairyPower(p); cooldown = 300; }
-            case SATYR -> { woodlandVigor(p); cooldown = 300; }
-            case THALASSIAN -> { tidalGuard(p); cooldown = 300; }
-            case NEPHILIM -> { radiantBurst(p); cooldown = 300; }
-            case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = 300; }
-            case TIEFLING -> { infernalPulse(p); cooldown = 300; }
-            case LYCANTHROPE -> { huntingHowl(p); cooldown = 300; }
-            case DRAGONBORN -> { dragonBreath(p); cooldown = 300; }
-            case HARPY -> { windGust(p); cooldown = 300; }
-            case GOD -> { divineJudgment(p); cooldown = 200; }
-            case NPC -> { guardCharge(p); cooldown = 240; }
+            case ELF -> { piercingShot(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case FAIRY -> { fairyPower(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case SATYR -> { woodlandVigor(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case THALASSIAN -> { tidalGuard(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case NEPHILIM -> { radiantBurst(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = RaceConfig.primaryCooldownTicks(); }
+            case TIEFLING -> { infernalPulse(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case LYCANTHROPE -> { huntingHowl(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case DRAGONBORN -> { dragonBreath(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case HARPY -> { windGust(p); cooldown = RaceConfig.primaryCooldownTicks(); }
+            case GOD -> { divineJudgment(p); cooldown = RaceConfig.godPrimaryCooldownTicks(); }
+            case NPC -> { guardCharge(p); cooldown = RaceConfig.npcPrimaryCooldownTicks(); }
             default -> { return; }
         }
         RaceState.customLong(p, "RaceVfxUntil", now + 30);
@@ -129,7 +129,7 @@ public final class RaceAbilities {
         // As três cargas podem ser usadas continuamente. O único cooldown
         // permanece na recarga de 45s depois que todas forem consumidas.
         RaceState.customLong(p, "MobilityBurstReady", 0);
-        long mobilityCooldown = 900;
+        long mobilityCooldown = RaceConfig.mobilityCooldownTicks();
         int heavyPieces = (int) RaceState.customLong(p, "HeavyArmorPieces");
         if ((race == Race.SATYR && heavyPieces >= 3) || (race == Race.HARPY && heavyPieces >= 4))
             mobilityCooldown *= 2;
@@ -160,7 +160,7 @@ public final class RaceAbilities {
     private static void piercingShot(ServerPlayer p) {
         Vec3 origin = p.getEyePosition();
         Vec3 direction = p.getLookAngle().normalize();
-        double range = 18.0;
+        double range = RaceConfig.elfProjectileRange.get();
         for (LivingEntity target : nearby(p, range)) {
             Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0);
             Vec3 relative = center.subtract(origin);
@@ -168,7 +168,7 @@ public final class RaceAbilities {
             if (alongRay < 0 || alongRay > range || !p.hasLineOfSight(target)) continue;
             double distanceFromRay = relative.subtract(direction.scale(alongRay)).length();
             if (distanceFromRay <= Math.max(.75, target.getBbWidth() * .65)) {
-                target.hurt(p.damageSources().playerAttack(p), 5f);
+                target.hurt(p.damageSources().playerAttack(p), RaceConfig.elfProjectileDamage.get().floatValue());
                 particlesAt(p, external("irons_spellbooks:wisp", ParticleTypes.END_ROD), target.getX(), target.getY()+target.getBbHeight()*.5, target.getZ(), 10, .25, .35, .25, .03);
             }
         }
@@ -186,7 +186,7 @@ public final class RaceAbilities {
             case WATER -> {
                 Vec3 center = p.position();
                 for (LivingEntity target : nearby(p, 4.5)) {
-                    target.hurt(p.damageSources().playerAttack(p), 4f);
+                    target.hurt(p.damageSources().playerAttack(p), RaceConfig.fairyWaterDamage.get().floatValue());
                     Vec3 away = target.position().subtract(center).normalize();
                     target.push(away.x * 1.15, .22, away.z * 1.15);
                     target.hurtMarked = true;
@@ -209,7 +209,7 @@ public final class RaceAbilities {
                     if (alongRay < 0 || alongRay > 10 || !p.hasLineOfSight(target)) continue;
                     double distanceFromRay = relative.subtract(look.scale(alongRay)).length();
                     if (distanceFromRay <= Math.max(.8, target.getBbWidth() * .7)) {
-                        target.hurt(p.damageSources().playerAttack(p), 3f);
+                        target.hurt(p.damageSources().playerAttack(p), RaceConfig.fairyAirDamage.get().floatValue());
                         target.push(look.x * 1.4, .25, look.z * 1.4);
                         target.hurtMarked = true;
                     }
@@ -221,7 +221,7 @@ public final class RaceAbilities {
             default -> {
                 for (LivingEntity target : nearby(p, 5)) {
                     if (p.hasLineOfSight(target)) {
-                        target.hurt(p.damageSources().playerAttack(p), 2f);
+                        target.hurt(p.damageSources().playerAttack(p), RaceConfig.fairyNatureDamage.get().floatValue());
                         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 4));
                     }
                 }

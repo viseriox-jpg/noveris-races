@@ -339,7 +339,6 @@ public final class RaceEvents {
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 2, false, false));
             }
             case NPC -> {
-                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 2, false, false));
                 p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1, false, false));
             }
             default -> {}

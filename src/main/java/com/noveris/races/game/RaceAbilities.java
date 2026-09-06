@@ -192,32 +192,41 @@ public final class RaceAbilities {
                     target.hurtMarked = true;
                 }
                 p.clearFire();
+                p.heal(2f);
                 cleanseOneHarmfulEffect(p);
-                p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
+                p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 0));
                 particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.SPLASH), 42, 1.1, .12);
                 particles(p, external("irons_spellbooks:acid_bubble", ParticleTypes.BUBBLE), 24, .8, .08);
                 particles(p, ParticleTypes.FALLING_WATER, 20, .8, .04);
             }
             case AIR -> {
+                Vec3 origin = p.getEyePosition();
                 Vec3 look = p.getLookAngle().normalize();
-                for (LivingEntity target : nearby(p, 8)) {
-                    Vec3 toward = target.position().subtract(p.position()).normalize();
-                    if (toward.dot(look) < .25 || !p.hasLineOfSight(target)) continue;
-                    target.hurt(p.damageSources().playerAttack(p), 4f);
-                    target.push(toward.x * 1.15, .28, toward.z * 1.15);
-                    target.hurtMarked = true;
+                for (LivingEntity target : nearby(p, 10)) {
+                    Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0);
+                    Vec3 relative = center.subtract(origin);
+                    double alongRay = relative.dot(look);
+                    if (alongRay < 0 || alongRay > 10 || !p.hasLineOfSight(target)) continue;
+                    double distanceFromRay = relative.subtract(look.scale(alongRay)).length();
+                    if (distanceFromRay <= Math.max(.8, target.getBbWidth() * .7)) {
+                        target.hurt(p.damageSources().playerAttack(p), 3f);
+                        target.push(look.x * 1.4, .25, look.z * 1.4);
+                        target.hurtMarked = true;
+                    }
                 }
-                p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 120, 0));
+                p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 80, 0));
                 particles(p, external("irons_spellbooks:spark", ParticleTypes.CLOUD), 46, 1.3, .16);
                 particles(p, ParticleTypes.SWEEP_ATTACK, 8, .7, .02);
             }
             default -> {
                 for (LivingEntity target : nearby(p, 5)) {
                     if (p.hasLineOfSight(target)) {
-                        target.hurt(p.damageSources().playerAttack(p), 4f);
-                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+                        target.hurt(p.damageSources().playerAttack(p), 2f);
+                        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 4));
                     }
                 }
+                cleanseOneHarmfulEffect(p);
+                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0));
                 particles(p, external("irons_spellbooks:cleanse", ParticleTypes.HAPPY_VILLAGER), 38, 1.1, .08);
                 particles(p, external("hazennstuff:leaf_particle", ParticleTypes.COMPOSTER), 26, .9, .05);
             }

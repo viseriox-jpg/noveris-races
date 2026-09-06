@@ -72,7 +72,7 @@ public final class RaceNetwork {
                 case "select", "trial" -> {
                     if (RaceState.inCombat(player)) return;
                     Race race = Race.parse(payload.race);
-                    if ((race == Race.GOD || race == Race.NPC) && !player.hasPermissions(2)) return;
+                    if ((race == Race.GOD || race == Race.NPC) && !player.hasPermissions(RaceConfig.adminPermissionLevel.get())) return;
                     DragonLineage lineage = DragonLineage.parse(payload.lineage);
                     FairyAffinity fairyAffinity = FairyAffinity.parse(payload.fairyAffinity);
                     Race ancestryA = Race.parse(payload.ancestryA);

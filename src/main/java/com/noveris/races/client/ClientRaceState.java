@@ -18,6 +18,8 @@ public final class ClientRaceState {
     public static long primaryCooldown;
     public static long mobilityCooldown;
     public static int mobilityCharges = 3;
+    public static int primaryCooldownMax = 300;
+    public static int mobilityCooldownMax = 900;
     public static boolean combat;
     public static boolean visionEnabled = true;
     public static int hydration = 100;
@@ -27,7 +29,7 @@ public final class ClientRaceState {
     public static void accept(StatePayload p) {
         race = Race.parse(p.race()); lineage = DragonLineage.parse(p.lineage()); fairyAffinity = FairyAffinity.parse(p.fairyAffinity());
         ancestryA = Race.parse(p.ancestryA()); ancestryB = Race.parse(p.ancestryB()); size = RaceSize.parse(p.size()); confirmed = p.confirmed();
-        trial = p.trial(); primaryCooldown = p.primaryCooldown(); mobilityCooldown = p.mobilityCooldown(); mobilityCharges = p.mobilityCharges(); combat = p.combat(); visionEnabled = p.visionEnabled(); hydration = p.hydration();
+        trial = p.trial(); primaryCooldown = p.primaryCooldown(); mobilityCooldown = p.mobilityCooldown(); mobilityCharges = p.mobilityCharges(); primaryCooldownMax = p.primaryCooldownMax(); mobilityCooldownMax = p.mobilityCooldownMax(); combat = p.combat(); visionEnabled = p.visionEnabled(); hydration = p.hydration();
         if (race != Race.NONE && confirmed) selectionPending = false;
     }
 }

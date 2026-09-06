@@ -170,4 +170,3 @@ public final class RacePanelScreen extends NoverisScreen {
     }
     private String[] weaknesses(Race r){return RaceInfo.weaknesses(r, ClientRaceState.lineage);}
 }
-}

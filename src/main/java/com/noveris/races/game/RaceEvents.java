@@ -62,6 +62,18 @@ public final class RaceEvents {
         if (!(event.getEntity() instanceof ServerPlayer p)) return;
         RaceState.tickTrial(p);
         Race race = RaceState.race(p);
+        boolean fireDragon = race == Race.DRAGONBORN && RaceState.lineage(p) == DragonLineage.FIRE;
+        if ((race == Race.TIEFLING || fireDragon) && p.isInWaterOrRain()) {
+            long now = p.level().getGameTime();
+            long nextDamage = RaceState.customLong(p, "WaterDamageReady");
+            double damage = race == Race.TIEFLING
+                    ? RaceConfig.tieflingWaterDamage.get()
+                    : RaceConfig.fireDragonWaterDamage.get();
+            if (damage > 0 && now >= nextDamage) {
+                p.hurt(p.damageSources().drown(), (float) damage);
+                RaceState.customLong(p, "WaterDamageReady", now + RaceConfig.waterDamageIntervalTicks.get());
+            }
+        }
         if (RaceState.customLong(p, "MobilityChargeSystem") == 1
                 && RaceState.customLong(p, "MobilityCharges") <= 0
                 && RaceState.mobilityReady(p) > 0

@@ -82,7 +82,17 @@ public final class FakeNameScreen extends NoverisScreen {
         return true;
     }
     private void send(String action){ PacketDistributor.sendToServer(new ActionPayload(action, nickname.getValue(), pronouns.getValue(), format, color, prefix, "")); }
-    private boolean hasFormat(String f){ return format.equals(f) || format.contains(","+f) || format.contains(f+","); }
+    private String normalizeFormat(String value){
+        if(value==null || value.isBlank()) return "normal";
+        java.util.LinkedHashSet<String> out=new java.util.LinkedHashSet<>();
+        for(String part:value.toLowerCase().split(",")){
+            String f=part.trim();
+            if(f.equals("normal")) return "normal";
+            if(f.equals("bold")||f.equals("italic")||f.equals("underlined")||f.equals("strikethrough")||f.equals("uniform")) out.add(f);
+        }
+        return out.isEmpty()?"normal":String.join(",",out);
+    }
+    private boolean hasFormat(String f){ return normalizeFormat(format).equals(f) || normalizeFormat(format).contains(","+f) || normalizeFormat(format).contains(f+","); }
     private void toggleFormat(String f){
         if(f.equals("normal")){ format="normal"; return; }
         java.util.LinkedHashSet<String> set=new java.util.LinkedHashSet<>();
@@ -105,8 +115,10 @@ public final class FakeNameScreen extends NoverisScreen {
     private String colorLabel(String value){ return switch(value){case "purple"->"PINK";case "dark_red"->"DARK RED";case "dark_purple"->"DARK PURPLE";default->value.toUpperCase();}; }
     private Component preview(){
         String name=nickname.getValue().isBlank()?"SeuNome":nickname.getValue();
+        String selectedFormat=normalizeFormat(format);
         Style style=Style.EMPTY.withColor(colorFormatting(color));
-        for(String f:format.split(",")) switch(f){case "bold"->style=style.withBold(true);case "italic"->style=style.withItalic(true);case "underlined"->style=style.withUnderlined(true);case "strikethrough"->style=style.withStrikethrough(true);case "uniform"->style=style.withFont(ResourceLocation.withDefaultNamespace("uniform"));default->{}};
+        if(selectedFormat.equals("normal")) style=style.withBold(false).withItalic(false).withUnderlined(false).withStrikethrough(false).withFont(ResourceLocation.withDefaultNamespace("default"));
+        for(String f:selectedFormat.split(",")) switch(f){case "bold"->style=style.withBold(true);case "italic"->style=style.withItalic(true);case "underlined"->style=style.withUnderlined(true);case "strikethrough"->style=style.withStrikethrough(true);case "uniform"->style=style.withFont(ResourceLocation.withDefaultNamespace("uniform"));default->{}};
         MutableComponent c=switch(prefix){case "avarion"->Component.literal("Avarion ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withBold(true));case "orvannis"->Component.literal("Orvannis ").withStyle(Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withBold(true));default->Component.empty();};
         return c.append(Component.literal(name).withStyle(style)).append(pronouns.getValue().isBlank()?Component.empty():Component.literal(" ["+pronouns.getValue()+"]").withStyle(ChatFormatting.GRAY));
     }

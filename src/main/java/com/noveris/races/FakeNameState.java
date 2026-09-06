@@ -48,6 +48,8 @@ public final class FakeNameState {
         java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
         for (String part : value.toLowerCase().split(",")) {
             String f = part.trim();
+            // "normal" é uma opção exclusiva: ela remove qualquer formatação anterior.
+            if (f.equals("normal")) return "normal";
             if (f.equals("bold") || f.equals("italic") || f.equals("underlined") || f.equals("strikethrough") || f.equals("uniform")) out.add(f);
         }
         return out.isEmpty() ? "normal" : String.join(",", out);
@@ -56,8 +58,14 @@ public final class FakeNameState {
         String name = nickname(p);
         if (name.isBlank()) name = p.getGameProfile().getName();
         String suffix = pronouns(p).isBlank() ? "" : " §7[" + pronouns(p) + "]";
+        String selectedFormat = normalizeFormats(format(p));
         Style style = Style.EMPTY.withColor(displayColor(color(p)));
-        for (String f : format(p).split(",")) {
+        if (selectedFormat.equals("normal")) {
+            // Define explicitamente o estilo padrão do Minecraft, inclusive após um apelido antigo formatado.
+            style = style.withBold(false).withItalic(false).withUnderlined(false).withStrikethrough(false)
+                    .withFont(ResourceLocation.withDefaultNamespace("default"));
+        }
+        for (String f : selectedFormat.split(",")) {
             switch (f) {
                 case "bold" -> style = style.withBold(true);
                 case "italic" -> style = style.withItalic(true);

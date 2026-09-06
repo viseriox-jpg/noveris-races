@@ -24,7 +24,7 @@ public final class AdminRaceScreen extends NoverisScreen {
         int cardY = top + 86, cardW = 260, gap = 18;
         godX = left + panelWidth / 2 - cardW - gap / 2; npcX = left + panelWidth / 2 + gap / 2;
         card(g, godX, cardY, cardW, "DEUS", Race.GOD, "1000 de vida (500 corações)", "Regeneração VII • Resistência III", mx, my);
-        card(g, npcX, cardY, cardW, "NPC", Race.NPC, "80 de vida (40 corações)", "Regeneração III • Resistência II", mx, my);
+        card(g, npcX, cardY, cardW, "NPC", Race.NPC, "80 de vida (40 corações)", "Resistência II", mx, my);
         int infoY = top + 150;
         g.drawCenteredString(font, "RAÇA: " + selected.title.toUpperCase(), left + panelWidth / 2, infoY, selected.color);
         g.drawCenteredString(font, selected == Race.GOD ? "Julgamento Divino • Teleporte Celestial" : "Investida de Guarda", left + panelWidth / 2, infoY + 22, LILAC);

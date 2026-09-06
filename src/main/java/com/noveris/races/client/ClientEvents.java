@@ -68,11 +68,11 @@ public final class ClientEvents {
             int y = mc.getWindow().getGuiScaledHeight() / 2 - 22;
             if (ClientRaceState.primaryCooldown > 0) {
                 int max = ClientRaceState.race == Race.GOD ? 200 : ClientRaceState.race == Race.NPC ? 240 : 300;
-                drawCooldown(event.getGuiGraphics(), mc, 8, y, "PRIMÁRIA", ClientRaceState.primaryCooldown, max);
+                drawCooldown(event.getGuiGraphics(), mc, 8, y, "PRIMÁRIA", ClientRaceState.primaryCooldown, ClientRaceState.primaryCooldownMax);
                 y += 24;
             }
             if (ClientRaceState.mobilityCooldown > 0)
-                drawCooldown(event.getGuiGraphics(), mc, 8, y, "MOBILIDADE", ClientRaceState.mobilityCooldown, 900);
+                drawCooldown(event.getGuiGraphics(), mc, 8, y, "MOBILIDADE", ClientRaceState.mobilityCooldown, ClientRaceState.mobilityCooldownMax);
         }
 
         private static void drawCooldown(net.minecraft.client.gui.GuiGraphics g, Minecraft mc, int x, int y,

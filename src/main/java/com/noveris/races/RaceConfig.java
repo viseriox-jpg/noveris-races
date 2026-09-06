@@ -53,6 +53,7 @@ public final class RaceConfig {
     private RaceConfig() {}
 
     public static int primaryCooldownTicks() { return primaryCooldownSeconds.get() * 20; }
+    public static int primaryCooldownTicks(Race race) { return race == Race.GOD ? godPrimaryCooldownTicks() : race == Race.NPC ? npcPrimaryCooldownTicks() : primaryCooldownTicks(); }
     public static int godPrimaryCooldownTicks() { return godPrimaryCooldownSeconds.get() * 20; }
     public static int npcPrimaryCooldownTicks() { return npcPrimaryCooldownSeconds.get() * 20; }
     public static int mobilityCooldownTicks() { return mobilityCooldownSeconds.get() * 20; }

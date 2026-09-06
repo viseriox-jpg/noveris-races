@@ -24,12 +24,12 @@ public final class RaceNetwork {
     }
 
     public record StatePayload(String race, String lineage, String fairyAffinity, String ancestryA, String ancestryB, String size, boolean confirmed, long trial,
-                               long primaryCooldown, long mobilityCooldown, int mobilityCharges,
+                               long primaryCooldown, long mobilityCooldown, int mobilityCharges, int primaryCooldownMax, int mobilityCooldownMax,
                                boolean combat, boolean visionEnabled, int hydration) implements CustomPacketPayload {
         public static final Type<StatePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(NoverisRaces.MOD_ID, "state"));
         public static final StreamCodec<RegistryFriendlyByteBuf, StatePayload> CODEC = StreamCodec.of(
-                (buf, v) -> { buf.writeUtf(v.race); buf.writeUtf(v.lineage); buf.writeUtf(v.fairyAffinity); buf.writeUtf(v.ancestryA); buf.writeUtf(v.ancestryB); buf.writeUtf(v.size); buf.writeBoolean(v.confirmed); buf.writeVarLong(v.trial); buf.writeVarLong(v.primaryCooldown); buf.writeVarLong(v.mobilityCooldown); buf.writeVarInt(v.mobilityCharges); buf.writeBoolean(v.combat); buf.writeBoolean(v.visionEnabled); buf.writeVarInt(v.hydration); },
-                buf -> new StatePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readVarInt(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt()));
+                (buf, v) -> { buf.writeUtf(v.race); buf.writeUtf(v.lineage); buf.writeUtf(v.fairyAffinity); buf.writeUtf(v.ancestryA); buf.writeUtf(v.ancestryB); buf.writeUtf(v.size); buf.writeBoolean(v.confirmed); buf.writeVarLong(v.trial); buf.writeVarLong(v.primaryCooldown); buf.writeVarLong(v.mobilityCooldown); buf.writeVarInt(v.mobilityCharges); buf.writeVarInt(v.primaryCooldownMax); buf.writeVarInt(v.mobilityCooldownMax); buf.writeBoolean(v.combat); buf.writeBoolean(v.visionEnabled); buf.writeVarInt(v.hydration); },
+                buf -> new StatePayload(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readBoolean(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readBoolean(), buf.readVarInt()));
         @Override public Type<? extends CustomPacketPayload> type() { return TYPE; }
     }
 

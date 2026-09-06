@@ -157,9 +157,11 @@ public final class RacePanelScreen extends NoverisScreen {
             case HUMAN -> new String[]{"Pressa I funciona ao trabalhar","Não possui habilidades raciais ativas ou mobilidade"};
             case NEPHILIM -> new String[]{"Força ativa com 30% ou menos de vida","Recebe 50% menos dano de fogo; cura recebida é menor"};
             case VAMPIRE -> new String[]{"Velocidade, Força e mordida regenerativa exigem noite","Fogo suspende vantagens e aplica Fraqueza"};
-            case TIEFLING -> new String[]{"Imune a dano de fogo e lava; retalia ao ser queimado","Água aplica Fraqueza; cura pequena é reduzida com fome alta"};
+            case TIEFLING -> new String[]{"Imune a dano de fogo e lava; retalia ao ser queimado","Água e chuva causam dano; cura pequena é reduzida com fome alta"};
             case LYCANTHROPE -> new String[]{"Força, velocidade e regeneração exigem noite e 6+ de fome","A fome é consumida durante a noite; dia suspende os bônus"};
-            case DRAGONBORN -> new String[]{"Resistência elemental depende da linhagem escolhida","Fome aumenta com o tempo; elemento oposto causa penalidade"};
+            case DRAGONBORN -> ClientRaceState.lineage == com.noveris.races.DragonLineage.FIRE
+                    ? new String[]{"Água e chuva causam dano","Resistência ao fogo; elemento oposto causa penalidade"}
+                    : new String[]{"Resistência elemental depende da linhagem escolhida","Fome aumenta com o tempo; elemento oposto causa penalidade"};
             case HARPY -> new String[]{"Velocidade adicional exige áreas abertas","Armadura pesada reduz a mobilidade"};
             case GOD -> new String[]{"Raças administrativas: resistência e regeneração elevadas","Teleporte exige espaço seguro"};
             case NPC -> new String[]{"Investida de Guarda é a única habilidade ativa","Raça exclusiva para operadores"};

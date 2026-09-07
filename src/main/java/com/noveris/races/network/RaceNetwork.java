@@ -83,12 +83,8 @@ public final class RaceNetwork {
                         RaceGame.sync(player);
                         return;
                     }
-                    if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) {
-                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                                "Você já possui uma raça definida. Use /noverisraces reset antes de escolher outra."), true);
-                        RaceGame.sync(player);
-                        return;
-                    }
+                    // Deus e NPC são exceções administrativas: podem substituir
+                    // diretamente a raça atual do operador, sem /reset.
                     RaceState.beginTrial(player, race, DragonLineage.NONE, FairyAffinity.NONE,
                             Race.NONE, Race.NONE, RaceSize.parse(payload.size));
                     RaceState.confirm(player);

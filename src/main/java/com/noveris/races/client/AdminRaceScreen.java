@@ -80,7 +80,7 @@ public final class AdminRaceScreen extends NoverisScreen {
             if (selectionRequestSent) return true;
             selectionRequestSent = true;
             ClientRaceState.selectionPending = true;
-            PacketDistributor.sendToServer(new ActionPayload("select", selected.name(), "NONE", "NONE", "NONE", "NONE", size.name()));
+            PacketDistributor.sendToServer(new ActionPayload("admin_select", selected.name(), "NONE", "NONE", "NONE", "NONE", size.name()));
             return true;
         }
         return super.mouseClicked(mx, my, button);

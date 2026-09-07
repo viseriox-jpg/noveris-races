@@ -69,6 +69,33 @@ public final class RaceNetwork {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
             switch (payload.action) {
+                case "admin_select" -> {
+                    Race race = Race.parse(payload.race);
+                    if (race != Race.GOD && race != Race.NPC) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "A seleção administrativa recebeu uma raça inválida."), true);
+                        RaceGame.sync(player);
+                        return;
+                    }
+                    if (!player.hasPermissions(RaceConfig.adminPermissionLevel.get())) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "Você precisa ser operador para escolher essa raça."), true);
+                        RaceGame.sync(player);
+                        return;
+                    }
+                    if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "Você já possui uma raça definida. Use /noverisraces reset antes de escolher outra."), true);
+                        RaceGame.sync(player);
+                        return;
+                    }
+                    RaceState.beginTrial(player, race, DragonLineage.NONE, FairyAffinity.NONE,
+                            Race.NONE, Race.NONE, RaceSize.parse(payload.size));
+                    RaceState.confirm(player);
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            "Raça administrativa selecionada: " + race.title + "."), true);
+                    RaceGame.sync(player);
+                }
                 case "select", "trial" -> {
                     // Seleção definitiva: só pode escolher novamente depois de /reset.
                     if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) {

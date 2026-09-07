@@ -23,6 +23,10 @@ public final class AdminRaceScreen extends NoverisScreen {
             minecraft.setScreen(null);
             return;
         }
+        if (selectionRequestSent && !ClientRaceState.selectionPending
+                && ClientRaceState.race == Race.NONE) {
+            selectionRequestSent = false;
+        }
         frame(g, "RAÇAS ADMINISTRATIVAS");
         g.drawString(font, "SOMENTE OPERADORES", left + panelWidth - 190, top + 28, DANGER, false);
         divider(g, top + 56);

@@ -82,7 +82,6 @@ public final class RaceConfig {
         tieflingWaterDamage = b.defineInRange("tieflingWaterDamage", 2.0, 0.0, 40.0);
         fireDragonWaterDamage = b.defineInRange("fireDragonWaterDamage", 2.0, 0.0, 40.0);
         waterDamageIntervalTicks = b.defineInRange("waterDamageIntervalTicks", 20, 1, 200);
-        b.pop();
 
         b.comment("Passivas, atributos e multiplicadores de combate.").push("balance");
         passiveRefreshTicks = b.defineInRange("passiveRefreshTicks", 20, 1, 200);

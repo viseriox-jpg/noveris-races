@@ -91,7 +91,7 @@ public final class RaceInfo {
         return switch (r) {
             case ELF -> "Projétil mágico perfurante: 2,5 corações em até 18 blocos.";
             case FAIRY -> switch (affinity) {
-                case WATER -> "Empurra, apaga fogo, cura 1 coração e concede Resistência.";
+                case WATER -> "Empurra, apaga fogo, cura 1 coração e purifica um efeito negativo.";
                 case AIR -> "Rajada em linha causa 1,5 coração, empurra e concede Velocidade.";
                 default -> "Prende inimigos por 3s, causa 1 coração e purifica um efeito negativo.";
             };

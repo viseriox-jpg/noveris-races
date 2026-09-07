@@ -84,9 +84,6 @@ public final class RaceEvents {
         }
         updateScale(p);
         handleHeavyArmorMobility(p, race);
-        // No Nether, a afinidade feérica não consegue sustentar regeneração.
-        if (race == Race.FAIRY && p.level().dimensionType().ultraWarm())
-            p.removeEffect(MobEffects.REGENERATION);
         if (p.tickCount % 20 == 0) {
             applyAttributes(p);
             applyPassives(p, race);
@@ -143,10 +140,8 @@ public final class RaceEvents {
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.IS_FALL)
                 && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil")) event.setAmount(event.getAmount() * .35f);
         // No Nether, dano mágico deixa o Feérico enfraquecido por alguns segundos.
-        if (race == Race.FAIRY && victim.level().dimensionType().ultraWarm()
-                && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
-            victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
-        if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO)) event.setAmount(event.getAmount() * .8f);
+        if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
+            event.setAmount(event.getAmount() * RaceConfig.fairyMagicDamageMultiplier.get());
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE))
             victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
@@ -163,20 +158,20 @@ public final class RaceEvents {
             return;
         }
         if (race == Race.DRAGONBORN && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
-            event.setAmount(event.getAmount() * .88f);
+            event.setAmount(event.getAmount() * RaceConfig.dragonPhysicalDamageMultiplier.get());
         if (race == Race.DRAGONBORN) {
             DragonLineage lineage = RaceState.lineage(victim);
-            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .4f);
+            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * RaceConfig.dragonFireDamageMultiplier.get());
             if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING))
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 0, false, false));
             if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE))
                 victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
-            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * .4f);
+            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * RaceConfig.dragonFrostDamageMultiplier.get());
             if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
                 victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         }
         if (race == Race.HARPY) {
-            if (event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .2f);
+            if (event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * RaceConfig.harpyFallDamageMultiplier.get());
             else if (!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
         }
@@ -188,12 +183,12 @@ public final class RaceEvents {
     public static void healing(LivingHealEvent event) {
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.TIEFLING
                 && p.getFoodData().getFoodLevel() >= 18 && event.getAmount() <= 1.0f)
-            event.setAmount(event.getAmount() * .75f);
+            event.setAmount(event.getAmount() * RaceConfig.tieflingHealingMultiplier.get());
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.THALASSIAN
-                && RaceState.customLong(p, "DryTicks") > 6000) event.setAmount(event.getAmount() * .6f);
-        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.FAIRY
-                && p.level().dimensionType().ultraWarm()) event.setAmount(event.getAmount() * .7f);
+                && RaceState.customLong(p, "DryTicks") > RaceConfig.hydrationWarningQuarterTicks.get())
+            event.setAmount(event.getAmount() * RaceConfig.thalassianDryHealingMultiplier.get());
+
     }
 
     @SubscribeEvent
@@ -243,16 +238,18 @@ public final class RaceEvents {
         var knockback = p.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
         var blockReach = p.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
         var entityReach = p.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
-        if (maxHealth != null) maxHealth.setBaseValue(race.maxHealth);
+        if (maxHealth != null) maxHealth.setBaseValue(RaceConfig.maxHealth(race));
         if (speed != null) {
-            double value = .1;
-            if (race == Race.DRAGONBORN) value = .092;
+            double value = RaceConfig.defaultMovementSpeed.get();
+            if (race == Race.DRAGONBORN) value = RaceConfig.dragonMovementSpeed.get();
             if (race == Race.HARPY)
-                value = RaceState.customLong(p, "HeavyMobilityBlocked") == 1 ? .1 : .112;
-            if (race == Race.LYCANTHROPE && p.level().isNight()) value = .11;
+                value = RaceState.customLong(p, "HeavyMobilityBlocked") == 1
+                        ? RaceConfig.defaultMovementSpeed.get() : RaceConfig.harpyMovementSpeed.get();
+            if (race == Race.LYCANTHROPE && p.level().isNight()) value = RaceConfig.lycanthropeNightMovementSpeed.get();
             speed.setBaseValue(value);
         }
-        if (knockback != null) knockback.setBaseValue(race == Race.DRAGONBORN ? .2 : 0);
+        if (knockback != null) knockback.setBaseValue(race == Race.DRAGONBORN
+                ? RaceConfig.dragonKnockbackResistance.get() : 0);
         boolean small = RaceState.size(p) == RaceSize.SMALL;
         if (blockReach != null) blockReach.setBaseValue(small ? 4.275 : 4.5);
         if (entityReach != null) entityReach.setBaseValue(small ? 2.85 : 3.0);
@@ -278,7 +275,6 @@ public final class RaceEvents {
                 switch (RaceState.fairyAffinity(p)) {
                     case WATER -> {
                         if (p.isInWaterOrRain())
-                            p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 40, 0, false, false));
                     }
                     case AIR -> {
                         if (!p.onGround() && p.getDeltaMovement().y < -0.08)
@@ -432,7 +428,7 @@ public final class RaceEvents {
         tickHydration(p, false);
     }
     private static void tickHydration(ServerPlayer p, boolean hybrid) {
-        final long maximum = 9600;
+        final long maximum = RaceConfig.hydrationMaximumTicks.get();
         long before = RaceState.customLong(p, "DryTicks");
         long dry;
         if (p.isInWater()) dry = Math.max(0, before - 32);
@@ -443,15 +439,16 @@ public final class RaceEvents {
         if (dry >= 6000) p.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 40, 0, false, false));
         if (dry >= maximum) {
             p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
-            if (p.tickCount % 200 == 0 && p.getHealth() > 2f) {
-                p.hurt(p.damageSources().dryOut(), Math.min(2f, p.getHealth() - 2f));
+            if (p.tickCount % RaceConfig.hydrationDamageIntervalTicks.get() == 0 && p.getHealth() > 2f) {
+                p.hurt(p.damageSources().dryOut(), Math.min((float) RaceConfig.hydrationDamage.get(), p.getHealth() - 2f));
                 if (p.level() instanceof ServerLevel level)
                     level.sendParticles(ParticleTypes.ASH, p.getX(), p.getY() + 1, p.getZ(), 12, .35, .5, .35, .03);
                 p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.GENERIC_HURT,
                         net.minecraft.sounds.SoundSource.PLAYERS, .55f, 1.35f);
             }
         }
-        int warning = dry >= maximum ? 3 : dry >= 7200 ? 2 : dry >= 4800 ? 1 : 0;
+        int warning = dry >= maximum ? 3 : dry >= RaceConfig.hydrationWarningQuarterTicks.get() ? 2
+                : dry >= RaceConfig.hydrationWarningHalfTicks.get() ? 1 : 0;
         int oldWarning = (int) RaceState.customLong(p, "HydrationWarning");
         if (warning > oldWarning) {
             String text = warning == 1 ? "Hidratação em 50%." : warning == 2

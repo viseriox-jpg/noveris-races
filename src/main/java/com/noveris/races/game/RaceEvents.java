@@ -139,10 +139,10 @@ public final class RaceEvents {
         if (race == Race.SATYR && event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .5f);
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.IS_FALL)
                 && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil"))
-            event.setAmount(event.getAmount() * (float) RaceConfig.fairyFallDamageMultiplier.get());
+            event.setAmount(event.getAmount() * RaceConfig.fairyFallDamageMultiplier.get().floatValue());
         // No Nether, dano mágico deixa o Feérico enfraquecido por alguns segundos.
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
-            event.setAmount(event.getAmount() * (float) RaceConfig.fairyMagicDamageMultiplier.get());
+            event.setAmount(event.getAmount() * RaceConfig.fairyMagicDamageMultiplier.get().floatValue());
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE))
             victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
@@ -159,20 +159,20 @@ public final class RaceEvents {
             return;
         }
         if (race == Race.DRAGONBORN && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
-            event.setAmount(event.getAmount() * (float) RaceConfig.dragonPhysicalDamageMultiplier.get());
+            event.setAmount(event.getAmount() * RaceConfig.dragonPhysicalDamageMultiplier.get().floatValue());
         if (race == Race.DRAGONBORN) {
             DragonLineage lineage = RaceState.lineage(victim);
-            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * (float) RaceConfig.dragonFireDamageMultiplier.get());
+            if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * RaceConfig.dragonFireDamageMultiplier.get().floatValue());
             if (lineage == DragonLineage.FIRE && event.getSource().is(DamageTypeTags.IS_FREEZING))
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 0, false, false));
             if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FIRE))
                 victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
-            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * (float) RaceConfig.dragonFrostDamageMultiplier.get());
+            if (lineage == DragonLineage.FROST && event.getSource().is(DamageTypeTags.IS_FREEZING)) event.setAmount(event.getAmount() * RaceConfig.dragonFrostDamageMultiplier.get().floatValue());
             if (lineage == DragonLineage.VENOM && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
                 victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         }
         if (race == Race.HARPY) {
-            if (event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * (float) RaceConfig.harpyFallDamageMultiplier.get());
+            if (event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * RaceConfig.harpyFallDamageMultiplier.get().floatValue());
             else if (!event.getSource().is(DamageTypeTags.BYPASSES_ARMOR))
                 victim.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 0, false, false));
         }
@@ -184,11 +184,11 @@ public final class RaceEvents {
     public static void healing(LivingHealEvent event) {
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.TIEFLING
                 && p.getFoodData().getFoodLevel() >= 18 && event.getAmount() <= 1.0f)
-            event.setAmount(event.getAmount() * (float) RaceConfig.tieflingHealingMultiplier.get());
+            event.setAmount(event.getAmount() * RaceConfig.tieflingHealingMultiplier.get().floatValue());
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.THALASSIAN
                 && RaceState.customLong(p, "DryTicks") > RaceConfig.hydrationWarningQuarterTicks.get())
-            event.setAmount(event.getAmount() * (float) RaceConfig.thalassianDryHealingMultiplier.get());
+            event.setAmount(event.getAmount() * RaceConfig.thalassianDryHealingMultiplier.get().floatValue());
 
     }
 
@@ -439,7 +439,7 @@ public final class RaceEvents {
         if (dry >= maximum) {
             p.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 40, 0, false, false));
             if (p.tickCount % RaceConfig.hydrationDamageIntervalTicks.get() == 0 && p.getHealth() > 2f) {
-                p.hurt(p.damageSources().dryOut(), Math.min((float) RaceConfig.hydrationDamage.get(), p.getHealth() - 2f));
+                p.hurt(p.damageSources().dryOut(), Math.min(RaceConfig.hydrationDamage.get().floatValue(), p.getHealth() - 2f));
                 if (p.level() instanceof ServerLevel level)
                     level.sendParticles(ParticleTypes.ASH, p.getX(), p.getY() + 1, p.getZ(), 12, .35, .5, .35, .03);
                 p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.GENERIC_HURT,

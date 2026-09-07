@@ -70,11 +70,12 @@ public final class RaceNetwork {
             if (!(context.player() instanceof ServerPlayer player)) return;
             switch (payload.action) {
                 case "select", "trial" -> {
-                    if (RaceState.inCombat(player)) return;
                     // Seleção definitiva: só pode escolher novamente depois de /reset.
                     if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) return;
                     Race race = Race.parse(payload.race);
-                    if ((race == Race.GOD || race == Race.NPC) && !player.hasPermissions(RaceConfig.adminPermissionLevel.get())) return;
+                    boolean adminRace = race == Race.GOD || race == Race.NPC;
+                    if (RaceState.inCombat(player) && !adminRace) return;
+                    if (adminRace && !player.hasPermissions(RaceConfig.adminPermissionLevel.get())) return;
                     DragonLineage lineage = DragonLineage.parse(payload.lineage);
                     FairyAffinity fairyAffinity = FairyAffinity.parse(payload.fairyAffinity);
                     Race ancestryA = Race.parse(payload.ancestryA);

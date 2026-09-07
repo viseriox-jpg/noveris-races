@@ -71,11 +71,26 @@ public final class RaceNetwork {
             switch (payload.action) {
                 case "select", "trial" -> {
                     // Seleção definitiva: só pode escolher novamente depois de /reset.
-                    if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) return;
+                    if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "Você já possui uma raça definida. Use /noverisraces reset antes de escolher outra."), true);
+                        RaceGame.sync(player);
+                        return;
+                    }
                     Race race = Race.parse(payload.race);
                     boolean adminRace = race == Race.GOD || race == Race.NPC;
-                    if (RaceState.inCombat(player) && !adminRace) return;
-                    if (adminRace && !player.hasPermissions(RaceConfig.adminPermissionLevel.get())) return;
+                    if (RaceState.inCombat(player) && !adminRace) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "Não é possível escolher uma raça durante o combate."), true);
+                        RaceGame.sync(player);
+                        return;
+                    }
+                    if (adminRace && !player.hasPermissions(RaceConfig.adminPermissionLevel.get())) {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "Você não tem permissão para escolher essa raça administrativa."), true);
+                        RaceGame.sync(player);
+                        return;
+                    }
                     DragonLineage lineage = DragonLineage.parse(payload.lineage);
                     FairyAffinity fairyAffinity = FairyAffinity.parse(payload.fairyAffinity);
                     Race ancestryA = Race.parse(payload.ancestryA);
@@ -85,6 +100,10 @@ public final class RaceNetwork {
                     if (race != Race.NONE && (race != Race.DRAGONBORN || lineage != DragonLineage.NONE) && validFairy) {
                         RaceState.beginTrial(player, race, lineage, fairyAffinity, ancestryA, ancestryB, size);
                         RaceState.confirm(player);
+                        RaceGame.sync(player);
+                    } else {
+                        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                                "Não foi possível validar a raça escolhida."), true);
                         RaceGame.sync(player);
                     }
                 }

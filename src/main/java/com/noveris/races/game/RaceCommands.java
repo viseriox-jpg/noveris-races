@@ -92,6 +92,7 @@ public final class RaceCommands {
 
     private static int openAdminPanel(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
+        RaceGame.sync(player);
         PacketDistributor.sendToPlayer(player, new AdminPanelPayload(true));
         return 1;
     }

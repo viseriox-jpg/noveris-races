@@ -71,6 +71,8 @@ public final class RaceNetwork {
             switch (payload.action) {
                 case "select", "trial" -> {
                     if (RaceState.inCombat(player)) return;
+                    // Seleção definitiva: só pode escolher novamente depois de /reset.
+                    if (RaceState.confirmed(player) && RaceState.race(player) != Race.NONE) return;
                     Race race = Race.parse(payload.race);
                     if ((race == Race.GOD || race == Race.NPC) && !player.hasPermissions(RaceConfig.adminPermissionLevel.get())) return;
                     DragonLineage lineage = DragonLineage.parse(payload.lineage);

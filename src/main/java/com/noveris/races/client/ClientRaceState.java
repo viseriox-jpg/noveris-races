@@ -30,6 +30,6 @@ public final class ClientRaceState {
         race = Race.parse(p.race()); lineage = DragonLineage.parse(p.lineage()); fairyAffinity = FairyAffinity.parse(p.fairyAffinity());
         ancestryA = Race.parse(p.ancestryA()); ancestryB = Race.parse(p.ancestryB()); size = RaceSize.parse(p.size()); confirmed = p.confirmed();
         trial = p.trial(); primaryCooldown = p.primaryCooldown(); mobilityCooldown = p.mobilityCooldown(); mobilityCharges = p.mobilityCharges(); primaryCooldownMax = p.primaryCooldownMax(); mobilityCooldownMax = p.mobilityCooldownMax(); combat = p.combat(); visionEnabled = p.visionEnabled(); hydration = p.hydration();
-        if (race != Race.NONE && confirmed) selectionPending = false;
+        if (race == Race.NONE || (race != Race.NONE && confirmed)) selectionPending = false;
     }
 }

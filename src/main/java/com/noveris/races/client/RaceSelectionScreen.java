@@ -25,7 +25,9 @@ public final class RaceSelectionScreen extends NoverisScreen {
 
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         super.render(g, mx, my, partialTick);
-        if (selectionRequestSent && ClientRaceState.confirmed && ClientRaceState.race != Race.NONE) { minecraft.setScreen(null); return; }
+        // O primeiro sync do servidor pode chegar depois que a tela abriu.
+        // Uma raça confirmada é definitiva e nunca deve deixar esta tela aberta.
+        if (ClientRaceState.confirmed && ClientRaceState.race != Race.NONE) { minecraft.setScreen(null); return; }
         frame(g, "LINHAGENS DE NOVERIS");
         // A confirmação substitui a seleção inteira; não renderize os
         // componentes da tela anterior por baixo do modal.

@@ -138,7 +138,8 @@ public final class RaceEvents {
         }
         if (race == Race.SATYR && event.getSource().is(DamageTypeTags.IS_FALL)) event.setAmount(event.getAmount() * .5f);
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.IS_FALL)
-                && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil")) event.setAmount(event.getAmount() * .35f);
+                && victim.level().getGameTime() < RaceState.customLong(victim, "FaeLandingUntil"))
+            event.setAmount(event.getAmount() * RaceConfig.fairyFallDamageMultiplier.get());
         // No Nether, dano mágico deixa o Feérico enfraquecido por alguns segundos.
         if (race == Race.FAIRY && event.getSource().is(DamageTypeTags.WITCH_RESISTANT_TO))
             event.setAmount(event.getAmount() * RaceConfig.fairyMagicDamageMultiplier.get());
@@ -273,9 +274,7 @@ public final class RaceEvents {
             }
             case FAIRY -> {
                 switch (RaceState.fairyAffinity(p)) {
-                    case WATER -> {
-                        if (p.isInWaterOrRain())
-                    }
+                    case WATER -> {}
                     case AIR -> {
                         if (!p.onGround() && p.getDeltaMovement().y < -0.08)
                             p.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 30, 0, false, false));

@@ -23,9 +23,16 @@ public final class AdminRaceScreen extends NoverisScreen {
             minecraft.setScreen(null);
             return;
         }
-        if (selectionRequestSent && !ClientRaceState.selectionPending
-                && ClientRaceState.race == Race.NONE) {
-            selectionRequestSent = false;
+        if (selectionRequestSent && !ClientRaceState.selectionPending) {
+            if (ClientRaceState.confirmed && ClientRaceState.race == selected) {
+                minecraft.setScreen(null);
+                return;
+            }
+            // O servidor respondeu com recusa (raça já definida, permissão etc.).
+            // Nunca deixe o botão preso em "SALVANDO...".
+            if (ClientRaceState.confirmed || ClientRaceState.race == Race.NONE) {
+                selectionRequestSent = false;
+            }
         }
         frame(g, "RAÇAS ADMINISTRATIVAS");
         g.drawString(font, "SOMENTE OPERADORES", left + panelWidth - 190, top + 28, DANGER, false);

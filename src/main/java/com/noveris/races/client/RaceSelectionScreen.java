@@ -14,6 +14,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
     private Race ancestryA = Race.HUMAN, ancestryB = Race.ELF;
     private RaceSize size = RaceSize.MEDIUM;
     private boolean confirming;
+    private boolean selectionRequestSent;
     private int actionX, actionY, actionW, actionH, specialX, specialY, specialW, specialH;
     private int sizeX, sizeY, sizeW, sizeH;
     private int confirmX, confirmY, backX, backY, confirmW, confirmH, backW, backH;
@@ -24,7 +25,7 @@ public final class RaceSelectionScreen extends NoverisScreen {
 
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         super.render(g, mx, my, partialTick);
-        if (ClientRaceState.selectionPending && ClientRaceState.confirmed) { minecraft.setScreen(null); return; }
+        if (selectionRequestSent && ClientRaceState.confirmed && ClientRaceState.race != Race.NONE) { minecraft.setScreen(null); return; }
         frame(g, "LINHAGENS DE NOVERIS");
         // A confirmação substitui a seleção inteira; não renderize os
         // componentes da tela anterior por baixo do modal.
@@ -118,10 +119,20 @@ public final class RaceSelectionScreen extends NoverisScreen {
 
     @Override public boolean mouseClicked(double mx,double my,int button){
         if(confirming){
-            if(inside(mx,my,confirmX,confirmY,confirmW,confirmH)){PacketDistributor.sendToServer(new ActionPayload("select",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));ClientRaceState.selectionPending=true;return true;}
-            if(inside(mx,my,backX,backY,backW,backH)){confirming=false;return true;}return true;
+            if(inside(mx,my,confirmX,confirmY,confirmW,confirmH)){
+                if(selectionRequestSent) return true;
+                selectionRequestSent=true;
+                ClientRaceState.selectionPending=true;
+                PacketDistributor.sendToServer(new ActionPayload("select",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));
+                return true;
+            }
+            if(inside(mx,my,backX,backY,backW,backH)){
+                if(!selectionRequestSent) confirming=false;
+                return true;
+            }
+            return true;
         }
-        if(inside(mx,my,actionX,actionY,actionW,actionH)){PacketDistributor.sendToServer(new ActionPayload("trial",selected.name(),lineage.name(),fairyAffinity.name(),ancestryA.name(),ancestryB.name(),size.name()));minecraft.setScreen(null);return true;}
+        if(inside(mx,my,actionX,actionY,actionW,actionH)){confirming=true;return true;}
         int tabY=top+54,gap=6,tabW=(panelWidth-68-gap*2)/3;
         for(int i=0;i<3;i++)if(inside(mx,my,left+34+i*(tabW+gap),tabY,tabW,24)){realm=RaceRealm.values()[i];selected=racesForRealm()[0];return true;}
         Race[] races=racesForRealm();int cardY=top+94,cardW=(panelWidth-68-gap*(races.length-1))/races.length;

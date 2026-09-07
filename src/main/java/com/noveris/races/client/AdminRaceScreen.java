@@ -11,6 +11,7 @@ public final class AdminRaceScreen extends NoverisScreen {
     private Race selected = Race.GOD;
     private RaceSize size = RaceSize.MEDIUM;
     private int godX, npcX, sizeX, sizeY, actionX, actionY;
+    private boolean selectionRequestSent;
 
     public AdminRaceScreen() { super("Raças administrativas"); }
     @Override public boolean isPauseScreen() { return false; }
@@ -18,6 +19,10 @@ public final class AdminRaceScreen extends NoverisScreen {
 
     @Override public void render(GuiGraphics g, int mx, int my, float partialTick) {
         super.render(g, mx, my, partialTick);
+        if (selectionRequestSent && ClientRaceState.confirmed && ClientRaceState.race == selected) {
+            minecraft.setScreen(null);
+            return;
+        }
         frame(g, "RAÇAS ADMINISTRATIVAS");
         g.drawString(font, "SOMENTE OPERADORES", left + panelWidth - 190, top + 28, DANGER, false);
         divider(g, top + 56);
@@ -37,7 +42,7 @@ public final class AdminRaceScreen extends NoverisScreen {
         sizeOption(g, sizeX + sizeW + 6, sizeY, sizeW, "MÉDIO", RaceSize.MEDIUM, mx, my);
         sizeOption(g, sizeX + (sizeW + 6) * 2, sizeY, sizeW, "MAIOR", RaceSize.LARGE, mx, my);
         actionX = left + panelWidth / 2 - 130; actionY = top + panelHeight - 38;
-        button(g, actionX, actionY, 260, 26, "INICIAR TESTE ADMIN", mx, my, true);
+        button(g, actionX, actionY, 260, 26, selectionRequestSent ? "SALVANDO..." : "ESCOLHER RAÇA", mx, my, !selectionRequestSent);
     }
 
     private void card(GuiGraphics g, int x, int y, int w, String label, Race race, String health, String effects, int mx, int my) {
@@ -61,8 +66,11 @@ public final class AdminRaceScreen extends NoverisScreen {
         if (inside(mx, my, sizeX + sizeW + 6, sizeY, sizeW, 22)) { size = RaceSize.MEDIUM; return true; }
         if (inside(mx, my, sizeX + (sizeW + 6) * 2, sizeY, sizeW, 22)) { size = RaceSize.LARGE; return true; }
         if (inside(mx, my, actionX, actionY, 260, 26)) {
+            if (selectionRequestSent) return true;
+            selectionRequestSent = true;
+            ClientRaceState.selectionPending = true;
             PacketDistributor.sendToServer(new ActionPayload("select", selected.name(), "NONE", "NONE", "NONE", "NONE", size.name()));
-            minecraft.setScreen(null); return true;
+            return true;
         }
         return super.mouseClicked(mx, my, button);
     }

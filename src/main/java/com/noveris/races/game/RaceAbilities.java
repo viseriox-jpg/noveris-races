@@ -40,7 +40,6 @@ public final class RaceAbilities {
             case FAIRY -> { fairyPower(p); cooldown = RaceConfig.primaryCooldownTicks(); }
             case SATYR -> { woodlandVigor(p); cooldown = RaceConfig.primaryCooldownTicks(); }
             case THALASSIAN -> { tidalGuard(p); cooldown = RaceConfig.primaryCooldownTicks(); }
-            case NEPHILIM -> { radiantBurst(p); cooldown = RaceConfig.primaryCooldownTicks(); }
             case VAMPIRE -> { if (!bloodDrain(p)) return; cooldown = RaceConfig.primaryCooldownTicks(); }
             case TIEFLING -> { infernalPulse(p); cooldown = RaceConfig.primaryCooldownTicks(); }
             case LYCANTHROPE -> { huntingHowl(p); cooldown = RaceConfig.primaryCooldownTicks(); }
@@ -105,7 +104,6 @@ public final class RaceAbilities {
             }
             case SATYR -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, .48, look.z * 1.15); }
             case THALASSIAN -> { if (!p.isInWater() && !p.onGround()) return; p.setDeltaMovement(look.x * (p.isInWater() ? 1.55 : .75), p.isInWater() ? look.y * 1.1 : .18, look.z * (p.isInWater() ? 1.55 : .75)); }
-            case NEPHILIM -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * .7, .62, look.z * .7); }
             case VAMPIRE -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.2, .12, look.z * 1.2); }
             case TIEFLING -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.15, Math.max(.18, look.y * .35), look.z * 1.15); }
             case LYCANTHROPE -> { if (!p.onGround()) return; p.setDeltaMovement(look.x * 1.35, .34, look.z * 1.35); }
@@ -146,7 +144,6 @@ public final class RaceAbilities {
                     : external("irons_spellbooks:shockwave", ParticleTypes.CLOUD); particles(p, fae, 24, .7, .06); particles(p, ParticleTypes.END_ROD, 4, .4, .025); }
             case SATYR -> { particles(p, external("hazennstuff:nature_slash_particle", ParticleTypes.COMPOSTER), 26, .75, .055); particles(p, ParticleTypes.END_ROD, 4, .4, .025); }
             case THALASSIAN -> particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 32, .78, .08);
-            case NEPHILIM -> { particles(p, external("irons_spellbooks:heal", ParticleTypes.END_ROD), 24, .68, .04); particles(p, ParticleTypes.END_ROD, 5, .42, .025); }
             case VAMPIRE -> { particles(p, external("irons_spellbooks:blood", ParticleTypes.SMOKE), 28, .68, .05); particles(p, external("irons_spellbooks:siphon", ParticleTypes.DAMAGE_INDICATOR), 8, .45, .03); }
             case TIEFLING -> particles(p, external("irons_spellbooks:fire", ParticleTypes.FLAME), 22, .55, .12);
             case LYCANTHROPE -> { particles(p, ParticleTypes.POOF, 30, .8, .1); particles(p, ParticleTypes.CRIT, 16, .7, .12); particles(p, ParticleTypes.ASH, 10, .55, .03); }
@@ -243,31 +240,6 @@ public final class RaceAbilities {
         p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0));
         particles(p, external("irons_spellbooks:tinted_bubble_pop", ParticleTypes.BUBBLE), 36, .9, .08);
         particles(p, ParticleTypes.FALLING_WATER, 16, .8, .03);
-    }
-    private static void radiantBurst(ServerPlayer p) {
-        Vec3 origin = p.getEyePosition();
-        Vec3 direction = p.getLookAngle().normalize();
-        double range = 10.0;
-        for (LivingEntity target : nearby(p, range)) {
-            Vec3 center = target.position().add(0, target.getBbHeight() * .5, 0);
-            Vec3 relative = center.subtract(origin);
-            double alongRay = relative.dot(direction);
-            if (alongRay < 0 || alongRay > range || !p.hasLineOfSight(target)) continue;
-            double distanceFromRay = relative.subtract(direction.scale(alongRay)).length();
-            if (distanceFromRay <= Math.max(.8, target.getBbWidth() * .7)) {
-                target.hurt(p.damageSources().playerAttack(p), 4f);
-                // Lentidão II visível por 5 segundos; o efeito é aplicado mesmo
-                // quando o alvo bloqueia ou reduz o dano da rajada.
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1, true, true, true));
-            }
-        }
-        if (p.level() instanceof ServerLevel level) {
-            for (int step = 1; step <= 20; step++) {
-                Vec3 point = origin.add(direction.scale(step * (range / 20.0)));
-                level.sendParticles(external("irons_spellbooks:heal", ParticleTypes.END_ROD), point.x, point.y, point.z, 3, .08, .08, .08, .01);
-            }
-        }
-        p.level().playSound(null, p.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, .8f, 1.5f);
     }
     private static boolean bloodDrain(ServerPlayer p) {
         if (!p.level().isNight()) {

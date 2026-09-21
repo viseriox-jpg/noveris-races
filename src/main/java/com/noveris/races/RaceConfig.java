@@ -12,7 +12,6 @@ public final class RaceConfig {
     public static final ModConfigSpec.IntValue mobilityCooldownSeconds;
     public static final ModConfigSpec.DoubleValue elfProjectileRange;
     public static final ModConfigSpec.DoubleValue elfMaxHealth, fairyMaxHealth, satyrMaxHealth, thalassianMaxHealth;
-    public static final ModConfigSpec.DoubleValue humanMaxHealth, nephilimMaxHealth, vampireMaxHealth, tieflingMaxHealth;
     public static final ModConfigSpec.DoubleValue lycanthropeMaxHealth, dragonbornMaxHealth, harpyMaxHealth;
     public static final ModConfigSpec.DoubleValue godMaxHealth, npcMaxHealth;
     public static final ModConfigSpec.DoubleValue elfProjectileDamage;
@@ -60,7 +59,6 @@ public final class RaceConfig {
         satyrMaxHealth = b.defineInRange("satyrMaxHealth", 34.0, 1.0, 1000.0);
         thalassianMaxHealth = b.defineInRange("thalassianMaxHealth", 34.0, 1.0, 1000.0);
         humanMaxHealth = b.defineInRange("humanMaxHealth", 30.0, 1.0, 1000.0);
-        nephilimMaxHealth = b.defineInRange("nephilimMaxHealth", 34.0, 1.0, 1000.0);
         vampireMaxHealth = b.defineInRange("vampireMaxHealth", 34.0, 1.0, 1000.0);
         tieflingMaxHealth = b.defineInRange("tieflingMaxHealth", 34.0, 1.0, 1000.0);
         lycanthropeMaxHealth = b.defineInRange("lycanthropeMaxHealth", 36.0, 1.0, 1000.0);
@@ -116,7 +114,6 @@ public final class RaceConfig {
             case SATYR -> satyrMaxHealth.get();
             case THALASSIAN -> thalassianMaxHealth.get();
             case HUMAN -> humanMaxHealth.get();
-            case NEPHILIM -> nephilimMaxHealth.get();
             case VAMPIRE -> vampireMaxHealth.get();
             case TIEFLING -> tieflingMaxHealth.get();
             case LYCANTHROPE -> lycanthropeMaxHealth.get();

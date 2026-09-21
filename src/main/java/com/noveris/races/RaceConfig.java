@@ -12,6 +12,7 @@ public final class RaceConfig {
     public static final ModConfigSpec.IntValue mobilityCooldownSeconds;
     public static final ModConfigSpec.DoubleValue elfProjectileRange;
     public static final ModConfigSpec.DoubleValue elfMaxHealth, fairyMaxHealth, satyrMaxHealth, thalassianMaxHealth;
+    public static final ModConfigSpec.DoubleValue humanMaxHealth, vampireMaxHealth, tieflingMaxHealth;
     public static final ModConfigSpec.DoubleValue lycanthropeMaxHealth, dragonbornMaxHealth, harpyMaxHealth;
     public static final ModConfigSpec.DoubleValue godMaxHealth, npcMaxHealth;
     public static final ModConfigSpec.DoubleValue elfProjectileDamage;

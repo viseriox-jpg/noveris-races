@@ -146,7 +146,6 @@ public final class RaceEvents {
         if (race == Race.THALASSIAN && event.getSource().is(DamageTypeTags.IS_FIRE))
             victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.THALASSIAN && victim.isInWater() && !event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) event.setAmount(event.getAmount() * .92f);
-        if (race == Race.NEPHILIM && event.getSource().is(DamageTypeTags.IS_FIRE)) event.setAmount(event.getAmount() * .50f);
         if (race == Race.VAMPIRE && event.getSource().is(DamageTypeTags.IS_FIRE))
             victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 0, false, false));
         if (race == Race.TIEFLING && event.getSource().is(DamageTypeTags.IS_FIRE)) {
@@ -185,7 +184,6 @@ public final class RaceEvents {
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.TIEFLING
                 && p.getFoodData().getFoodLevel() >= 18 && event.getAmount() <= 1.0f)
             event.setAmount(event.getAmount() * RaceConfig.tieflingHealingMultiplier.get().floatValue());
-        if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.NEPHILIM) event.setAmount(event.getAmount() * .8f);
         if (event.getEntity() instanceof ServerPlayer p && RaceState.race(p) == Race.THALASSIAN
                 && RaceState.customLong(p, "DryTicks") > RaceConfig.hydrationWarningQuarterTicks.get())
             event.setAmount(event.getAmount() * RaceConfig.thalassianDryHealingMultiplier.get().floatValue());
@@ -298,7 +296,6 @@ public final class RaceEvents {
                 if (p.isInWater()) { if (RaceState.visionEnabled(p) && isDark(p)) p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 60, 0, false, false)); p.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 60, 0, false, false)); }
             }
             case HUMAN -> p.addEffect(new MobEffectInstance(MobEffects.DIG_SPEED, 40, 0, false, false));
-            case NEPHILIM -> { if (p.getHealth() <= p.getMaxHealth() * .3f) p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 60, 0, false, false)); }
             case VAMPIRE -> {
                 if (RaceState.visionEnabled(p) && isDark(p))
                     p.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 260, 0, false, false));

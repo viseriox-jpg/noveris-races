@@ -155,7 +155,6 @@ public final class RacePanelScreen extends NoverisScreen {
             case SATYR -> new String[]{"Velocidade e salto exigem terreno natural","Armadura pesada reduz ou bloqueia a mobilidade"};
             case THALASSIAN -> new String[]{"Nado acelerado e visão noturna exigem água","Hidratação cai fora da água; fogo aplica Fraqueza"};
             case HUMAN -> new String[]{"Pressa I funciona ao trabalhar","Não possui habilidades raciais ativas ou mobilidade"};
-            case NEPHILIM -> new String[]{"Força ativa com 30% ou menos de vida","Recebe 50% menos dano de fogo; cura recebida é menor"};
             case VAMPIRE -> new String[]{"Velocidade, Força e mordida regenerativa exigem noite","Fogo suspende vantagens e aplica Fraqueza"};
             case TIEFLING -> new String[]{"Imune a dano de fogo e lava; retalia ao ser queimado","Água e chuva causam dano; cura pequena é reduzida com fome alta"};
             case LYCANTHROPE -> new String[]{"Força, velocidade e regeneração exigem noite e 6+ de fome","A fome é consumida durante a noite; dia suspende os bônus"};

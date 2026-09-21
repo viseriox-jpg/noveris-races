@@ -9,7 +9,6 @@ public enum Race {
     SATYR("Sátiro", RaceRealm.ORVANNIS, 34.0, .85f, 1f, 1.05f, 0xFFC69B62),
     THALASSIAN("Thalassiano", RaceRealm.ORVANNIS, 34.0, .85f, 1.02f, 1.07f, 0xFF68C9D0),
     HUMAN("Humano", RaceRealm.NEUTRAL, 30.0, .90f, 1f, 1.05f, 0xFFD8CBB1),
-    NEPHILIM("Nephilin", RaceRealm.NEUTRAL, 34.0, .90f, 1.05f, 1.10f, 0xFFE4D49A),
     VAMPIRE("Vampiro", RaceRealm.NEUTRAL, 34.0, .85f, 1f, 1.05f, 0xFFBFA3A3),
     TIEFLING("Tiefling", RaceRealm.AVARION, 34.0, .98f, 1.03f, 1.08f, 0xFFE58B32),
     LYCANTHROPE("Licantropo", RaceRealm.AVARION, 36.0, .95f, 1f, 1.05f, 0xFFD7CDB4),
@@ -49,7 +48,6 @@ public enum Race {
         if (normalized.equals("sátiro") || normalized.equals("satiro")) return SATYR;
         if (normalized.equals("thalassiano")) return THALASSIAN;
         if (normalized.equals("humano")) return HUMAN;
-        if (normalized.equals("nephilin")) return NEPHILIM;
         if (normalized.equals("vampiro")) return VAMPIRE;
         if (normalized.equals("deus")) return GOD;
         if (normalized.equals("npc")) return NPC;

@@ -13,7 +13,6 @@ public final class RaceInfo {
             case SATYR -> "Mobilidade terrestre silvestre.";
             case THALASSIAN -> "Especialista em ambientes aquáticos.";
             case HUMAN -> "Pessoa comum com eficiência básica.";
-            case NEPHILIM -> "Resistência sobrenatural.";
             case VAMPIRE -> "Caçador noturno com sustentação.";
             case TIEFLING -> "Resistente a fogo e ambientes hostis.";
             case LYCANTHROPE -> "Predador fortalecido pela noite.";
@@ -32,7 +31,6 @@ public final class RaceInfo {
             case SATYR -> "Mobilidade terrestre e sobrevivência natural.";
             case THALASSIAN -> "Exploração oceânica e combate aquático.";
             case HUMAN -> "Versatilidade, ferramentas e progressão.";
-            case NEPHILIM -> "Resistência sobrenatural equilibrada.";
             case VAMPIRE -> "Sustentação e combate noturno.";
             case TIEFLING -> "Sobrevivência e retaliação.";
             case LYCANTHROPE -> "Predador fortalecido pela noite.";
@@ -53,7 +51,6 @@ public final class RaceInfo {
             case SATYR -> "Vigor Silvestre";
             case THALASSIAN -> "Guarda das Marés";
             case HUMAN -> "Nenhuma habilidade ativa";
-            case NEPHILIM -> "Rajada de Luz";
             case VAMPIRE -> "Drenagem de Sangue";
             case TIEFLING -> "Pulso Ígneo";
             case LYCANTHROPE -> "Uivo de Caçada";
@@ -76,7 +73,6 @@ public final class RaceInfo {
             case SATYR -> "Investida Caprina";
             case THALASSIAN -> "Impulso Aquático";
             case HUMAN -> "Nenhuma habilidade de mobilidade";
-            case NEPHILIM -> "Impulso Radiante";
             case VAMPIRE -> "Passo Sombrio";
             case TIEFLING -> "Avanço em Fogo";
             case LYCANTHROPE -> "Bote Predatório";
@@ -97,7 +93,6 @@ public final class RaceInfo {
             };
             case SATYR -> "Concede velocidade e regeneração temporárias.";
             case THALASSIAN -> "Concede resistência por 6s e apaga fogo, em qualquer ambiente.";
-            case NEPHILIM -> "Feixe frontal que causa 2 corações e Lentidão por 5 segundos.";
             case VAMPIRE -> "Drenagem rouba até 3 corações; mordida cura 0,5 à noite a cada 10s.";
             case TIEFLING -> "Queima e fere criaturas ao redor.";
             case LYCANTHROPE -> "Revela presas; recebe velocidade extra à noite.";
@@ -119,7 +114,6 @@ public final class RaceInfo {
             };
             case SATYR -> "Investida terrestre veloz com salto curto. 3 cargas, recarga 45s.";
             case THALASSIAN -> "Arrancada livre na água; em terra exige chão. 3 cargas, recarga 45s.";
-            case NEPHILIM -> "Impulso radiante que exige contato com o chão. 3 cargas, recarga 45s.";
             case VAMPIRE -> "Avanço sombrio terrestre na direção do olhar. 3 cargas, recarga 45s.";
             case TIEFLING -> "Avanço terrestre envolto em fogo. 3 cargas, recarga 45s.";
             case LYCANTHROPE -> "Bote terrestre longo para alcançar uma presa. 3 cargas, recarga 45s.";
@@ -137,7 +131,6 @@ public final class RaceInfo {
             case SATYR -> new String[]{"Mais rápido e ágil sobre terreno natural", "Resistência aprimorada; cura em florestas"};
             case THALASSIAN -> new String[]{"Respira e minera normalmente na água", "Nado acelerado e visão aquática"};
             case HUMAN -> new String[]{"Pressa I permanente ao trabalhar", "Sem habilidades ativas ou poderes sobrenaturais"};
-            case NEPHILIM -> new String[]{"50% menos dano de fogo", "Força temporária quando está com pouca vida"};
             case VAMPIRE -> new String[]{"Visão controlável; mordida cura 0,5 à noite a cada 10s", "Força e velocidade adicionais durante a noite"};
             case TIEFLING -> new String[]{"Imune a dano de fogo e lava; visão controlável", "Ao receber fogo, ganha Força temporária"};
             case LYCANTHROPE -> new String[]{"Força, velocidade e regeneração à noite", "Detecta criaturas em um raio curto de 6 blocos"};
@@ -156,7 +149,6 @@ public final class RaceInfo {
             case SATYR -> new String[]{"Armadura pesada reduz bônus por etapas", "Ambientes subterrâneos reduzem velocidade"};
             case THALASSIAN -> new String[]{"Desidrata ao permanecer longe da água", "Fogo aplica Fraqueza temporária"};
             case HUMAN -> new String[]{"Sem resistências naturais especiais", "Sem habilidades ativas ou de mobilidade"};
-            case NEPHILIM -> new String[]{"Toda cura recebida é 20% menor", "Rajada exige mira e não oferece proteção"};
             case VAMPIRE -> new String[]{"Sol suspende poderes noturnos e roubo de vida", "Fogo aplica Fraqueza temporária; comida rende menos"};
             case TIEFLING -> new String[]{"Água e chuva causam dano", "Curas pequenas são 25% menores com fome alta"};
             case LYCANTHROPE -> new String[]{"Velocidade e regeneração exigem 6 de fome", "Durante o dia, os bônus noturnos ficam suspensos"};
